@@ -66,7 +66,9 @@ fun AppNavGraph(navController: NavHostController) {
 
     Scaffold(
         bottomBar = {
-            val shouldShowBottomBar = bottomNavItems.any { it.route == currentRoute }
+            val shouldShowBottomBar = androidx.compose.runtime.remember(currentRoute) {
+                bottomNavItems.any { it.route == currentRoute }
+            }
             if (shouldShowBottomBar) {
                 ChromaBottomNavigationBar(
                     items = bottomNavItems,
@@ -162,17 +164,18 @@ fun ChromaBottomNavigationBar(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val navItemShape = androidx.compose.runtime.remember { RoundedCornerShape(4.dp) }
             items.forEach { screen ->
                 val isSelected = currentRoute == screen.route
 
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(navItemShape)
                         .background(if (isSelected) ChromaStone200 else Color.Transparent)
                         .border(
                             width = if (isSelected) 1.5.dp else 0.dp,
                             color = if (isSelected) ChromaBlack else Color.Transparent,
-                            shape = RoundedCornerShape(4.dp)
+                            shape = navItemShape
                         )
                         .clickable { onItemClick(screen) }
                         .padding(horizontal = 10.dp, vertical = 6.dp),

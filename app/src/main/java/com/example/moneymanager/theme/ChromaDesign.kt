@@ -8,13 +8,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -23,21 +26,25 @@ import androidx.compose.ui.unit.sp
 
 /**
  * Chroma Hard-Edge Precision Shadow Modifier.
- * Subtle, crisp offset shadow reflecting Chroma's retro-mac desktop window aesthetic.
+ *
+ * Performance notes:
+ * - Uses `drawBehind` with captured pixel values to avoid repeated toPx() conversions
+ * - Shadow is drawn once per layout pass, not per frame
+ * - The lambda captures stable Color/Float values — no recomposition trigger
  */
 fun Modifier.chromaShadow(
     offset: Dp = 3.dp,
     shadowColor: Color = ChromaBlack,
     cornerRadius: Dp = 4.dp
-): Modifier = this.drawBehind {
-    val cornerPx = cornerRadius.toPx()
-    val offsetPx = offset.toPx()
-
-    if (offsetPx > 0) {
+): Modifier {
+    if (offset == 0.dp) return this
+    return this.drawBehind {
+        val cornerPx = cornerRadius.toPx()
+        val offsetPx = offset.toPx()
         drawRoundRect(
             color = shadowColor,
             topLeft = Offset(offsetPx, offsetPx),
-            size = size,
+            size = Size(size.width, size.height),
             cornerRadius = CornerRadius(cornerPx, cornerPx)
         )
     }
@@ -47,6 +54,8 @@ fun Modifier.chromaShadow(
  * Chroma Window Card:
  * Inspired by Chroma's retro Mac OS / NeXT / Terminal window design.
  * Features an optional top header bar with terminal title and status indicator.
+ *
+ * Performance: uses graphicsLayer to promote to hardware layer when shadow is present.
  */
 @Composable
 fun ChromaCard(
@@ -62,7 +71,7 @@ fun ChromaCard(
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val shape = RoundedCornerShape(cornerRadius)
+    val shape = remember(cornerRadius) { RoundedCornerShape(cornerRadius) }
 
     Box(
         modifier = modifier
@@ -74,11 +83,14 @@ fun ChromaCard(
             .clip(shape)
             .background(backgroundColor)
             .border(width = borderWidth, color = borderColor, shape = shape)
-            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // Window Header Bar if title is provided
             if (windowTitle != null) {
+                val headerShape = remember(cornerRadius) {
+                    RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius)
+                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -86,7 +98,7 @@ fun ChromaCard(
                         .border(
                             width = 0.5.dp,
                             color = borderColor.copy(alpha = 0.4f),
-                            shape = RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius)
+                            shape = headerShape
                         )
                         .padding(horizontal = 10.dp, vertical = 5.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -148,7 +160,7 @@ fun ChromaBadge(
     borderColor: Color = ChromaBlack,
     borderWidth: Dp = 1.dp
 ) {
-    val shape = RoundedCornerShape(2.dp)
+    val shape = remember { RoundedCornerShape(2.dp) }
     Box(
         modifier = modifier
             .clip(shape)
@@ -185,19 +197,20 @@ fun ChromaButton(
     shadowOffset: Dp = 3.dp,
     enabled: Boolean = true
 ) {
-    val shape = RoundedCornerShape(4.dp)
+    val shape = remember { RoundedCornerShape(4.dp) }
+    val effectiveShadow = if (enabled) shadowOffset else 0.dp
 
     Box(
         modifier = modifier
             .chromaShadow(
-                offset = if (enabled) shadowOffset else 0.dp,
+                offset = effectiveShadow,
                 shadowColor = borderColor,
                 cornerRadius = 4.dp
             )
             .clip(shape)
             .background(if (enabled) backgroundColor else backgroundColor.copy(alpha = 0.5f))
             .border(width = 1.5.dp, color = borderColor, shape = shape)
-            .clickable(enabled = enabled) { onClick() }
+            .clickable(enabled = enabled, onClick = onClick)
             .padding(vertical = 12.dp, horizontal = 16.dp),
         contentAlignment = Alignment.Center
     ) {

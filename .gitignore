@@ -15,3 +15,5 @@ local.properties
 *.aab
 *.keystore
 *.jks
+# Allow APKs in the releases folder for direct download
+!releases/*.apk
