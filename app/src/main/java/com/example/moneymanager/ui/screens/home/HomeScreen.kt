@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -49,50 +48,6 @@ fun HomeScreen(
     val selectedScope by viewModel.selectedScopeFilter.collectAsState()
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "chroma//money",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 0.5.sp
-                            )
-                        )
-                        ChromaBadge(
-                            text = FormatUtils.formatMonth(FormatUtils.getCurrentMonthKey()).uppercase(),
-                            backgroundColor = ChromaStone200,
-                            textColor = ChromaBlack
-                        )
-                    }
-                },
-                actions = {
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 12.dp)
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(MaterialTheme.colorScheme.surface)
-                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
-                            .clickable { onNavigateToSettings() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
-            )
-        },
         floatingActionButton = {
             Box(
                 modifier = Modifier
@@ -124,10 +79,64 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            // Top padding respects status bar; small gap so content sits right under it
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = 8.dp,
+                bottom = 96.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Hero Today's Spend Window Card
+            // ── Inline compact header row (replaces TopAppBar) ──────────────
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp, bottom = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Wordmark + month badge
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "chroma//money",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 0.5.sp
+                            )
+                        )
+                        ChromaBadge(
+                            text = FormatUtils.formatMonth(FormatUtils.getCurrentMonthKey()).uppercase(),
+                            backgroundColor = ChromaStone200,
+                            textColor = ChromaBlack
+                        )
+                    }
+                    // Settings icon button
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                            .clickable { onNavigateToSettings() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+
+            // ── Hero Today's Spend card ──────────────────────────────────────
             item {
                 ChromaTodayHeroCard(
                     todaySpend = todaySpend,
@@ -137,7 +146,7 @@ fun HomeScreen(
                 )
             }
 
-            // Personal vs Household Split Cards
+            // ── Personal vs Household split ──────────────────────────────────
             item {
                 ChromaPersonalHouseholdSplitRow(
                     personalSpend = personalMonth,
@@ -145,8 +154,9 @@ fun HomeScreen(
                 )
             }
 
-            // Scope Filter Selector Box
+            // ── Scope filter selector ────────────────────────────────────────
             item {
+                val scopeShape = remember { RoundedCornerShape(4.dp) }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -161,9 +171,9 @@ fun HomeScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .chromaShadow(offset = if (isSelected) 2.dp else 1.dp, cornerRadius = 4.dp)
-                                .clip(RoundedCornerShape(4.dp))
+                                .clip(scopeShape)
                                 .background(if (isSelected) ChromaBlack else MaterialTheme.colorScheme.surface)
-                                .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                                .border(1.5.dp, MaterialTheme.colorScheme.outline, scopeShape)
                                 .clickable { viewModel.selectedScopeFilter.value = scopeItem }
                                 .padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center
@@ -181,7 +191,7 @@ fun HomeScreen(
                 }
             }
 
-            // Recent Transactions Section Header
+            // ── Recent activity header ───────────────────────────────────────
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -212,7 +222,7 @@ fun HomeScreen(
                 }
             }
 
-            // Recent Transactions List
+            // ── Transaction list ─────────────────────────────────────────────
             if (recentTxs.isEmpty()) {
                 item {
                     ChromaEmptyTransactionsPlaceholder(onAddClick = onNavigateToAdd)
@@ -244,67 +254,44 @@ fun ChromaTodayHeroCard(
         statusIndicator = "[ LIVE ]",
         shadowOffset = 3.dp
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "TODAY'S TOTAL",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = FormatUtils.formatCurrency(todaySpend),
-                style = MaterialTheme.typography.displaySmall.copy(
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Black
-                ),
-                color = if (todaySpend > 0) ChromaRed else MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(14.dp))
-            HorizontalDivider(thickness = 1.dp, color = ChromaStone200)
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Month summary row
+        Column(modifier = Modifier.padding(14.dp)) {
+            // Today label + amount on same row to save vertical space
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
             ) {
                 Column {
                     Text(
-                        text = "MONTH_SPENT",
+                        text = "TODAY'S TOTAL",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
                         ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = FormatUtils.formatCurrency(monthSpend),
-                        style = MaterialTheme.typography.titleMedium.copy(
+                        text = FormatUtils.formatCurrency(todaySpend),
+                        style = MaterialTheme.typography.displaySmall.copy(
                             fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold
-                        )
+                            fontWeight = FontWeight.Black
+                        ),
+                        color = if (todaySpend > 0) ChromaRed else MaterialTheme.colorScheme.onSurface
                     )
                 }
-
-                if (monthIncome > 0) {
-                    Column(horizontalAlignment = Alignment.End) {
+                // Month info column on the right
+                Column(horizontalAlignment = Alignment.End) {
+                    if (monthIncome > 0) {
                         Text(
-                            text = "MONTH_INCOME",
+                            text = "MONTH_IN",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold
                             ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = FormatUtils.formatCurrency(monthIncome),
                             style = MaterialTheme.typography.titleMedium.copy(
@@ -313,18 +300,15 @@ fun ChromaTodayHeroCard(
                             ),
                             color = ChromaGreen
                         )
-                    }
-                } else if (totalBudget > 0) {
-                    Column(horizontalAlignment = Alignment.End) {
+                    } else if (totalBudget > 0) {
                         Text(
-                            text = "BUDGET_LIMIT",
+                            text = "BUDGET",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold
                             ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = FormatUtils.formatCurrency(totalBudget),
                             style = MaterialTheme.typography.titleMedium.copy(
@@ -337,48 +321,74 @@ fun ChromaTodayHeroCard(
                 }
             }
 
-            // Budget Progress Bar
-            if (totalBudget > 0) {
-                Spacer(modifier = Modifier.height(12.dp))
-                val progress = (monthSpend / totalBudget).toFloat().coerceIn(0f, 1f)
-                val isOverBudget = monthSpend > totalBudget
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(thickness = 1.dp, color = ChromaStone200)
+            Spacer(modifier = Modifier.height(10.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(10.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(ChromaStone200)
-                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(progress)
-                            .background(if (isOverBudget) ChromaRed else ChromaOrange)
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+            // Month spend row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
                     Text(
-                        text = "${(progress * 100).toInt()}% USED",
+                        text = "MONTH_SPENT",
                         style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = FormatUtils.formatCurrency(monthSpend),
+                        style = MaterialTheme.typography.titleMedium.copy(
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold
                         )
                     )
-                    Text(
-                        text = if (isOverBudget) "OVER: ${FormatUtils.formatCurrency(monthSpend - totalBudget)}"
-                        else "LEFT: ${FormatUtils.formatCurrency(totalBudget - monthSpend)}",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
+                }
+
+                // Budget progress inline if applicable
+                if (totalBudget > 0) {
+                    val progress = (monthSpend / totalBudget).toFloat().coerceIn(0f, 1f)
+                    val isOverBudget = monthSpend > totalBudget
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = if (isOverBudget) "OVER: ${FormatUtils.formatCurrency(monthSpend - totalBudget)}"
+                            else "LEFT: ${FormatUtils.formatCurrency(totalBudget - monthSpend)}",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
+                            ),
                             color = if (isOverBudget) ChromaRed else MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        // Inline budget bar
+                        Box(
+                            modifier = Modifier
+                                .width(100.dp)
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(ChromaStone200)
+                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .fillMaxWidth(progress)
+                                    .background(if (isOverBudget) ChromaRed else ChromaOrange)
+                            )
+                        }
+                        Text(
+                            text = "${(progress * 100).toInt()}% used",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 9.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }
@@ -392,7 +402,7 @@ fun ChromaPersonalHouseholdSplitRow(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         // Personal Card
         ChromaCard(
@@ -400,21 +410,26 @@ fun ChromaPersonalHouseholdSplitRow(
             windowTitle = "personal.db",
             shadowOffset = 2.dp
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                ChromaBadge(text = "PERSONAL", backgroundColor = ChromaBlue, textColor = ChromaWhite)
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = FormatUtils.formatCurrency(personalSpend),
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold
+            Row(
+                modifier = Modifier.padding(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ChromaBadge(text = "P", backgroundColor = ChromaBlue, textColor = ChromaWhite)
+                Column {
+                    Text(
+                        text = FormatUtils.formatCurrency(personalSpend),
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
-                )
-                Text(
-                    text = "This Month",
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                    Text(
+                        text = "personal",
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
 
@@ -424,21 +439,26 @@ fun ChromaPersonalHouseholdSplitRow(
             windowTitle = "household.db",
             shadowOffset = 2.dp
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                ChromaBadge(text = "HOUSEHOLD", backgroundColor = ChromaOrange, textColor = ChromaWhite)
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = FormatUtils.formatCurrency(householdSpend),
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold
+            Row(
+                modifier = Modifier.padding(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ChromaBadge(text = "H", backgroundColor = ChromaOrange, textColor = ChromaWhite)
+                Column {
+                    Text(
+                        text = FormatUtils.formatCurrency(householdSpend),
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
-                )
-                Text(
-                    text = "This Month",
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                    Text(
+                        text = "household",
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
@@ -461,13 +481,13 @@ fun TransactionCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Boxy Category Icon Badge
+            // Category Icon Box
             Box(
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(36.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(ChromaStone100)
                     .border(1.dp, ChromaStone400, RoundedCornerShape(4.dp)),
@@ -477,23 +497,22 @@ fun TransactionCard(
                     imageVector = FormatUtils.getCategoryIcon(category?.icon ?: "category"),
                     contentDescription = null,
                     tint = ChromaBlack,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(18.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
-            // Details Column
+            // Details
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = if (transaction.note.isNotBlank()) transaction.note else (category?.name ?: "Expense"),
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                     maxLines = 1
                 )
-                Spacer(modifier = Modifier.height(2.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
                         text = category?.name ?: "Misc",
@@ -503,7 +522,7 @@ fun TransactionCard(
                         ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text("•", style = MaterialTheme.typography.labelSmall)
+                    Text("·", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
                         text = transaction.paymentMode.name,
                         style = MaterialTheme.typography.labelSmall.copy(
@@ -512,7 +531,7 @@ fun TransactionCard(
                             fontWeight = FontWeight.Bold
                         )
                     )
-                    Text("•", style = MaterialTheme.typography.labelSmall)
+                    Text("·", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
                         text = transaction.scope.name,
                         style = MaterialTheme.typography.labelSmall.copy(
@@ -525,11 +544,11 @@ fun TransactionCard(
                 }
             }
 
-            // Amount Column
+            // Amount
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = (if (isExpense) "- " else "+ ") + FormatUtils.formatCurrency(transaction.amount),
-                    style = MaterialTheme.typography.titleMedium.copy(
+                    style = MaterialTheme.typography.titleSmall.copy(
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold
                     ),
@@ -563,7 +582,7 @@ fun ChromaEmptyTransactionsPlaceholder(onAddClick: () -> Unit) {
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(44.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(ChromaStone100)
                     .border(1.dp, ChromaStone400, RoundedCornerShape(4.dp)),
@@ -573,10 +592,10 @@ fun ChromaEmptyTransactionsPlaceholder(onAddClick: () -> Unit) {
                     imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
                     contentDescription = null,
                     tint = ChromaBlack,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = "NO TRANSACTIONS LOGGED",
                 style = MaterialTheme.typography.titleSmall.copy(
@@ -590,7 +609,7 @@ fun ChromaEmptyTransactionsPlaceholder(onAddClick: () -> Unit) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             ChromaButton(
                 text = "+ ADD TRANSACTION",
                 onClick = onAddClick,
