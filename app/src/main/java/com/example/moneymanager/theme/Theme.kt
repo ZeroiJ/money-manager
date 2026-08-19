@@ -6,55 +6,55 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = MintGreen,
-    onPrimary = Color.Black,
-    primaryContainer = Color(0xFF00391C),
-    onPrimaryContainer = MintGreen,
-    secondary = TealAccent,
-    onSecondary = Color.Black,
-    secondaryContainer = Color(0xFF003644),
-    onSecondaryContainer = TealAccent,
-    tertiary = AmberGold,
-    onTertiary = Color.Black,
-    background = DarkBg,
-    onBackground = TextPrimary,
-    surface = DarkSurface,
-    onSurface = TextPrimary,
-    surfaceVariant = DarkSurfaceVariant,
-    onSurfaceVariant = TextSecondary,
-    surfaceContainer = DarkSurfaceElevated,
-    outline = DarkBorder,
-    error = ExpenseRed,
-    onError = Color.White
+private val NeoDarkColorScheme = darkColorScheme(
+    primary = NeoYellow,
+    onPrimary = NeoBlack,
+    primaryContainer = NeoBlack,
+    onPrimaryContainer = NeoYellow,
+    secondary = NeoCyan,
+    onSecondary = NeoBlack,
+    secondaryContainer = NeoGray900,
+    onSecondaryContainer = NeoCyan,
+    tertiary = NeoLime,
+    onTertiary = NeoBlack,
+    background = NeoBlack,
+    onBackground = NeoWhite,
+    surface = NeoGray900,
+    onSurface = NeoWhite,
+    surfaceVariant = NeoDarkCard,
+    onSurfaceVariant = NeoGray200,
+    surfaceContainer = NeoDarkSurface,
+    outline = NeoWhite,
+    error = NeoRed,
+    onError = NeoWhite
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = EmeraldGreen,
-    onPrimary = Color.White,
-    primaryContainer = Color(0xFFD1FAE5),
-    onPrimaryContainer = Color(0xFF065F46),
-    secondary = IndigoAccent,
-    onSecondary = Color.White,
-    secondaryContainer = Color(0xFFE0E7FF),
-    onSecondaryContainer = Color(0xFF3730A3),
-    tertiary = CoralOrange,
-    onTertiary = Color.White,
-    background = LightBg,
-    onBackground = LightTextPrimary,
-    surface = LightSurface,
-    onSurface = LightTextPrimary,
-    surfaceVariant = LightSurfaceVariant,
-    onSurfaceVariant = LightTextSecondary,
-    outline = LightBorder,
-    error = ExpenseRed,
-    onError = Color.White
+private val NeoLightColorScheme = lightColorScheme(
+    primary = NeoBlack,
+    onPrimary = NeoWhite,
+    primaryContainer = NeoYellow,
+    onPrimaryContainer = NeoBlack,
+    secondary = NeoLime,
+    onSecondary = NeoBlack,
+    secondaryContainer = NeoGray100,
+    onSecondaryContainer = NeoBlack,
+    tertiary = NeoOrange,
+    onTertiary = NeoWhite,
+    background = NeoOffWhite,
+    onBackground = NeoBlack,
+    surface = NeoWhite,
+    onSurface = NeoBlack,
+    surfaceVariant = NeoGray100,
+    onSurfaceVariant = NeoGray700,
+    outline = NeoBlack,
+    error = NeoRed,
+    onError = NeoWhite
 )
 
 @Composable
 fun MoneyManagerTheme(
-    darkTheme: Boolean = true, // Dark mode default as specified in AGENTS.md
-    dynamicColor: Boolean = false, // Keep tailored brand color scheme consistent
+    darkTheme: Boolean = false, // High-contrast crisp Neo-Brutalist default
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -62,8 +62,8 @@ fun MoneyManagerTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> NeoDarkColorScheme
+        else -> NeoLightColorScheme
     }
 
     MaterialTheme(

@@ -2,12 +2,13 @@ package com.example.moneymanager.ui.screens.transactions
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,7 +51,15 @@ fun TransactionListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Transactions", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = "TRANSACTIONS",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         }
@@ -59,223 +69,250 @@ fun TransactionListScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Search Box
-            OutlinedTextField(
-                value = query,
-                onValueChange = { viewModel.searchQuery.value = it },
-                placeholder = { Text("Search note, category, amount, mode...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                trailingIcon = {
-                    if (query.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.searchQuery.value = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Clear")
-                        }
-                    }
-                },
+            // Boxy Search Field
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .neoShadow(offset = 3.dp, cornerRadius = 6.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                    .padding(horizontal = 12.dp, vertical = 2.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextField(
+                        value = query,
+                        onValueChange = { viewModel.searchQuery.value = it },
+                        placeholder = {
+                            Text(
+                                "Search notes, categories, amounts...",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        },
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.searchQuery.value = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear", modifier = Modifier.size(18.dp))
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Boxy Filter Chips Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                )
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Filter Chips Scrollable Row
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Scope Filters
-                item {
-                    FilterChip(
-                        selected = scopeFilter == null,
-                        onClick = { viewModel.scopeFilter.value = null },
-                        label = { Text("All Scopes") }
-                    )
-                }
-                item {
-                    FilterChip(
-                        selected = scopeFilter == TransactionScope.PERSONAL,
-                        onClick = {
-                            viewModel.scopeFilter.value = if (scopeFilter == TransactionScope.PERSONAL) null else TransactionScope.PERSONAL
-                        },
-                        label = { Text("Personal") }
-                    )
-                }
-                item {
-                    FilterChip(
-                        selected = scopeFilter == TransactionScope.HOUSEHOLD,
-                        onClick = {
-                            viewModel.scopeFilter.value = if (scopeFilter == TransactionScope.HOUSEHOLD) null else TransactionScope.HOUSEHOLD
-                        },
-                        label = { Text("Household") }
-                    )
-                }
-
-                // Date Filters
-                item {
-                    FilterChip(
-                        selected = dateFilter == DateFilter.THIS_MONTH,
-                        onClick = {
-                            viewModel.dateFilter.value = if (dateFilter == DateFilter.THIS_MONTH) DateFilter.ALL else DateFilter.THIS_MONTH
-                        },
-                        label = { Text("This Month") }
-                    )
-                }
-                item {
-                    FilterChip(
-                        selected = dateFilter == DateFilter.LAST_MONTH,
-                        onClick = {
-                            viewModel.dateFilter.value = if (dateFilter == DateFilter.LAST_MONTH) DateFilter.ALL else DateFilter.LAST_MONTH
-                        },
-                        label = { Text("Last Month") }
-                    )
+                // Scope Filter Chips
+                listOf(
+                    null to "ALL SCOPE",
+                    TransactionScope.PERSONAL to "PERSONAL",
+                    TransactionScope.HOUSEHOLD to "HOUSEHOLD"
+                ).forEach { (scope, label) ->
+                    val isSelected = scopeFilter == scope
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(
+                                if (isSelected) {
+                                    when (scope) {
+                                        TransactionScope.PERSONAL -> NeoBlue
+                                        TransactionScope.HOUSEHOLD -> NeoOrange
+                                        else -> NeoBlack
+                                    }
+                                } else MaterialTheme.colorScheme.surface
+                            )
+                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                            .clickable { viewModel.scopeFilter.value = scope }
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
+                            color = if (isSelected) NeoWhite else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
 
-                // Payment Mode Filters
-                PaymentMode.entries.forEach { mode ->
-                    item {
-                        FilterChip(
-                            selected = modeFilter == mode,
-                            onClick = {
-                                viewModel.paymentModeFilter.value = if (modeFilter == mode) null else mode
-                            },
-                            label = { Text(mode.name) }
+                // Payment Mode Filter Chips
+                PaymentMode.values().forEach { mode ->
+                    val isSelected = modeFilter == mode
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(if (isSelected) NeoYellow else MaterialTheme.colorScheme.surface)
+                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                            .clickable {
+                                viewModel.paymentModeFilter.value = if (isSelected) null else mode
+                            }
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = mode.name,
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
+                            color = if (isSelected) NeoBlack else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Summary Bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${filteredTxs.size} transactions",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = "${filteredTxs.size} TRANSACTIONS",
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black)
                 )
                 Text(
-                    text = "Total: ${FormatUtils.formatCurrency(totalFilteredSpend)}",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.primary
+                    text = "TOTAL: ${FormatUtils.formatCurrency(totalFilteredSpend)}",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Black,
+                        color = NeoRed
+                    )
                 )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Transactions Grouped List
-            if (groupedTxs.isEmpty()) {
+            // Grouped Transaction Feed
+            if (filteredTxs.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(32.dp),
+                        .padding(24.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No matching transactions found.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "NO TRANSACTIONS FOUND",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
                     )
                 }
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     groupedTxs.forEach { dayGroup ->
-                        // Date Header
+                        // Sticky Date Header Block
                         stickyHeader {
-                            Row(
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .background(MaterialTheme.colorScheme.background)
-                                    .padding(vertical = 8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                    .padding(vertical = 6.dp)
                             ) {
-                                Text(
-                                    text = dayGroup.dateLabel,
-                                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = FormatUtils.formatCurrency(dayGroup.dayTotalSpend),
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(NeoGray100)
+                                        .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = dayGroup.dateLabel.uppercase(),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
+                                        color = NeoBlack
+                                    )
+                                    if (dayGroup.dayTotalSpend > 0) {
+                                        Text(
+                                            text = "- " + FormatUtils.formatCurrency(dayGroup.dayTotalSpend),
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.Black,
+                                                color = NeoRed
+                                            )
+                                        )
+                                    }
+                                }
                             }
                         }
 
+                        // Transaction Cards for this Date
                         items(dayGroup.transactions, key = { it.id }) { tx ->
                             val category = categoriesMap[tx.categoryId]
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                TransactionCard(
-                                    transaction = tx,
-                                    category = category,
-                                    modifier = Modifier.weight(1f),
-                                    onClick = { onNavigateToEditTransaction(tx.id) }
-                                )
-                                IconButton(
-                                    onClick = { transactionToDelete = tx },
-                                    modifier = Modifier.padding(start = 4.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.DeleteOutline,
-                                        contentDescription = "Delete",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(6.dp))
+                            TransactionCard(
+                                transaction = tx,
+                                category = category,
+                                onClick = { onNavigateToEditTransaction(tx.id) }
+                            )
                         }
                     }
                 }
             }
         }
+    }
 
-        // Delete Confirmation Dialog
-        if (transactionToDelete != null) {
-            val tx = transactionToDelete!!
-            AlertDialog(
-                onDismissRequest = { transactionToDelete = null },
-                title = { Text("Delete Transaction") },
-                text = {
-                    Text("Are you sure you want to delete this transaction of ${FormatUtils.formatCurrency(tx.amount)} (${tx.note.ifBlank { "Expense" }})?")
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            viewModel.deleteTransaction(tx)
-                            transactionToDelete = null
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = ExpenseRed)
-                    ) {
-                        Text("Delete", color = Color.White)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { transactionToDelete = null }) {
-                        Text("Cancel")
-                    }
+    // Delete Confirmation Dialog (Neo-Brutalist Dialog)
+    if (transactionToDelete != null) {
+        val tx = transactionToDelete!!
+        AlertDialog(
+            onDismissRequest = { transactionToDelete = null },
+            shape = RoundedCornerShape(6.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = {
+                Text(
+                    text = "DELETE TRANSACTION",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to permanently remove this transaction of ${FormatUtils.formatCurrency(tx.amount)}?",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                NeoButton(
+                    text = "DELETE",
+                    onClick = {
+                        viewModel.deleteTransaction(tx)
+                        transactionToDelete = null
+                    },
+                    backgroundColor = NeoRed,
+                    textColor = NeoWhite,
+                    borderColor = NeoBlack,
+                    shadowOffset = 2.dp
+                )
+            },
+            dismissButton = {
+                TextButton(onClick = { transactionToDelete = null }) {
+                    Text("CANCEL", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 }
-            )
-        }
+            }
+        )
     }
 }

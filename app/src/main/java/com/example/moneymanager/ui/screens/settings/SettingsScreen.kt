@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -14,7 +15,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -58,10 +59,32 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings & Preferences", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = "SETTINGS",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 12.dp, end = 8.dp)
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                            .clickable { onNavigateBack() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -73,282 +96,269 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(padding),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Privacy Header Card
+            // Offline Privacy Banner Card
             item {
-                Card(
+                NeoCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    backgroundColor = NeoYellow,
+                    borderColor = NeoBlack,
+                    shadowOffset = 4.dp
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
-                                .clip(CircleShape)
-                                .background(MintGreen.copy(alpha = 0.2f)),
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(NeoBlack),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.Shield, contentDescription = null, tint = MintGreen)
+                            Icon(Icons.Default.Shield, contentDescription = null, tint = NeoYellow, modifier = Modifier.size(22.dp))
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "100% Offline & Private",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                text = "100% OFFLINE & PRIVATE",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black),
+                                color = NeoBlack
                             )
                             Text(
-                                text = "Your data is stored locally on this device. No cloud sync, no tracking, no servers.",
+                                text = "All financial data remains on this device. No servers, zero telemetry.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = NeoBlack
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Display Preferences
+            item {
+                NeoCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    shadowOffset = 3.dp
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "INDIAN NUMBER GROUPING",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
+                            )
+                            Text(
+                                text = if (useIndianGrouping) "Lakh/Crore format (e.g. ₹1,50,000)" else "Standard format (e.g. ₹150,000)",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
+                        Switch(
+                            checked = useIndianGrouping,
+                            onCheckedChange = { viewModel.setUseIndianGrouping(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = NeoBlack,
+                                checkedTrackColor = NeoYellow,
+                                uncheckedThumbColor = NeoGray700,
+                                uncheckedTrackColor = NeoGray200
+                            )
+                        )
                     }
                 }
             }
 
-            // Display Preferences Section
+            // Categories Management
             item {
-                Column {
-                    Text("Display Preferences", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
+                NeoCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    shadowOffset = 3.dp
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "Indian Number Grouping",
-                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                                )
-                                Text(
-                                    text = if (useIndianGrouping) "Lakh/Crore format (e.g. ₹1,50,000)" else "Standard format (e.g. ₹150,000)",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Switch(
-                                checked = useIndianGrouping,
-                                onCheckedChange = { viewModel.setUseIndianGrouping(it) }
+                            Text(
+                                text = "EXPENSE CATEGORIES",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
                             )
+                            TextButton(onClick = { showAddCategoryDialog = true }) {
+                                Text("+ ADD CUSTOM", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        categories.forEach { category ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(Color(category.color.toInt()))
+                                        .border(1.dp, NeoBlack, RoundedCornerShape(4.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = FormatUtils.getCategoryIcon(category.icon),
+                                        contentDescription = null,
+                                        tint = NeoBlack,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = category.name,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (!category.isDefault) {
+                                    IconButton(
+                                        onClick = { viewModel.deleteCategory(category) },
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.DeleteOutline,
+                                            contentDescription = "Delete",
+                                            tint = NeoRed,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            // Categories Management Section
+            // Recurring Subscriptions Management
             item {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Expense Categories", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
-                        TextButton(onClick = { showAddCategoryDialog = true }) {
-                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Add Custom")
+                NeoCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    shadowOffset = 3.dp
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "RECURRING SUBSCRIPTIONS",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
+                            )
+                            TextButton(onClick = { showAddRecurringDialog = true }) {
+                                Text("+ ADD NEW", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                            }
                         }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
 
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            categories.forEach { category ->
-                                val catColor = Color(category.color)
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        if (recurringRules.isEmpty()) {
+                            Text(
+                                text = "No active recurring bills. Use + ADD NEW to configure Rent, WiFi, Netflix, SIP, etc.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            recurringRules.forEach { rule ->
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(32.dp)
-                                            .clip(CircleShape)
-                                            .background(catColor.copy(alpha = 0.2f)),
-                                        contentAlignment = Alignment.Center
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = rule.note.ifBlank { "Subscription" },
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black)
+                                        )
+                                        Text(
+                                            text = "${FormatUtils.formatCurrency(rule.amount)} • ${rule.frequency.name} • Next: ${FormatUtils.formatDate(rule.nextDueDate)}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = { viewModel.deleteRecurringRule(rule) },
+                                        modifier = Modifier.size(28.dp)
                                     ) {
                                         Icon(
-                                            imageVector = FormatUtils.getCategoryIcon(category.icon),
-                                            contentDescription = null,
-                                            tint = catColor,
+                                            Icons.Default.DeleteOutline,
+                                            contentDescription = "Delete",
+                                            tint = NeoRed,
                                             modifier = Modifier.size(18.dp)
                                         )
                                     }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = category.name,
-                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    if (!category.isDefault) {
-                                        IconButton(
-                                            onClick = { viewModel.deleteCategory(category) },
-                                            modifier = Modifier.size(28.dp)
-                                        ) {
-                                            Icon(
-                                                Icons.Default.DeleteOutline,
-                                                contentDescription = "Delete",
-                                                tint = ExpenseRed,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
-                                    }
                                 }
+                                HorizontalDivider(thickness = 1.dp, color = NeoGray200)
                             }
                         }
                     }
                 }
             }
 
-            // Recurring Expenses Section
+            // Household Members
             item {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Recurring Expenses & Bills", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
-                        TextButton(onClick = { showAddRecurringDialog = true }) {
-                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Add Recurring")
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    if (recurringRules.isEmpty()) {
-                        Card(
+                NeoCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    shadowOffset = 3.dp
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "No recurring expenses set up (Rent, WiFi, Subscriptions). Tap + Add Recurring above.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(16.dp)
+                                text = "HOUSEHOLD MEMBERS",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
                             )
+                            TextButton(onClick = { showAddMemberDialog = true }) {
+                                Text("+ ADD MEMBER", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                            }
                         }
-                    } else {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                recurringRules.forEach { rule ->
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        householdMembers.forEach { member ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Person, contentDescription = null, tint = NeoOrange, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = member.name,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (householdMembers.size > 1) {
+                                    IconButton(
+                                        onClick = { viewModel.deleteHouseholdMember(member) },
+                                        modifier = Modifier.size(28.dp)
                                     ) {
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = rule.note.ifBlank { "Recurring Expense" },
-                                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-                                            )
-                                            Text(
-                                                text = "${FormatUtils.formatCurrency(rule.amount)} • ${rule.frequency.name} • Next: ${FormatUtils.formatDate(rule.nextDueDate)}",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                        IconButton(
-                                            onClick = { viewModel.deleteRecurringRule(rule) },
-                                            modifier = Modifier.size(28.dp)
-                                        ) {
-                                            Icon(
-                                                Icons.Default.DeleteOutline,
-                                                contentDescription = "Delete",
-                                                tint = ExpenseRed,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
-                                    }
-                                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Household Members Section
-            item {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Household Members", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
-                        TextButton(onClick = { showAddMemberDialog = true }) {
-                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Add Member")
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            householdMembers.forEach { member ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        Icons.Default.Person,
-                                        contentDescription = null,
-                                        tint = HouseholdOrange,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = member.name,
-                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    if (householdMembers.size > 1) {
-                                        IconButton(
-                                            onClick = { viewModel.deleteHouseholdMember(member) },
-                                            modifier = Modifier.size(28.dp)
-                                        ) {
-                                            Icon(
-                                                Icons.Default.DeleteOutline,
-                                                contentDescription = "Delete",
-                                                tint = ExpenseRed,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
+                                        Icon(
+                                            Icons.Default.DeleteOutline,
+                                            contentDescription = "Delete",
+                                            tint = NeoRed,
+                                            modifier = Modifier.size(18.dp)
+                                        )
                                     }
                                 }
                             }
@@ -357,206 +367,218 @@ fun SettingsScreen(
                 }
             }
 
-            // Backup & Data Export Section
+            // Backup & Data Export
             item {
-                Column {
-                    Text("Data Backup & Export", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
-                    Spacer(modifier = Modifier.height(8.dp))
+                NeoCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    shadowOffset = 4.dp
+                ) {
+                    Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text(
+                            text = "DATA BACKUP & EXPORT",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
+                        )
 
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            // Export CSV
-                            FilledTonalButton(
-                                onClick = {
-                                    scope.launch {
-                                        val csv = viewModel.exportCsvBackup()
-                                        showBackupExportDialog = csv
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Icon(Icons.Default.TableChart, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Export to CSV (Excel / Sheets)")
-                            }
+                        NeoButton(
+                            text = "EXPORT TO CSV (EXCEL / SHEETS)",
+                            onClick = {
+                                scope.launch {
+                                    val csv = viewModel.exportCsvBackup()
+                                    showBackupExportDialog = csv
+                                }
+                            },
+                            backgroundColor = NeoWhite,
+                            textColor = NeoBlack,
+                            borderColor = NeoBlack,
+                            shadowOffset = 2.dp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                            // Export JSON
-                            FilledTonalButton(
-                                onClick = {
-                                    scope.launch {
-                                        val json = viewModel.exportJsonBackup()
-                                        showBackupExportDialog = json
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Icon(Icons.Default.DataObject, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Export Full Backup (JSON)")
-                            }
+                        NeoButton(
+                            text = "EXPORT FULL BACKUP (JSON)",
+                            onClick = {
+                                scope.launch {
+                                    val json = viewModel.exportJsonBackup()
+                                    showBackupExportDialog = json
+                                }
+                            },
+                            backgroundColor = NeoYellow,
+                            textColor = NeoBlack,
+                            borderColor = NeoBlack,
+                            shadowOffset = 2.dp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                            // Import JSON
-                            OutlinedButton(
-                                onClick = { showImportDialog = true },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Restore / Import JSON Backup")
-                            }
-                        }
+                        NeoButton(
+                            text = "RESTORE / IMPORT JSON BACKUP",
+                            onClick = { showImportDialog = true },
+                            backgroundColor = NeoGray100,
+                            textColor = NeoBlack,
+                            borderColor = NeoBlack,
+                            shadowOffset = 2.dp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             }
         }
+    }
 
-        // Add Category Dialog
-        if (showAddCategoryDialog) {
-            AddCategoryDialog(
-                onDismiss = { showAddCategoryDialog = false },
-                onSave = { name, icon, color ->
-                    viewModel.addCategory(name, icon, color)
-                    showAddCategoryDialog = false
+    // Add Category Dialog
+    if (showAddCategoryDialog) {
+        AddCategoryDialog(
+            onDismiss = { showAddCategoryDialog = false },
+            onSave = { name, icon, color ->
+                viewModel.addCategory(name, icon, color)
+                showAddCategoryDialog = false
+            }
+        )
+    }
+
+    // Add Recurring Dialog
+    if (showAddRecurringDialog) {
+        AddRecurringDialog(
+            categories = categories,
+            onDismiss = { showAddRecurringDialog = false },
+            onSave = { amount, type, catId, note, mode, scopeType, freq, dueDate ->
+                viewModel.addRecurringRule(amount, type, catId, note, mode, scopeType, freq, dueDate)
+                showAddRecurringDialog = false
+            }
+        )
+    }
+
+    // Add Member Dialog
+    if (showAddMemberDialog) {
+        var memberName by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showAddMemberDialog = false },
+            shape = RoundedCornerShape(6.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = { Text("ADD HOUSEHOLD MEMBER", fontWeight = FontWeight.Black) },
+            text = {
+                OutlinedTextField(
+                    value = memberName,
+                    onValueChange = { memberName = it },
+                    label = { Text("Member Name (e.g. Partner, Roommate)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(6.dp)
+                )
+            },
+            confirmButton = {
+                NeoButton(
+                    text = "ADD",
+                    onClick = {
+                        viewModel.addHouseholdMember(memberName)
+                        showAddMemberDialog = false
+                    },
+                    backgroundColor = NeoYellow,
+                    textColor = NeoBlack,
+                    borderColor = NeoBlack,
+                    shadowOffset = 2.dp,
+                    enabled = memberName.isNotBlank()
+                )
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddMemberDialog = false }) {
+                    Text("CANCEL", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 }
-            )
-        }
+            }
+        )
+    }
 
-        // Add Recurring Dialog
-        if (showAddRecurringDialog) {
-            AddRecurringDialog(
-                categories = categories,
-                onDismiss = { showAddRecurringDialog = false },
-                onSave = { amount, type, catId, note, mode, scopeType, freq, dueDate ->
-                    viewModel.addRecurringRule(amount, type, catId, note, mode, scopeType, freq, dueDate)
-                    showAddRecurringDialog = false
-                }
-            )
-        }
-
-        // Add Member Dialog
-        if (showAddMemberDialog) {
-            var memberName by remember { mutableStateOf("") }
-            AlertDialog(
-                onDismissRequest = { showAddMemberDialog = false },
-                title = { Text("Add Household Member") },
-                text = {
+    // Backup View & Copy Dialog
+    if (showBackupExportDialog != null) {
+        val content = showBackupExportDialog!!
+        AlertDialog(
+            onDismissRequest = { showBackupExportDialog = null },
+            shape = RoundedCornerShape(6.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = { Text("BACKUP GENERATED", fontWeight = FontWeight.Black) },
+            text = {
+                Column {
+                    Text("Your offline data backup has been generated. You can copy it to your clipboard:", style = MaterialTheme.typography.bodySmall)
+                    Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                        value = memberName,
-                        onValueChange = { memberName = it },
-                        label = { Text("Member Name (e.g. Partner, Roommate)") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        value = content.take(300) + if (content.length > 300) "..." else "",
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth().height(120.dp),
+                        shape = RoundedCornerShape(6.dp)
                     )
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            viewModel.addHouseholdMember(memberName)
-                            showAddMemberDialog = false
-                        },
-                        enabled = memberName.isNotBlank()
-                    ) {
-                        Text("Add")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showAddMemberDialog = false }) {
-                        Text("Cancel")
-                    }
                 }
-            )
-        }
-
-        // Backup View & Copy Dialog
-        if (showBackupExportDialog != null) {
-            val content = showBackupExportDialog!!
-            AlertDialog(
-                onDismissRequest = { showBackupExportDialog = null },
-                title = { Text("Backup Generated") },
-                text = {
-                    Column {
-                        Text("Your offline data backup has been generated. You can copy it to your clipboard:", style = MaterialTheme.typography.bodySmall)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = content.take(300) + if (content.length > 300) "..." else "",
-                            onValueChange = {},
-                            readOnly = true,
-                            modifier = Modifier.fillMaxWidth().height(120.dp)
-                        )
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                            clipboard.setPrimaryClip(ClipData.newPlainText("MoneyManagerBackup", content))
-                            Toast.makeText(context, "Copied to clipboard!", Toast.LENGTH_SHORT).show()
-                            showBackupExportDialog = null
-                        }
-                    ) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Copy to Clipboard")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showBackupExportDialog = null }) {
-                        Text("Close")
-                    }
+            },
+            confirmButton = {
+                NeoButton(
+                    text = "COPY TO CLIPBOARD",
+                    onClick = {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("MoneyManagerBackup", content))
+                        Toast.makeText(context, "Copied to clipboard!", Toast.LENGTH_SHORT).show()
+                        showBackupExportDialog = null
+                    },
+                    backgroundColor = NeoYellow,
+                    textColor = NeoBlack,
+                    borderColor = NeoBlack,
+                    shadowOffset = 2.dp
+                )
+            },
+            dismissButton = {
+                TextButton(onClick = { showBackupExportDialog = null }) {
+                    Text("CLOSE", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 }
-            )
-        }
+            }
+        )
+    }
 
-        // Import Dialog
-        if (showImportDialog) {
-            var importText by remember { mutableStateOf("") }
-            AlertDialog(
-                onDismissRequest = { showImportDialog = false },
-                title = { Text("Import JSON Backup") },
-                text = {
-                    Column {
-                        Text("Paste your exported JSON backup text below to restore:", style = MaterialTheme.typography.bodySmall)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = importText,
-                            onValueChange = { importText = it },
-                            label = { Text("Paste JSON Here") },
-                            modifier = Modifier.fillMaxWidth().height(140.dp)
-                        )
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                val success = viewModel.importJsonBackup(importText)
-                                if (success) {
-                                    Toast.makeText(context, "Data successfully restored!", Toast.LENGTH_SHORT).show()
-                                    showImportDialog = false
-                                } else {
-                                    Toast.makeText(context, "Invalid JSON format. Please verify.", Toast.LENGTH_LONG).show()
-                                }
+    // Import Dialog
+    if (showImportDialog) {
+        var importText by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showImportDialog = false },
+            shape = RoundedCornerShape(6.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = { Text("RESTORE JSON BACKUP", fontWeight = FontWeight.Black) },
+            text = {
+                Column {
+                    Text("Paste your exported JSON backup text below to restore:", style = MaterialTheme.typography.bodySmall)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = importText,
+                        onValueChange = { importText = it },
+                        label = { Text("Paste JSON Here") },
+                        modifier = Modifier.fillMaxWidth().height(140.dp),
+                        shape = RoundedCornerShape(6.dp)
+                    )
+                }
+            },
+            confirmButton = {
+                NeoButton(
+                    text = "RESTORE",
+                    onClick = {
+                        scope.launch {
+                            val success = viewModel.importJsonBackup(importText)
+                            if (success) {
+                                Toast.makeText(context, "Data successfully restored!", Toast.LENGTH_SHORT).show()
+                                showImportDialog = false
+                            } else {
+                                Toast.makeText(context, "Invalid JSON format. Please verify.", Toast.LENGTH_LONG).show()
                             }
-                        },
-                        enabled = importText.isNotBlank()
-                    ) {
-                        Text("Restore Data")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showImportDialog = false }) {
-                        Text("Cancel")
-                    }
+                        }
+                    },
+                    backgroundColor = NeoYellow,
+                    textColor = NeoBlack,
+                    borderColor = NeoBlack,
+                    shadowOffset = 2.dp,
+                    enabled = importText.isNotBlank()
+                )
+            },
+            dismissButton = {
+                TextButton(onClick = { showImportDialog = false }) {
+                    Text("CANCEL", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 }
-            )
-        }
+            }
+        )
     }
 }
 
@@ -571,7 +593,9 @@ fun AddCategoryDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("New Expense Category") },
+        shape = RoundedCornerShape(6.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        title = { Text("NEW EXPENSE CATEGORY", fontWeight = FontWeight.Black) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
@@ -579,11 +603,12 @@ fun AddCategoryDialog(
                     onValueChange = { name = it },
                     label = { Text("Category Name") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(6.dp)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("Select Color", style = MaterialTheme.typography.labelMedium)
+                Text("Select Color", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black))
                 Spacer(modifier = Modifier.height(6.dp))
 
                 LazyRow(
@@ -595,20 +620,20 @@ fun AddCategoryDialog(
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
-                                .clip(CircleShape)
+                                .clip(RoundedCornerShape(4.dp))
                                 .background(color)
                                 .clickable { selectedColor = colorLong }
                                 .border(
-                                    width = if (selectedColor == colorLong) 3.dp else 0.dp,
-                                    color = if (selectedColor == colorLong) Color.White else Color.Transparent,
-                                    shape = CircleShape
+                                    width = if (selectedColor == colorLong) 2.5.dp else 1.dp,
+                                    color = NeoBlack,
+                                    shape = RoundedCornerShape(4.dp)
                                 )
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("Select Icon", style = MaterialTheme.typography.labelMedium)
+                Text("Select Icon", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black))
                 Spacer(modifier = Modifier.height(6.dp))
 
                 LazyVerticalGrid(
@@ -622,15 +647,16 @@ fun AddCategoryDialog(
                         Box(
                             modifier = Modifier
                                 .size(36.dp)
-                                .clip(CircleShape)
-                                .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(if (isSelected) NeoYellow else MaterialTheme.colorScheme.surface)
+                                .border(1.5.dp, NeoBlack, RoundedCornerShape(4.dp))
                                 .clickable { selectedIcon = iconName },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = FormatUtils.getCategoryIcon(iconName),
                                 contentDescription = null,
-                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = NeoBlack,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -639,16 +665,19 @@ fun AddCategoryDialog(
             }
         },
         confirmButton = {
-            Button(
+            NeoButton(
+                text = "CREATE",
                 onClick = { onSave(name, selectedIcon, selectedColor) },
+                backgroundColor = NeoYellow,
+                textColor = NeoBlack,
+                borderColor = NeoBlack,
+                shadowOffset = 2.dp,
                 enabled = name.isNotBlank()
-            ) {
-                Text("Create")
-            }
+            )
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("CANCEL", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     )
@@ -679,20 +708,31 @@ fun AddRecurringDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Recurring Expense") },
+        shape = RoundedCornerShape(6.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        title = { Text("ADD RECURRING RULE", fontWeight = FontWeight.Black) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text("Quick Templates:", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Quick Templates:", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black))
                 Spacer(modifier = Modifier.height(4.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    items(subscriptionTemplates) { (tmplName, defaultAmt) ->
-                        SuggestionChip(
-                            onClick = {
-                                note = tmplName
-                                amountText = defaultAmt.toLong().toString()
-                            },
-                            label = { Text(tmplName, style = MaterialTheme.typography.labelSmall) }
-                        )
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    subscriptionTemplates.forEach { (tmplName, defaultAmt) ->
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(NeoGray100)
+                                .border(1.5.dp, NeoBlack, RoundedCornerShape(4.dp))
+                                .clickable {
+                                    note = tmplName
+                                    amountText = defaultAmt.toLong().toString()
+                                }
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(tmplName, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black), color = NeoBlack)
+                        }
                     }
                 }
 
@@ -702,60 +742,80 @@ fun AddRecurringDialog(
                     onValueChange = { if (it.all { c -> c.isDigit() || c == '.' }) amountText = it },
                     label = { Text("Amount (₹)") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(6.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("Description (e.g., Rent, WiFi, Netflix)") },
+                    label = { Text("Description (e.g., Rent, WiFi)") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(6.dp)
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
-                Text("Frequency", style = MaterialTheme.typography.labelMedium)
+                Text("Frequency", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black))
                 Spacer(modifier = Modifier.height(4.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    items(Frequency.entries) { freq ->
-                        FilterChip(
-                            selected = frequency == freq,
-                            onClick = { frequency = freq },
-                            label = { Text(freq.name) }
-                        )
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Frequency.entries.forEach { freq ->
+                        val isSelected = frequency == freq
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(if (isSelected) NeoYellow else MaterialTheme.colorScheme.surface)
+                                .border(1.5.dp, NeoBlack, RoundedCornerShape(4.dp))
+                                .clickable { frequency = freq }
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Text(freq.name, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black), color = NeoBlack)
+                        }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Scope", style = MaterialTheme.typography.labelMedium)
+                Text("Scope", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black))
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     TransactionScope.entries.forEach { s ->
-                        FilterChip(
-                            selected = scope == s,
-                            onClick = { scope = s },
-                            label = { Text(s.name) }
-                        )
+                        val isSelected = scope == s
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(if (isSelected) (if (s == TransactionScope.PERSONAL) NeoBlue else NeoOrange) else MaterialTheme.colorScheme.surface)
+                                .border(1.5.dp, NeoBlack, RoundedCornerShape(4.dp))
+                                .clickable { scope = s }
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Text(s.name, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black), color = if (isSelected) NeoWhite else NeoBlack)
+                        }
                     }
                 }
             }
         },
         confirmButton = {
-            Button(
+            NeoButton(
+                text = "ADD RULE",
                 onClick = {
                     val amt = amountText.toDoubleOrNull() ?: 0.0
                     if (amt > 0) {
                         onSave(amt, TransactionType.EXPENSE, selectedCatId, note, paymentMode, scope, frequency, System.currentTimeMillis())
                     }
                 },
+                backgroundColor = NeoYellow,
+                textColor = NeoBlack,
+                borderColor = NeoBlack,
+                shadowOffset = 2.dp,
                 enabled = (amountText.toDoubleOrNull() ?: 0.0) > 0.0 && note.isNotBlank()
-            ) {
-                Text("Add Rule")
-            }
+            )
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("CANCEL", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     )

@@ -1,16 +1,14 @@
 package com.example.moneymanager.ui.screens.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,66 +52,133 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         Text(
-                            text = "Money Manager",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                            text = "MONEY MANAGER",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp
+                            )
                         )
-                        Text(
-                            text = FormatUtils.formatMonth(FormatUtils.getCurrentMonthKey()),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        NeoBadge(
+                            text = FormatUtils.formatMonth(FormatUtils.getCurrentMonthKey()).uppercase(),
+                            backgroundColor = NeoYellow,
+                            textColor = NeoBlack
                         )
                     }
                 },
                 actions = {
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    Box(
+                        modifier = Modifier
+                            .padding(end = 12.dp)
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                            .clickable { onNavigateToSettings() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onNavigateToAdd,
-                icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text("Add Spend", fontWeight = FontWeight.Bold) },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(16.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .neoShadow(offset = 4.dp, cornerRadius = 8.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(NeoYellow)
+                    .border(2.5.dp, NeoBlack, RoundedCornerShape(8.dp))
+                    .clickable { onNavigateToAdd() }
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Add, contentDescription = null, tint = NeoBlack, modifier = Modifier.size(22.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "ADD SPEND",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = NeoBlack
+                    )
+                }
+            }
         }
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 88.dp)
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Main Today's Spend Card
+            // Hero Today's Spend Box
             item {
-                TodaySpendHeroCard(
+                NeoTodayHeroCard(
                     todaySpend = todaySpend,
                     monthSpend = monthSpend,
                     monthIncome = monthIncome,
                     totalBudget = totalBudget
                 )
-                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Personal vs Household Split Pill Cards
+            // Personal vs Household Split Cards
             item {
-                PersonalHouseholdSplitRow(
+                NeoPersonalHouseholdSplitRow(
                     personalSpend = personalMonth,
                     householdSpend = householdMonth
                 )
-                Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // Scope filter chips & Recent Header
+            // Scope Filter Selector Box
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf(
+                        HomeScopeFilter.ALL to "ALL",
+                        HomeScopeFilter.PERSONAL to "PERSONAL",
+                        HomeScopeFilter.HOUSEHOLD to "HOUSEHOLD"
+                    ).forEach { (scopeItem, label) ->
+                        val isSelected = selectedScope == scopeItem
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .neoShadow(offset = if (isSelected) 3.dp else 1.dp, cornerRadius = 6.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isSelected) NeoBlack else MaterialTheme.colorScheme.surface)
+                                .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                                .clickable { viewModel.selectedScopeFilter.value = scopeItem }
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
+                                ),
+                                color = if (isSelected) NeoWhite else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Recent Transactions Section Header
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -120,59 +186,36 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Recent Transactions",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                        text = "RECENT ACTIVITY",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
                     )
-                    TextButton(onClick = onNavigateToTransactions) {
-                        Text("See All")
+                    TextButton(
+                        onClick = onNavigateToTransactions,
+                        contentPadding = PaddingValues(horizontal = 8.dp)
+                    ) {
+                        Text(
+                            text = "SEE ALL",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Black),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(16.dp)
+                        )
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Scope Filter Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilterChip(
-                        selected = selectedScope == HomeScopeFilter.ALL,
-                        onClick = { viewModel.selectedScopeFilter.value = HomeScopeFilter.ALL },
-                        label = { Text("All") }
-                    )
-                    FilterChip(
-                        selected = selectedScope == HomeScopeFilter.PERSONAL,
-                        onClick = { viewModel.selectedScopeFilter.value = HomeScopeFilter.PERSONAL },
-                        label = { Text("Personal") },
-                        leadingIcon = {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(PersonalBlue)
-                            )
-                        }
-                    )
-                    FilterChip(
-                        selected = selectedScope == HomeScopeFilter.HOUSEHOLD,
-                        onClick = { viewModel.selectedScopeFilter.value = HomeScopeFilter.HOUSEHOLD },
-                        label = { Text("Household") },
-                        leadingIcon = {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(HouseholdOrange)
-                            )
-                        }
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
             }
 
             // Recent Transactions List
             if (recentTxs.isEmpty()) {
                 item {
-                    EmptyTransactionsPlaceholder(onAddClick = onNavigateToAdd)
+                    NeoEmptyTransactionsPlaceholder(onAddClick = onNavigateToAdd)
                 }
             } else {
                 items(recentTxs, key = { it.id }) { tx ->
@@ -182,7 +225,6 @@ fun HomeScreen(
                         category = category,
                         onClick = { onNavigateToEditTransaction(tx.id) }
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
@@ -190,115 +232,135 @@ fun HomeScreen(
 }
 
 @Composable
-fun TodaySpendHeroCard(
+fun NeoTodayHeroCard(
     todaySpend: Double,
     monthSpend: Double,
     monthIncome: Double,
     totalBudget: Double
 ) {
-    Card(
+    NeoCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        backgroundColor = MaterialTheme.colorScheme.surface,
+        shadowOffset = 5.dp
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-        ) {
-            Text(
-                text = "TODAY'S SPEND",
-                style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.2.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(4.dp))
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                NeoBadge(text = "TODAY'S SPEND", backgroundColor = NeoYellow, textColor = NeoBlack)
+                Text(
+                    text = "TOTAL",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             Text(
                 text = FormatUtils.formatCurrency(todaySpend),
-                style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.ExtraBold),
-                color = MaterialTheme.colorScheme.primary
+                style = MaterialTheme.typography.displaySmall.copy(
+                    fontWeight = FontWeight.Black,
+                    fontFamily = FontFamily.SansSerif
+                ),
+                color = if (todaySpend > 0) NeoRed else MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
-            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.outline)
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // Month spend & budget row
+            // Month summary row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
                     Text(
-                        text = "This Month Spent",
-                        style = MaterialTheme.typography.bodySmall,
+                        text = "MONTH SPENT",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = FormatUtils.formatCurrency(monthSpend),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
                     )
                 }
 
                 if (monthIncome > 0) {
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = "This Month Income",
-                            style = MaterialTheme.typography.bodySmall,
+                            text = "MONTH INCOME",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = FormatUtils.formatCurrency(monthIncome),
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = IncomeGreen
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
+                            color = NeoGreen
                         )
                     }
                 } else if (totalBudget > 0) {
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = "Monthly Budget",
-                            style = MaterialTheme.typography.bodySmall,
+                            text = "BUDGET LIMIT",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = FormatUtils.formatCurrency(totalBudget),
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.tertiary
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
+                            color = NeoCyan
                         )
                     }
                 }
             }
 
-            // Budget progress if set
+            // Budget Progress Bar
             if (totalBudget > 0) {
                 Spacer(modifier = Modifier.height(12.dp))
                 val progress = (monthSpend / totalBudget).toFloat().coerceIn(0f, 1f)
                 val isOverBudget = monthSpend > totalBudget
-                LinearProgressIndicator(
-                    progress = { progress },
+
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp)),
-                    color = if (isOverBudget) ExpenseRed else MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surface
-                )
+                        .height(14.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(NeoGray200)
+                        .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(progress)
+                            .background(if (isOverBudget) NeoRed else NeoLime)
+                    )
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "${(progress * 100).toInt()}% used",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (isOverBudget) ExpenseRed else MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "${(progress * 100).toInt()}% USED",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black)
                     )
                     Text(
-                        text = if (isOverBudget) "Over budget by ${FormatUtils.formatCurrency(monthSpend - totalBudget)}"
-                        else "Remaining: ${FormatUtils.formatCurrency(totalBudget - monthSpend)}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (isOverBudget) ExpenseRed else MaterialTheme.colorScheme.onSurfaceVariant
+                        text = if (isOverBudget) "EXCEEDED BY ${FormatUtils.formatCurrency(monthSpend - totalBudget)}"
+                        else "${FormatUtils.formatCurrency(totalBudget - monthSpend)} LEFT",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = if (isOverBudget) NeoRed else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                 }
             }
@@ -307,7 +369,7 @@ fun TodaySpendHeroCard(
 }
 
 @Composable
-fun PersonalHouseholdSplitRow(
+fun NeoPersonalHouseholdSplitRow(
     personalSpend: Double,
     householdSpend: Double
 ) {
@@ -316,61 +378,41 @@ fun PersonalHouseholdSplitRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         // Personal Card
-        Card(
+        NeoCard(
             modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            shadowOffset = 3.dp
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .clip(CircleShape)
-                            .background(PersonalBlue)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Personal",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Spacer(modifier = Modifier.height(6.dp))
+                NeoBadge(text = "PERSONAL", backgroundColor = NeoBlue, textColor = NeoWhite)
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = FormatUtils.formatCurrency(personalSpend),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                )
+                Text(
+                    text = "This Month",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
 
         // Household Card
-        Card(
+        NeoCard(
             modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            shadowOffset = 3.dp
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .clip(CircleShape)
-                            .background(HouseholdOrange)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Household",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Spacer(modifier = Modifier.height(6.dp))
+                NeoBadge(text = "HOUSEHOLD", backgroundColor = NeoOrange, textColor = NeoWhite)
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = FormatUtils.formatCurrency(householdSpend),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                )
+                Text(
+                    text = "This Month",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -384,34 +426,32 @@ fun TransactionCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
-    val categoryColor = category?.let { Color(it.color) } ?: MaterialTheme.colorScheme.primary
     val isExpense = transaction.type == TransactionType.EXPENSE
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    NeoCard(
+        modifier = modifier.fillMaxWidth(),
+        shadowOffset = 3.dp,
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Category Icon Badge
+            // Boxy Category Icon Badge
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(categoryColor.copy(alpha = 0.2f)),
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(NeoYellow)
+                    .border(2.dp, NeoBlack, RoundedCornerShape(6.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = FormatUtils.getCategoryIcon(category?.icon ?: "category"),
                     contentDescription = null,
-                    tint = categoryColor,
+                    tint = NeoBlack,
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -422,65 +462,45 @@ fun TransactionCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = if (transaction.note.isNotBlank()) transaction.note else (category?.name ?: "Expense"),
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black),
                     maxLines = 1
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    // Category name
                     Text(
                         text = category?.name ?: "Misc",
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
-                        text = "•",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    // Payment mode chip
+                    Text("•", style = MaterialTheme.typography.labelSmall)
                     Text(
                         text = transaction.paymentMode.name,
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
-                        color = when (transaction.paymentMode) {
-                            PaymentMode.UPI -> MaterialTheme.colorScheme.primary
-                            PaymentMode.CASH -> AmberGold
-                            PaymentMode.CARD -> TealAccent
-                        }
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black)
                     )
-                    // Scope indicator
+                    Text("•", style = MaterialTheme.typography.labelSmall)
                     Text(
-                        text = "•",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = transaction.scope.name.lowercase().replaceFirstChar { it.uppercase() },
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (transaction.scope == TransactionScope.PERSONAL) PersonalBlue else HouseholdOrange
-                    )
-                    // Paid by tag if household
-                    if (!transaction.paidBy.isNullOrBlank()) {
-                        Text(
-                            text = "(${transaction.paidBy})",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = transaction.scope.name,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Black,
+                            color = if (transaction.scope == TransactionScope.PERSONAL) NeoBlue else NeoOrange
                         )
-                    }
+                    )
                 }
             }
 
-            // Amount & Date Column
+            // Amount Column
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = (if (isExpense) "- " else "+ ") + FormatUtils.formatCurrency(transaction.amount),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = if (isExpense) ExpenseRed else IncomeGreen
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.SansSerif
+                    ),
+                    color = if (isExpense) NeoRed else NeoGreen
                 )
-                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = FormatUtils.formatDate(transaction.date),
                     style = MaterialTheme.typography.labelSmall,
@@ -492,37 +512,50 @@ fun TransactionCard(
 }
 
 @Composable
-fun EmptyTransactionsPlaceholder(onAddClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-        shape = RoundedCornerShape(16.dp)
+fun NeoEmptyTransactionsPlaceholder(onAddClick: () -> Unit) {
+    NeoCard(
+        modifier = Modifier.fillMaxWidth(),
+        shadowOffset = 4.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
+                .padding(28.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                Icons.Default.Receipt,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(NeoYellow)
+                    .border(2.dp, NeoBlack, RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ReceiptLong,
+                    contentDescription = null,
+                    tint = NeoBlack,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(14.dp))
             Text(
-                text = "No transactions logged yet",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "NO EXPENSES RECORDED YET",
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Tap + below to log your first spend in seconds!",
+                text = "Tap the button below to add your first spend in under 5 seconds.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            NeoButton(
+                text = "+ ADD TRANSACTION",
+                onClick = onAddClick,
+                backgroundColor = NeoBlack,
+                textColor = NeoWhite,
+                borderColor = NeoBlack
             )
         }
     }
