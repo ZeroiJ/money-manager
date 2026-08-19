@@ -43,31 +43,26 @@ fun BudgetsScreen(
     var selectedCategoryForBudget by remember { mutableStateOf<Category?>(null) }
     var budgetAmountInput by remember { mutableStateOf("") }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "budgets // limits",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp
-                        )
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Inline header
+        item {
+            Text(
+                text = "budgets // limits",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.5.sp
+                ),
+                modifier = Modifier.padding(bottom = 4.dp)
             )
         }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Month Selector Bar
+
+        // Month Selector Bar
             item {
                 ChromaCard(
                     modifier = Modifier.fillMaxWidth(),
@@ -365,7 +360,6 @@ fun BudgetsScreen(
                         }
                     }
                 }
-            }
         }
     }
 

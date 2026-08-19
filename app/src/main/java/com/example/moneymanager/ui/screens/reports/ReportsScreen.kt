@@ -46,31 +46,26 @@ fun ReportsScreen(
 
     var selectedHeatmapDay by remember { mutableStateOf<CalendarDayHeatmap?>(null) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "analytics // reports",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp
-                        )
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Inline header
+        item {
+            Text(
+                text = "analytics // reports",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.5.sp
+                ),
+                modifier = Modifier.padding(bottom = 4.dp)
             )
         }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Period Switcher (THIS_MONTH, LAST_MONTH, ALL_TIME)
+
+        // Period Switcher (THIS_MONTH, LAST_MONTH, ALL_TIME)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -480,7 +475,6 @@ fun ReportsScreen(
                     }
                 }
             }
-        }
     }
 }
 

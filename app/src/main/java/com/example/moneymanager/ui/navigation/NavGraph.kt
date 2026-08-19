@@ -47,7 +47,6 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
 
 val bottomNavItems = listOf(
     Screen.Home,
-    Screen.Transactions,
     Screen.Add,
     Screen.Budgets,
     Screen.Reports
@@ -160,11 +159,11 @@ fun ChromaBottomNavigationBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 8.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
+                .padding(vertical = 10.dp, horizontal = 12.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val navItemShape = androidx.compose.runtime.remember { RoundedCornerShape(4.dp) }
+            val navItemShape = androidx.compose.runtime.remember { RoundedCornerShape(6.dp) }
             items.forEach { screen ->
                 val isSelected = currentRoute == screen.route
 
@@ -178,7 +177,7 @@ fun ChromaBottomNavigationBar(
                             shape = navItemShape
                         )
                         .clickable { onItemClick(screen) }
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -189,15 +188,15 @@ fun ChromaBottomNavigationBar(
                             imageVector = screen.icon,
                             contentDescription = screen.title,
                             tint = if (isSelected) ChromaOrange else MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(26.dp)
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.height(3.dp))
                         Text(
                             text = screen.title,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = 9.sp
+                                fontSize = 10.sp
                             ),
                             color = if (isSelected) ChromaBlack else MaterialTheme.colorScheme.onSurfaceVariant
                         )

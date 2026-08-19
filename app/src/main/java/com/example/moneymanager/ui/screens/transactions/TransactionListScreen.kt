@@ -47,29 +47,23 @@ fun TransactionListScreen(
 
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "query // transactions",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp
-                        )
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            // Chroma Search Field
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 12.dp)
+    ) {
+        // Inline header
+        Text(
+            text = "query // transactions",
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.5.sp
+            ),
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
+        )
+
+        // Chroma Search Field
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -294,7 +288,6 @@ fun TransactionListScreen(
                     }
                 }
             }
-        }
     }
 
     if (transactionToDelete != null) {
