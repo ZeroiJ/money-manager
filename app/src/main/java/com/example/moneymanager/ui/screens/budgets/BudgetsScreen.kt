@@ -48,10 +48,11 @@ fun BudgetsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "BUDGETS",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp
+                        text = "budgets // limits",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
                         )
                     )
                 },
@@ -68,9 +69,10 @@ fun BudgetsScreen(
         ) {
             // Month Selector Bar
             item {
-                NeoCard(
+                ChromaCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shadowOffset = 3.dp
+                    windowTitle = "period.selector",
+                    shadowOffset = 2.dp
                 ) {
                     Row(
                         modifier = Modifier
@@ -81,31 +83,34 @@ fun BudgetsScreen(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(6.dp))
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(4.dp))
                                 .background(MaterialTheme.colorScheme.surface)
-                                .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
                                 .clickable { viewModel.navigateMonth(-1) },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month", modifier = Modifier.size(18.dp))
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month", modifier = Modifier.size(16.dp))
                         }
 
                         Text(
                             text = FormatUtils.formatMonth(currentMonth).uppercase(),
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
+                            )
                         )
 
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(6.dp))
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(4.dp))
                                 .background(MaterialTheme.colorScheme.surface)
-                                .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
                                 .clickable { viewModel.navigateMonth(1) },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month", modifier = Modifier.size(18.dp))
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month", modifier = Modifier.size(16.dp))
                         }
                     }
                 }
@@ -113,28 +118,13 @@ fun BudgetsScreen(
 
             // Overall Month Budget Summary
             item {
-                NeoCard(
+                ChromaCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shadowOffset = 4.dp
+                    windowTitle = "month_summary // progress",
+                    statusIndicator = if (totalBudget > 0) "${((totalSpent / totalBudget) * 100).toInt()}%" else "NO LIMIT",
+                    shadowOffset = 3.dp
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            NeoBadge(text = "MONTH TOTAL", backgroundColor = NeoYellow, textColor = NeoBlack)
-                            if (totalBudget > 0) {
-                                val pct = ((totalSpent / totalBudget) * 100).toInt()
-                                Text(
-                                    text = "$pct% SPENT",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black)
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -142,31 +132,37 @@ fun BudgetsScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "SPENT",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    text = "TOTAL_SPENT",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold
+                                    ),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
                                     text = FormatUtils.formatCurrency(totalSpent),
                                     style = MaterialTheme.typography.titleLarge.copy(
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = FontFamily.SansSerif
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Black
                                     )
                                 )
                             }
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
-                                    text = "TOTAL LIMIT",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    text = "TOTAL_LIMIT",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold
+                                    ),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
                                     text = if (totalBudget > 0) FormatUtils.formatCurrency(totalBudget) else "NO LIMIT",
                                     style = MaterialTheme.typography.titleLarge.copy(
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = FontFamily.SansSerif
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Black
                                     ),
-                                    color = if (totalBudget > 0) NeoCyan else MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (totalBudget > 0) ChromaCyan else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -179,16 +175,16 @@ fun BudgetsScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(14.dp)
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(NeoGray200)
-                                    .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                                    .height(10.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(ChromaStone200)
+                                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
                             ) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxHeight()
                                         .fillMaxWidth(progress)
-                                        .background(if (isExceeded) NeoRed else NeoLime)
+                                        .background(if (isExceeded) ChromaRed else ChromaOrange)
                                 )
                             }
                         }
@@ -196,7 +192,7 @@ fun BudgetsScreen(
                 }
             }
 
-            // Category Budgets Header
+            // Category Budgets Section Header
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -204,9 +200,10 @@ fun BudgetsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "CATEGORY BUDGETS",
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.Black,
+                        text = "CATEGORY_LIMITS.CONFIG",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         )
                     )
@@ -218,7 +215,10 @@ fun BudgetsScreen(
                         }) {
                             Text(
                                 text = "+ SET LIMIT",
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Black),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold
+                                ),
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -229,37 +229,40 @@ fun BudgetsScreen(
             // Budget Progress List
             if (budgetProgressList.isEmpty()) {
                 item {
-                    NeoCard(
+                    ChromaCard(
                         modifier = Modifier.fillMaxWidth(),
-                        shadowOffset = 3.dp
+                        windowTitle = "category_budgets // empty",
+                        shadowOffset = 2.dp
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(24.dp),
+                                .padding(20.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
                                 text = "NO BUDGETS SET FOR THIS MONTH",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold
+                                )
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "Set spending limits for categories like Groceries, Rent, Food Delivery to stay in control.",
+                                text = "Set monthly spending limits for categories to stay on track.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(14.dp))
-                            NeoButton(
+                            ChromaButton(
                                 text = "+ SET CATEGORY BUDGET",
                                 onClick = {
                                     selectedCategoryForBudget = categories.firstOrNull()
                                     budgetAmountInput = ""
                                     showAddBudgetDialog = true
                                 },
-                                backgroundColor = NeoYellow,
-                                textColor = NeoBlack,
-                                borderColor = NeoBlack
+                                backgroundColor = ChromaBlack,
+                                textColor = ChromaWhite
                             )
                         }
                     }
@@ -269,16 +272,16 @@ fun BudgetsScreen(
                     val progress = item.progress.coerceIn(0f, 1f)
                     val isExceeded = item.isOverBudget
 
-                    NeoCard(
+                    ChromaCard(
                         modifier = Modifier.fillMaxWidth(),
-                        shadowOffset = 3.dp,
+                        shadowOffset = 2.dp,
                         onClick = {
                             selectedCategoryForBudget = item.category
                             budgetAmountInput = if (item.limit > 0) item.limit.toInt().toString() else ""
                             showAddBudgetDialog = true
                         }
                     ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
+                        Column(modifier = Modifier.padding(12.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -287,49 +290,51 @@ fun BudgetsScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Box(
                                         modifier = Modifier
-                                            .size(36.dp)
-                                            .clip(RoundedCornerShape(6.dp))
-                                            .background(NeoYellow)
-                                            .border(2.dp, NeoBlack, RoundedCornerShape(6.dp)),
+                                            .size(34.dp)
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(ChromaStone100)
+                                            .border(1.dp, ChromaStone400, RoundedCornerShape(4.dp)),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
                                             imageVector = FormatUtils.getCategoryIcon(item.category.icon),
                                             contentDescription = null,
-                                            tint = NeoBlack,
-                                            modifier = Modifier.size(20.dp)
+                                            tint = ChromaBlack,
+                                            modifier = Modifier.size(18.dp)
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(
                                         text = item.category.name,
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                                     )
                                 }
 
                                 Text(
                                     text = "${FormatUtils.formatCurrency(item.spent)} / ${if (item.limit > 0) FormatUtils.formatCurrency(item.limit) else "No limit"}",
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Black)
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 )
                             }
 
                             if (item.limit > 0) {
                                 Spacer(modifier = Modifier.height(10.dp))
 
-                                // Progress bar
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(12.dp)
-                                        .clip(RoundedCornerShape(3.dp))
-                                        .background(NeoGray200)
-                                        .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(3.dp))
+                                        .height(8.dp)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(ChromaStone200)
+                                        .border(0.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
                                 ) {
                                     Box(
                                         modifier = Modifier
                                             .fillMaxHeight()
                                             .fillMaxWidth(progress)
-                                            .background(if (isExceeded) NeoRed else NeoLime)
+                                            .background(if (isExceeded) ChromaRed else ChromaGreen)
                                     )
                                 }
 
@@ -340,14 +345,19 @@ fun BudgetsScreen(
                                 ) {
                                     Text(
                                         text = "${(progress * 100).toInt()}% USED",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontSize = 10.sp
+                                        )
                                     )
                                     Text(
                                         text = if (isExceeded) "OVER BY ${FormatUtils.formatCurrency(item.spent - item.limit)}"
-                                        else "${FormatUtils.formatCurrency(item.remaining)} REMAINING",
+                                        else "${FormatUtils.formatCurrency(item.remaining)} LEFT",
                                         style = MaterialTheme.typography.labelSmall.copy(
-                                            fontWeight = FontWeight.Black,
-                                            color = if (isExceeded) NeoRed else MaterialTheme.colorScheme.onSurfaceVariant
+                                            fontFamily = FontFamily.Monospace,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isExceeded) ChromaRed else MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     )
                                 }
@@ -359,17 +369,19 @@ fun BudgetsScreen(
         }
     }
 
-    // Set Budget Dialog
     if (showAddBudgetDialog && selectedCategoryForBudget != null) {
         val cat = selectedCategoryForBudget!!
         AlertDialog(
             onDismissRequest = { showAddBudgetDialog = false },
-            shape = RoundedCornerShape(6.dp),
+            shape = RoundedCornerShape(4.dp),
             containerColor = MaterialTheme.colorScheme.surface,
             title = {
                 Text(
-                    text = "SET BUDGET: ${cat.name.uppercase()}",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
+                    text = "SET_LIMIT // ${cat.name.uppercase()}",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
+                    )
                 )
             },
             text = {
@@ -382,16 +394,20 @@ fun BudgetsScreen(
                     OutlinedTextField(
                         value = budgetAmountInput,
                         onValueChange = { budgetAmountInput = it.filter { ch -> ch.isDigit() } },
-                        label = { Text("Limit Amount (₹)", fontWeight = FontWeight.Bold) },
+                        label = { Text("Limit Amount (₹)", fontFamily = FontFamily.Monospace) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(6.dp)
+                        shape = RoundedCornerShape(4.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = ChromaBlack,
+                            unfocusedBorderColor = ChromaStone300
+                        )
                     )
                 }
             },
             confirmButton = {
-                NeoButton(
+                ChromaButton(
                     text = "SAVE",
                     onClick = {
                         val amount = budgetAmountInput.toDoubleOrNull() ?: 0.0
@@ -400,9 +416,8 @@ fun BudgetsScreen(
                         }
                         showAddBudgetDialog = false
                     },
-                    backgroundColor = NeoYellow,
-                    textColor = NeoBlack,
-                    borderColor = NeoBlack,
+                    backgroundColor = ChromaOrange,
+                    textColor = ChromaWhite,
                     shadowOffset = 2.dp
                 )
             },

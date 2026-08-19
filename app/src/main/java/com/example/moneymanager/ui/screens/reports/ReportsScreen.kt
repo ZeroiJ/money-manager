@@ -11,22 +11,21 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.moneymanager.data.model.PaymentMode
 import com.example.moneymanager.theme.*
 import com.example.moneymanager.util.FormatUtils
 
@@ -35,14 +34,13 @@ import com.example.moneymanager.util.FormatUtils
 fun ReportsScreen(
     viewModel: ReportsViewModel = hiltViewModel()
 ) {
-    val period by viewModel.selectedPeriod.collectAsState()
+    val selectedPeriod by viewModel.selectedPeriod.collectAsState()
     val totalExpense by viewModel.totalExpense.collectAsState()
     val totalIncome by viewModel.totalIncome.collectAsState()
-    val personalExpense by viewModel.personalExpense.collectAsState()
-    val householdExpense by viewModel.householdExpense.collectAsState()
+    val personalSpend by viewModel.personalExpense.collectAsState()
+    val householdSpend by viewModel.householdExpense.collectAsState()
     val categoryReports by viewModel.categoryReports.collectAsState()
     val paymentModeReports by viewModel.paymentModeReports.collectAsState()
-    val dailyTrend by viewModel.dailySpendTrend.collectAsState()
     val heatmapDays by viewModel.monthlyCalendarHeatmap.collectAsState()
     val settlements by viewModel.householdSettlements.collectAsState()
 
@@ -53,10 +51,11 @@ fun ReportsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "REPORTS & ANALYTICS",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp
+                        text = "analytics // reports",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
                         )
                     )
                 },
@@ -71,156 +70,158 @@ fun ReportsScreen(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Period Selector Tabs
+            // Period Switcher (THIS_MONTH, LAST_MONTH, ALL_TIME)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    ReportPeriod.values().forEach { p ->
-                        val isSelected = period == p
+                    listOf(
+                        ReportPeriod.THIS_MONTH to "THIS MONTH",
+                        ReportPeriod.LAST_MONTH to "LAST MONTH",
+                        ReportPeriod.ALL_TIME to "ALL TIME"
+                    ).forEach { (period, label) ->
+                        val isSelected = selectedPeriod == period
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .neoShadow(offset = if (isSelected) 3.dp else 1.dp, cornerRadius = 6.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(if (isSelected) NeoYellow else MaterialTheme.colorScheme.surface)
-                                .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
-                                .clickable { viewModel.selectedPeriod.value = p }
-                                .padding(vertical = 10.dp),
+                                .chromaShadow(offset = if (isSelected) 2.dp else 1.dp, cornerRadius = 4.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(if (isSelected) ChromaBlack else MaterialTheme.colorScheme.surface)
+                                .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                                .clickable { viewModel.selectedPeriod.value = period }
+                                .padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = when (p) {
-                                    ReportPeriod.THIS_MONTH -> "THIS MONTH"
-                                    ReportPeriod.LAST_MONTH -> "LAST MONTH"
-                                    ReportPeriod.ALL_TIME -> "ALL TIME"
-                                },
+                                text = "[ $label ]",
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp
                                 ),
-                                color = if (isSelected) NeoBlack else MaterialTheme.colorScheme.onSurface
+                                color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
                 }
             }
 
-            // High-Voltage KPI Cards (Expense & Income)
+            // High-Impact Spend vs Income Overview
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // Total Expense Card
-                    NeoCard(
+                    ChromaCard(
                         modifier = Modifier.weight(1f),
-                        shadowOffset = 3.dp
+                        windowTitle = "outflow.log",
+                        shadowOffset = 2.dp
                     ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
-                            NeoBadge(text = "TOTAL SPENT", backgroundColor = NeoRed, textColor = NeoWhite)
-                            Spacer(modifier = Modifier.height(8.dp))
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            ChromaBadge(text = "EXPENSE", backgroundColor = ChromaRed, textColor = ChromaWhite)
+                            Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = FormatUtils.formatCurrency(totalExpense),
                                 style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Black,
-                                    fontFamily = FontFamily.SansSerif
-                                )
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Black
+                                ),
+                                color = ChromaRed
+                            )
+                            Text(
+                                text = "Total Outflow",
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
 
-                    // Total Income / Balance Card
-                    NeoCard(
+                    // Total Income Card
+                    ChromaCard(
                         modifier = Modifier.weight(1f),
-                        shadowOffset = 3.dp
+                        windowTitle = "inflow.log",
+                        shadowOffset = 2.dp
                     ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
-                            NeoBadge(text = "TOTAL INCOME", backgroundColor = NeoGreen, textColor = NeoWhite)
-                            Spacer(modifier = Modifier.height(8.dp))
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            ChromaBadge(text = "INCOME", backgroundColor = ChromaGreen, textColor = ChromaWhite)
+                            Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = FormatUtils.formatCurrency(totalIncome),
                                 style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Black,
-                                    fontFamily = FontFamily.SansSerif
-                                )
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Black
+                                ),
+                                color = ChromaGreen
+                            )
+                            Text(
+                                text = "Total Inflow",
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
             }
 
-            // Scope Comparison (Personal vs Household)
+            // Scope Comparison Progress
             item {
-                NeoCard(
+                ChromaCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shadowOffset = 3.dp
+                    windowTitle = "scope_ratio // personal_vs_household",
+                    shadowOffset = 2.dp
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "SCOPE BREAKDOWN",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        val totalScope = personalExpense + householdExpense
-                        val personalPct = if (totalScope > 0) (personalExpense / totalScope).toFloat() else 0.5f
-
-                        // Segmented bar
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(16.dp)
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(NeoGray200)
-                                .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
-                        ) {
-                            Row(modifier = Modifier.fillMaxSize()) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .weight(if (personalPct > 0f) personalPct else 0.001f)
-                                        .background(NeoBlue)
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .weight(if (1f - personalPct > 0f) (1f - personalPct) else 0.001f)
-                                        .background(NeoOrange)
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
+                    Column(modifier = Modifier.padding(14.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "PERSONAL: ${FormatUtils.formatCurrency(personalSpend)}",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    color = ChromaBlue
+                                )
+                            )
+                            Text(
+                                text = "HOUSEHOLD: ${FormatUtils.formatCurrency(householdSpend)}",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    color = ChromaOrange
+                                )
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        val total = (personalSpend + householdSpend).coerceAtLeast(1.0)
+                        val personalFraction = (personalSpend / total).toFloat().coerceIn(0f, 1f)
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(12.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(ChromaStone200)
+                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
+                        ) {
+                            if (personalSpend > 0) {
                                 Box(
                                     modifier = Modifier
-                                        .size(10.dp)
-                                        .background(NeoBlue)
-                                        .border(1.dp, NeoBlack)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "PERSONAL: ${FormatUtils.formatCurrency(personalExpense)}",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                                        .fillMaxHeight()
+                                        .weight(personalFraction.coerceAtLeast(0.01f))
+                                        .background(ChromaBlue)
                                 )
                             }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (householdSpend > 0) {
                                 Box(
                                     modifier = Modifier
-                                        .size(10.dp)
-                                        .background(NeoOrange)
-                                        .border(1.dp, NeoBlack)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "HOUSEHOLD: ${FormatUtils.formatCurrency(householdExpense)}",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                                        .fillMaxHeight()
+                                        .weight((1f - personalFraction).coerceAtLeast(0.01f))
+                                        .background(ChromaOrange)
                                 )
                             }
                         }
@@ -228,340 +229,248 @@ fun ReportsScreen(
                 }
             }
 
-            // Monthly Spend Calendar Heatmap Section
-            if (heatmapDays.isNotEmpty()) {
-                item {
-                    NeoCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        shadowOffset = 4.dp
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
+            // 7-Column Spend Heatmap Calendar Matrix
+            item {
+                ChromaCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    windowTitle = "spend_intensity.matrix // monthly",
+                    statusIndicator = "HEATMAP",
+                    shadowOffset = 3.dp
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        // Day of week headers
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            listOf("M", "T", "W", "T", "F", "S", "S").forEach { dayLabel ->
                                 Text(
-                                    text = "MONTHLY SPEND HEATMAP",
-                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
-                                )
-                                Text(
-                                    text = "LEVELS 0-4",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    text = dayLabel,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 10.sp
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.width(36.dp),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                 )
                             }
+                        }
 
-                            Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                            // Day of week headers (M, T, W, T, F, S, S)
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                listOf("M", "T", "W", "T", "F", "S", "S").forEach { d ->
+                        // Grid of days
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(7),
+                            modifier = Modifier.height(180.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            items(heatmapDays) { day ->
+                                val cellColor = when (day.intensityLevel) {
+                                    0 -> ChromaStone100
+                                    1 -> ChromaYellow.copy(alpha = 0.4f)
+                                    2 -> ChromaYellow
+                                    3 -> ChromaOrange
+                                    else -> ChromaRed
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(cellColor)
+                                        .border(1.dp, ChromaStone400, RoundedCornerShape(2.dp))
+                                        .clickable { selectedHeatmapDay = day },
+                                    contentAlignment = Alignment.Center
+                                ) {
                                     Text(
-                                        text = d,
-                                        modifier = Modifier.weight(1f),
-                                        textAlign = TextAlign.Center,
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black)
+                                        text = "${day.dayNumber}",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = if (day.intensityLevel > 0) FontWeight.Bold else FontWeight.Normal,
+                                            fontSize = 9.sp
+                                        ),
+                                        color = if (day.intensityLevel >= 3) ChromaWhite else ChromaBlack
                                     )
                                 }
                             }
+                        }
 
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            // 7-column Calendar Heatmap Grid
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(7),
-                                modifier = Modifier.height(200.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        // Selected Heatmap Day Details
+                        if (selectedHeatmapDay != null) {
+                            val d = selectedHeatmapDay!!
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(ChromaStone200)
+                                    .border(1.dp, ChromaStone400, RoundedCornerShape(2.dp))
+                                    .padding(8.dp)
                             ) {
-                                items(heatmapDays) { day ->
-                                    val cellBg = when (day.intensityLevel) {
-                                        4 -> NeoRed
-                                        3 -> NeoOrange
-                                        2 -> NeoYellow
-                                        1 -> NeoLime
-                                        else -> MaterialTheme.colorScheme.surface
-                                    }
-                                    val isSelected = selectedHeatmapDay == day
-
-                                    Box(
-                                        modifier = Modifier
-                                            .aspectRatio(1f)
-                                            .clip(RoundedCornerShape(4.dp))
-                                            .background(cellBg)
-                                            .border(
-                                                width = if (isSelected) 2.5.dp else 1.dp,
-                                                color = MaterialTheme.colorScheme.outline,
-                                                shape = RoundedCornerShape(4.dp)
-                                            )
-                                            .clickable { selectedHeatmapDay = day },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = day.dayNumber.toString(),
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontSize = 10.sp,
-                                                fontWeight = if (day.intensityLevel > 0) FontWeight.Black else FontWeight.Normal
-                                            ),
-                                            color = if (day.intensityLevel >= 3) NeoWhite else NeoBlack
-                                        )
-                                    }
-                                }
-                            }
-
-                            // Selected day detail view
-                            if (selectedHeatmapDay != null) {
-                                val day = selectedHeatmapDay!!
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(NeoGray100)
-                                        .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
-                                        .padding(10.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = "DAY ${day.dayNumber} SPEND:",
-                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                                            color = NeoBlack
-                                        )
-                                        Text(
-                                            text = FormatUtils.formatCurrency(day.spendAmount),
-                                            style = MaterialTheme.typography.titleSmall.copy(
-                                                fontWeight = FontWeight.Black,
-                                                color = if (day.spendAmount > 0) NeoRed else NeoBlack
-                                            )
-                                        )
-                                    }
-                                }
+                                Text(
+                                    text = "DAY ${d.dayNumber}: SPEND = ${FormatUtils.formatCurrency(d.spendAmount)}",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
                             }
                         }
                     }
                 }
             }
 
-            // Household Settle Up Card
+            // Household Settle-Up Ledger Card
             if (settlements.isNotEmpty()) {
                 item {
-                    NeoCard(
+                    ChromaCard(
                         modifier = Modifier.fillMaxWidth(),
-                        shadowOffset = 4.dp
+                        windowTitle = "settle_up.ledger // splits",
+                        shadowOffset = 3.dp
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "HOUSEHOLD SETTLE UP",
-                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
-                                )
-                                NeoBadge(text = "SPLIT", backgroundColor = NeoOrange, textColor = NeoWhite)
-                            }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            settlements.forEach { member ->
+                        Column(
+                            modifier = Modifier.padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            settlements.forEach { balance ->
+                                val isOwed = balance.netBalance > 0
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 6.dp),
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(ChromaStone100)
+                                        .border(0.5.dp, ChromaStone300, RoundedCornerShape(2.dp))
+                                        .padding(10.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Column {
                                         Text(
-                                            text = member.memberName,
-                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
+                                            text = balance.memberName,
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                                         )
                                         Text(
-                                            text = "Paid: ${FormatUtils.formatCurrency(member.totalPaid)} | Share: ${FormatUtils.formatCurrency(member.fairShare)}",
-                                            style = MaterialTheme.typography.labelSmall,
+                                            text = "Paid: ${FormatUtils.formatCurrency(balance.totalPaid)} | Fair Share: ${FormatUtils.formatCurrency(balance.fairShare)}",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontFamily = FontFamily.Monospace,
+                                                fontSize = 10.sp
+                                            ),
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
 
-                                    val isOwed = member.netBalance >= 0
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(4.dp))
-                                            .background(if (isOwed) NeoGreen.copy(alpha = 0.2f) else NeoRed.copy(alpha = 0.2f))
-                                            .border(1.5.dp, if (isOwed) NeoGreen else NeoRed, RoundedCornerShape(4.dp))
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    ) {
+                                    Column(horizontalAlignment = Alignment.End) {
                                         Text(
-                                            text = if (isOwed) "+${FormatUtils.formatCurrency(member.netBalance)} (Gets back)"
-                                            else "${FormatUtils.formatCurrency(member.netBalance)} (Owes)",
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontWeight = FontWeight.Black,
-                                                color = if (isOwed) NeoGreen else NeoRed
+                                            text = if (isOwed) "+ ${FormatUtils.formatCurrency(balance.netBalance)}"
+                                            else "- ${FormatUtils.formatCurrency(-balance.netBalance)}",
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                fontFamily = FontFamily.Monospace,
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (isOwed) ChromaGreen else ChromaRed
                                             )
+                                        )
+                                        Text(
+                                            text = if (isOwed) "GETS BACK" else "OWES",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontFamily = FontFamily.Monospace,
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold
+                                            ),
+                                            color = if (isOwed) ChromaGreen else ChromaRed
                                         )
                                     }
                                 }
-                                HorizontalDivider(thickness = 1.dp, color = NeoGray200)
                             }
                         }
                     }
                 }
             }
 
-            // Category Spend Donut & Breakdown
+            // Category Spend Donut Chart
             if (categoryReports.isNotEmpty()) {
                 item {
-                    NeoCard(
+                    ChromaCard(
                         modifier = Modifier.fillMaxWidth(),
-                        shadowOffset = 4.dp
+                        windowTitle = "category_distribution.chart",
+                        shadowOffset = 3.dp
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "CATEGORY BREAKDOWN",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Donut Chart Canvas
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp),
+                                    .size(160.dp)
+                                    .padding(8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Canvas(modifier = Modifier.size(170.dp)) {
-                                    val strokeWidth = 32.dp.toPx()
-                                    var startAngle = -90f
-                                    val total = totalExpense.toFloat()
-
-                                    if (total > 0) {
-                                        categoryReports.forEach { rep ->
-                                            val sweep = (rep.amount.toFloat() / total) * 360f
-                                            drawArc(
-                                                color = Color(rep.category.color.toInt()),
-                                                startAngle = startAngle,
-                                                sweepAngle = sweep,
-                                                useCenter = false,
-                                                style = Stroke(width = strokeWidth)
-                                            )
-                                            startAngle += sweep
-                                        }
-                                    } else {
-                                        drawArc(
-                                            color = Color.LightGray,
-                                            startAngle = 0f,
-                                            sweepAngle = 360f,
-                                            useCenter = false,
-                                            style = Stroke(width = strokeWidth)
-                                        )
-                                    }
-                                }
-
+                                ChromaDonutChartCanvas(
+                                    categories = categoryReports,
+                                    totalSpend = totalExpense
+                                )
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
                                         text = "SPENT",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontSize = 9.sp
+                                        ),
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Text(
                                         text = FormatUtils.formatCurrency(totalExpense),
-                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     )
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(14.dp))
 
-                            // Category List
-                            categoryReports.forEach { rep ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 6.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(12.dp)
-                                                .background(Color(rep.category.color.toInt()))
-                                                .border(1.dp, NeoBlack)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = rep.category.name,
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-                                        )
-                                    }
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = FormatUtils.formatCurrency(rep.amount),
-                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        NeoBadge(
-                                            text = "${rep.percentage.toInt()}%",
-                                            backgroundColor = NeoYellow,
-                                            textColor = NeoBlack
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Payment Mode Breakdown
-            if (paymentModeReports.isNotEmpty()) {
-                item {
-                    NeoCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        shadowOffset = 3.dp
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "PAYMENT MODES",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Row(
+                            // Category Breakdown List
+                            Column(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                paymentModeReports.forEach { modeRep ->
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clip(RoundedCornerShape(4.dp))
-                                            .background(NeoGray100)
-                                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
-                                            .padding(10.dp)
+                                categoryReports.forEach { item ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Text(
-                                                text = modeRep.mode.name,
-                                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                                                color = NeoBlack
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(8.dp)
+                                                    .background(ChromaBlack)
                                             )
-                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                text = FormatUtils.formatCurrency(modeRep.amount),
-                                                style = MaterialTheme.typography.labelMedium.copy(
-                                                    fontWeight = FontWeight.Black,
-                                                    fontSize = 11.sp
+                                                text = item.category.name,
+                                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                                            )
+                                        }
+
+                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            Text(
+                                                text = FormatUtils.formatCurrency(item.amount),
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontFamily = FontFamily.Monospace,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            )
+                                            Text(
+                                                text = "(${(item.percentage * 100).toInt()}%)",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontFamily = FontFamily.Monospace,
+                                                    fontSize = 10.sp
                                                 ),
-                                                color = NeoBlack
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                         }
                                     }
@@ -570,6 +479,52 @@ fun ReportsScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChromaDonutChartCanvas(
+    categories: List<CategorySpendReport>,
+    totalSpend: Double
+) {
+    val colors = listOf(
+        ChromaOrange, ChromaBlue, ChromaGreen, ChromaPurple,
+        ChromaCyan, ChromaYellow, ChromaRed, ChromaStone600
+    )
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val strokeWidth = 18.dp.toPx()
+        val diameter = size.minDimension - strokeWidth
+        val radius = diameter / 2f
+        val center = Offset(size.width / 2f, size.height / 2f)
+
+        var startAngle = -90f
+
+        if (totalSpend <= 0) {
+            drawCircle(
+                color = ChromaStone200,
+                radius = radius,
+                center = center,
+                style = Stroke(width = strokeWidth)
+            )
+        } else {
+            categories.forEachIndexed { index, item ->
+                val sweepAngle = ((item.amount / totalSpend) * 360f).toFloat()
+                val color = colors[index % colors.size]
+
+                drawArc(
+                    color = color,
+                    startAngle = startAngle,
+                    sweepAngle = sweepAngle - 2f,
+                    useCenter = false,
+                    topLeft = Offset(center.x - radius, center.y - radius),
+                    size = Size(radius * 2, radius * 2),
+                    style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
+                )
+
+                startAngle += sweepAngle
             }
         }
     }

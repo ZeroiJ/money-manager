@@ -26,7 +26,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.moneymanager.data.model.PaymentMode
 import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionScope
-import com.example.moneymanager.data.model.TransactionType
 import com.example.moneymanager.theme.*
 import com.example.moneymanager.ui.screens.home.TransactionCard
 import com.example.moneymanager.util.FormatUtils
@@ -53,10 +52,11 @@ fun TransactionListScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "TRANSACTIONS",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp
+                        text = "query // transactions",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
                         )
                     )
                 },
@@ -69,26 +69,28 @@ fun TransactionListScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Boxy Search Field
+            // Chroma Search Field
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .neoShadow(offset = 3.dp, cornerRadius = 6.dp)
-                    .clip(RoundedCornerShape(6.dp))
+                    .chromaShadow(offset = 2.dp, cornerRadius = 4.dp)
+                    .clip(RoundedCornerShape(4.dp))
                     .background(MaterialTheme.colorScheme.surface)
-                    .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
                     .padding(horizontal = 12.dp, vertical = 2.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(20.dp)
+                    Text(
+                        text = "❯",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            color = ChromaOrange
+                        )
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     TextField(
@@ -96,8 +98,8 @@ fun TransactionListScreen(
                         onValueChange = { viewModel.searchQuery.value = it },
                         placeholder = {
                             Text(
-                                "Search notes, categories, amounts...",
-                                style = MaterialTheme.typography.bodyMedium
+                                "filter by note, category, amount...",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace)
                             )
                         },
                         singleLine = true,
@@ -111,21 +113,21 @@ fun TransactionListScreen(
                     )
                     if (query.isNotEmpty()) {
                         IconButton(onClick = { viewModel.searchQuery.value = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Clear", modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Close, contentDescription = "Clear", modifier = Modifier.size(16.dp))
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Boxy Filter Chips Row
+            // Filter Chips Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 // Scope Filter Chips
                 listOf(
@@ -136,24 +138,28 @@ fun TransactionListScreen(
                     val isSelected = scopeFilter == scope
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(2.dp))
                             .background(
                                 if (isSelected) {
                                     when (scope) {
-                                        TransactionScope.PERSONAL -> NeoBlue
-                                        TransactionScope.HOUSEHOLD -> NeoOrange
-                                        else -> NeoBlack
+                                        TransactionScope.PERSONAL -> ChromaBlue
+                                        TransactionScope.HOUSEHOLD -> ChromaOrange
+                                        else -> ChromaBlack
                                     }
                                 } else MaterialTheme.colorScheme.surface
                             )
-                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
                             .clickable { viewModel.scopeFilter.value = scope }
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                            .padding(horizontal = 8.dp, vertical = 5.dp)
                     ) {
                         Text(
-                            text = label,
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                            color = if (isSelected) NeoWhite else MaterialTheme.colorScheme.onSurface
+                            text = "[ $label ]",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp
+                            ),
+                            color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -163,24 +169,28 @@ fun TransactionListScreen(
                     val isSelected = modeFilter == mode
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(if (isSelected) NeoYellow else MaterialTheme.colorScheme.surface)
-                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(if (isSelected) ChromaStone200 else MaterialTheme.colorScheme.surface)
+                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
                             .clickable {
                                 viewModel.paymentModeFilter.value = if (isSelected) null else mode
                             }
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                            .padding(horizontal = 8.dp, vertical = 5.dp)
                     ) {
                         Text(
-                            text = mode.name,
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                            color = if (isSelected) NeoBlack else MaterialTheme.colorScheme.onSurface
+                            text = "[ ${mode.name} ]",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp
+                            ),
+                            color = ChromaBlack
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Summary Bar
             Row(
@@ -191,14 +201,18 @@ fun TransactionListScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${filteredTxs.size} TRANSACTIONS",
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black)
+                    text = "RECORDS: ${filteredTxs.size}",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
+                    )
                 )
                 Text(
                     text = "TOTAL: ${FormatUtils.formatCurrency(totalFilteredSpend)}",
                     style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Black,
-                        color = NeoRed
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        color = ChromaRed
                     )
                 )
             }
@@ -214,8 +228,11 @@ fun TransactionListScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "NO TRANSACTIONS FOUND",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
+                        text = "NO MATCHING RECORDS",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 }
             } else {
@@ -225,35 +242,40 @@ fun TransactionListScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     groupedTxs.forEach { dayGroup ->
-                        // Sticky Date Header Block
                         stickyHeader {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .background(MaterialTheme.colorScheme.background)
-                                    .padding(vertical = 6.dp)
+                                    .padding(vertical = 4.dp)
                             ) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(NeoGray100)
-                                        .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(ChromaStone200)
+                                        .border(0.5.dp, ChromaStone400, RoundedCornerShape(2.dp))
+                                        .padding(horizontal = 8.dp, vertical = 3.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
                                         text = dayGroup.dateLabel.uppercase(),
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                                        color = NeoBlack
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 10.sp
+                                        ),
+                                        color = ChromaBlack
                                     )
                                     if (dayGroup.dayTotalSpend > 0) {
                                         Text(
                                             text = "- " + FormatUtils.formatCurrency(dayGroup.dayTotalSpend),
                                             style = MaterialTheme.typography.labelSmall.copy(
-                                                fontWeight = FontWeight.Black,
-                                                color = NeoRed
+                                                fontFamily = FontFamily.Monospace,
+                                                fontWeight = FontWeight.Bold,
+                                                color = ChromaRed,
+                                                fontSize = 10.sp
                                             )
                                         )
                                     }
@@ -261,7 +283,6 @@ fun TransactionListScreen(
                             }
                         }
 
-                        // Transaction Cards for this Date
                         items(dayGroup.transactions, key = { it.id }) { tx ->
                             val category = categoriesMap[tx.categoryId]
                             TransactionCard(
@@ -276,35 +297,36 @@ fun TransactionListScreen(
         }
     }
 
-    // Delete Confirmation Dialog (Neo-Brutalist Dialog)
     if (transactionToDelete != null) {
         val tx = transactionToDelete!!
         AlertDialog(
             onDismissRequest = { transactionToDelete = null },
-            shape = RoundedCornerShape(6.dp),
+            shape = RoundedCornerShape(4.dp),
             containerColor = MaterialTheme.colorScheme.surface,
             title = {
                 Text(
-                    text = "DELETE TRANSACTION",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
+                    text = "DELETE_RECORD // CONFIRM",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
+                    )
                 )
             },
             text = {
                 Text(
-                    text = "Are you sure you want to permanently remove this transaction of ${FormatUtils.formatCurrency(tx.amount)}?",
+                    text = "Delete record for ${FormatUtils.formatCurrency(tx.amount)}?",
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             confirmButton = {
-                NeoButton(
-                    text = "DELETE",
+                ChromaButton(
+                    text = "CONFIRM DELETE",
                     onClick = {
                         viewModel.deleteTransaction(tx)
                         transactionToDelete = null
                     },
-                    backgroundColor = NeoRed,
-                    textColor = NeoWhite,
-                    borderColor = NeoBlack,
+                    backgroundColor = ChromaRed,
+                    textColor = ChromaWhite,
                     shadowOffset = 2.dp
                 )
             },

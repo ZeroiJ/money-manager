@@ -3,57 +3,56 @@ package com.example.moneymanager.theme
 import android.os.Build
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-private val NeoDarkColorScheme = darkColorScheme(
-    primary = NeoYellow,
-    onPrimary = NeoBlack,
-    primaryContainer = NeoBlack,
-    onPrimaryContainer = NeoYellow,
-    secondary = NeoCyan,
-    onSecondary = NeoBlack,
-    secondaryContainer = NeoGray900,
-    onSecondaryContainer = NeoCyan,
-    tertiary = NeoLime,
-    onTertiary = NeoBlack,
-    background = NeoBlack,
-    onBackground = NeoWhite,
-    surface = NeoGray900,
-    onSurface = NeoWhite,
-    surfaceVariant = NeoDarkCard,
-    onSurfaceVariant = NeoGray200,
-    surfaceContainer = NeoDarkSurface,
-    outline = NeoWhite,
-    error = NeoRed,
-    onError = NeoWhite
+private val ChromaDarkColorScheme = darkColorScheme(
+    primary = ChromaOrange,
+    onPrimary = ChromaWhite,
+    primaryContainer = ChromaBlack,
+    onPrimaryContainer = ChromaOrange,
+    secondary = ChromaCyan,
+    onSecondary = ChromaBlack,
+    secondaryContainer = ChromaStone900,
+    onSecondaryContainer = ChromaCyan,
+    tertiary = ChromaGreen,
+    onTertiary = ChromaBlack,
+    background = ChromaStone950,
+    onBackground = ChromaStone50,
+    surface = ChromaStone900,
+    onSurface = ChromaStone50,
+    surfaceVariant = ChromaStone800,
+    onSurfaceVariant = ChromaStone300,
+    surfaceContainer = ChromaStone900,
+    outline = ChromaStone50,
+    error = ChromaRed,
+    onError = ChromaWhite
 )
 
-private val NeoLightColorScheme = lightColorScheme(
-    primary = NeoBlack,
-    onPrimary = NeoWhite,
-    primaryContainer = NeoYellow,
-    onPrimaryContainer = NeoBlack,
-    secondary = NeoLime,
-    onSecondary = NeoBlack,
-    secondaryContainer = NeoGray100,
-    onSecondaryContainer = NeoBlack,
-    tertiary = NeoOrange,
-    onTertiary = NeoWhite,
-    background = NeoOffWhite,
-    onBackground = NeoBlack,
-    surface = NeoWhite,
-    onSurface = NeoBlack,
-    surfaceVariant = NeoGray100,
-    onSurfaceVariant = NeoGray700,
-    outline = NeoBlack,
-    error = NeoRed,
-    onError = NeoWhite
+private val ChromaLightColorScheme = lightColorScheme(
+    primary = ChromaBlack,
+    onPrimary = ChromaWhite,
+    primaryContainer = ChromaOrange,
+    onPrimaryContainer = ChromaWhite,
+    secondary = ChromaBlue,
+    onSecondary = ChromaWhite,
+    secondaryContainer = ChromaStone100,
+    onSecondaryContainer = ChromaBlack,
+    tertiary = ChromaGreen,
+    onTertiary = ChromaWhite,
+    background = ChromaStone50,
+    onBackground = ChromaBlack,
+    surface = ChromaWhite,
+    onSurface = ChromaBlack,
+    surfaceVariant = ChromaStone100,
+    onSurfaceVariant = ChromaStone600,
+    outline = ChromaBlack,
+    error = ChromaRed,
+    onError = ChromaWhite
 )
 
 @Composable
 fun MoneyManagerTheme(
-    darkTheme: Boolean = false, // High-contrast crisp Neo-Brutalist default
+    darkTheme: Boolean = false, // Chroma warm stone light mode default
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -62,8 +61,8 @@ fun MoneyManagerTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> NeoDarkColorScheme
-        else -> NeoLightColorScheme
+        darkTheme -> ChromaDarkColorScheme
+        else -> ChromaLightColorScheme
     }
 
     MaterialTheme(

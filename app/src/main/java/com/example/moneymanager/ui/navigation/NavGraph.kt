@@ -7,10 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.AccountBalanceWallet
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.PieChart
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,15 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.example.moneymanager.theme.*
 import com.example.moneymanager.ui.screens.add.AddTransactionScreen
@@ -38,100 +34,57 @@ import com.example.moneymanager.ui.screens.settings.SettingsScreen
 import com.example.moneymanager.ui.screens.transactions.TransactionListScreen
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
-    data object Home : Screen("home", "HOME", Icons.Filled.Home)
-    data object Transactions : Screen("transactions", "FEED", Icons.AutoMirrored.Filled.List)
-    data object AddTransaction : Screen("add_transaction?id={id}", "ADD", Icons.Filled.Add) {
-        fun createRoute(transactionId: Long? = null): String {
-            return if (transactionId != null) "add_transaction?id=$transactionId" else "add_transaction"
-        }
+    object Home : Screen("home", "HOME", Icons.Default.Home)
+    object Transactions : Screen("transactions", "FEED", Icons.AutoMirrored.Filled.List)
+    object Add : Screen("add_transaction", "ADD", Icons.Default.Add)
+    object Budgets : Screen("budgets", "BUDGETS", Icons.Default.AccountBalanceWallet)
+    object Reports : Screen("reports", "REPORTS", Icons.Default.PieChart)
+    object Settings : Screen("settings", "SETTINGS", Icons.Default.Settings)
+    object EditTransaction : Screen("edit_transaction/{transactionId}", "EDIT", Icons.Default.Edit) {
+        fun createRoute(transactionId: Long) = "edit_transaction/$transactionId"
     }
-    data object Budgets : Screen("budgets", "BUDGETS", Icons.Filled.AccountBalanceWallet)
-    data object Reports : Screen("reports", "REPORTS", Icons.Filled.PieChart)
-    data object Settings : Screen("settings", "SETTINGS", Icons.Filled.Home)
 }
+
+val bottomNavItems = listOf(
+    Screen.Home,
+    Screen.Transactions,
+    Screen.Add,
+    Screen.Budgets,
+    Screen.Reports
+)
 
 @Composable
 fun MainNavigation() {
     val navController = rememberNavController()
-    val bottomNavItems = listOf(
-        Screen.Home,
-        Screen.Transactions,
-        Screen.AddTransaction,
-        Screen.Budgets,
-        Screen.Reports
-    )
+    AppNavGraph(navController = navController)
+}
 
+@Composable
+fun AppNavGraph(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
-    val isBottomBarVisible = bottomNavItems.any { item ->
-        val baseRoute = item.route.substringBefore("?")
-        val currentRoute = currentDestination?.route?.substringBefore("?")
-        baseRoute == currentRoute
-    }
+    val currentRoute = navBackStackEntry?.destination?.route
 
     Scaffold(
         bottomBar = {
-            if (isBottomBarVisible) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(width = 2.5.dp, color = MaterialTheme.colorScheme.outline),
-                    color = MaterialTheme.colorScheme.surface
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp, horizontal = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        bottomNavItems.forEach { screen ->
-                            val baseRoute = screen.route.substringBefore("?")
-                            val currentRoute = currentDestination?.route?.substringBefore("?")
-                            val isSelected = currentRoute == baseRoute
-
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(if (isSelected) NeoYellow else Color.Transparent)
-                                    .then(
-                                        if (isSelected) {
-                                            Modifier.border(2.dp, NeoBlack, RoundedCornerShape(6.dp))
-                                        } else Modifier
-                                    )
-                                    .clickable {
-                                        val targetRoute = if (screen == Screen.AddTransaction) Screen.AddTransaction.createRoute(null) else screen.route
-                                        navController.navigate(targetRoute) {
-                                            popUpTo(navController.graph.findStartDestination().id) {
-                                                saveState = true
-                                            }
-                                            launchSingleTop = true
-                                            restoreState = true
-                                        }
-                                    }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Icon(
-                                        imageVector = screen.icon,
-                                        contentDescription = screen.title,
-                                        tint = if (isSelected) NeoBlack else MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Text(
-                                        text = screen.title,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontSize = 9.sp,
-                                            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
-                                        ),
-                                        color = if (isSelected) NeoBlack else MaterialTheme.colorScheme.onSurface
-                                    )
+            val shouldShowBottomBar = bottomNavItems.any { it.route == currentRoute }
+            if (shouldShowBottomBar) {
+                ChromaBottomNavigationBar(
+                    items = bottomNavItems,
+                    currentRoute = currentRoute,
+                    onItemClick = { screen ->
+                        if (screen == Screen.Add) {
+                            navController.navigate(Screen.Add.route)
+                        } else {
+                            navController.navigate(screen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
                                 }
+                                launchSingleTop = true
+                                restoreState = true
                             }
                         }
                     }
-                }
+                )
             }
         }
     ) { innerPadding ->
@@ -142,52 +95,111 @@ fun MainNavigation() {
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
-                    onNavigateToAdd = { navController.navigate(Screen.AddTransaction.createRoute(null)) },
+                    onNavigateToAdd = { navController.navigate(Screen.Add.route) },
                     onNavigateToTransactions = { navController.navigate(Screen.Transactions.route) },
                     onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                     onNavigateToEditTransaction = { txId ->
-                        navController.navigate(Screen.AddTransaction.createRoute(txId))
+                        navController.navigate(Screen.EditTransaction.createRoute(txId))
                     }
                 )
             }
-
             composable(Screen.Transactions.route) {
                 TransactionListScreen(
                     onNavigateToEditTransaction = { txId ->
-                        navController.navigate(Screen.AddTransaction.createRoute(txId))
+                        navController.navigate(Screen.EditTransaction.createRoute(txId))
                     }
                 )
             }
-
-            composable(
-                route = Screen.AddTransaction.route,
-                arguments = listOf(
-                    navArgument("id") {
-                        type = NavType.LongType
-                        defaultValue = -1L
-                    }
-                )
-            ) { backStackEntry ->
-                val txId = backStackEntry.arguments?.getLong("id") ?: -1L
-                val validTxId = if (txId > 0) txId else null
+            composable(Screen.Add.route) {
                 AddTransactionScreen(
-                    transactionId = validTxId,
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
-
             composable(Screen.Budgets.route) {
                 BudgetsScreen()
             }
-
             composable(Screen.Reports.route) {
                 ReportsScreen()
             }
-
             composable(Screen.Settings.route) {
                 SettingsScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
+            }
+            composable(
+                route = Screen.EditTransaction.route,
+                arguments = listOf(navArgument("transactionId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val txId = backStackEntry.arguments?.getLong("transactionId") ?: -1L
+                AddTransactionScreen(
+                    transactionId = txId,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ChromaBottomNavigationBar(
+    items: List<Screen>,
+    currentRoute: String?,
+    onItemClick: (Screen) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(ChromaStone50)
+            .border(
+                width = 1.5.dp,
+                color = MaterialTheme.colorScheme.outline
+            )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = 8.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            items.forEach { screen ->
+                val isSelected = currentRoute == screen.route
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(if (isSelected) ChromaStone200 else Color.Transparent)
+                        .border(
+                            width = if (isSelected) 1.5.dp else 0.dp,
+                            color = if (isSelected) ChromaBlack else Color.Transparent,
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .clickable { onItemClick(screen) }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = screen.icon,
+                            contentDescription = screen.title,
+                            tint = if (isSelected) ChromaOrange else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = screen.title,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                fontSize = 9.sp
+                            ),
+                            color = if (isSelected) ChromaBlack else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         }
     }

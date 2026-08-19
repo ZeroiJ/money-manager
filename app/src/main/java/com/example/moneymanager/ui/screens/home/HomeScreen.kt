@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.moneymanager.data.model.Category
-import com.example.moneymanager.data.model.PaymentMode
 import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
@@ -57,16 +57,17 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "MONEY MANAGER",
-                            style = MaterialTheme.typography.titleLarge.copy(
+                            text = "chroma//money",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Black,
-                                letterSpacing = 1.sp
+                                letterSpacing = 0.5.sp
                             )
                         )
-                        NeoBadge(
+                        ChromaBadge(
                             text = FormatUtils.formatMonth(FormatUtils.getCurrentMonthKey()).uppercase(),
-                            backgroundColor = NeoYellow,
-                            textColor = NeoBlack
+                            backgroundColor = ChromaStone200,
+                            textColor = ChromaBlack
                         )
                     }
                 },
@@ -74,10 +75,10 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .padding(end = 12.dp)
-                            .size(38.dp)
-                            .clip(RoundedCornerShape(6.dp))
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(4.dp))
                             .background(MaterialTheme.colorScheme.surface)
-                            .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
                             .clickable { onNavigateToSettings() },
                         contentAlignment = Alignment.Center
                     ) {
@@ -85,7 +86,7 @@ fun HomeScreen(
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Settings",
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 },
@@ -95,24 +96,25 @@ fun HomeScreen(
         floatingActionButton = {
             Box(
                 modifier = Modifier
-                    .neoShadow(offset = 4.dp, cornerRadius = 8.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(NeoYellow)
-                    .border(2.5.dp, NeoBlack, RoundedCornerShape(8.dp))
+                    .chromaShadow(offset = 3.dp, cornerRadius = 4.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(ChromaOrange)
+                    .border(1.5.dp, ChromaBlack, RoundedCornerShape(4.dp))
                     .clickable { onNavigateToAdd() }
-                    .padding(horizontal = 20.dp, vertical = 14.dp),
+                    .padding(horizontal = 18.dp, vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Add, contentDescription = null, tint = NeoBlack, modifier = Modifier.size(22.dp))
+                    Icon(Icons.Default.Add, contentDescription = null, tint = ChromaWhite, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "ADD SPEND",
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 0.5.sp
+                        text = "+ ADD SPEND",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
                         ),
-                        color = NeoBlack
+                        color = ChromaWhite
                     )
                 }
             }
@@ -125,9 +127,9 @@ fun HomeScreen(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Hero Today's Spend Box
+            // Hero Today's Spend Window Card
             item {
-                NeoTodayHeroCard(
+                ChromaTodayHeroCard(
                     todaySpend = todaySpend,
                     monthSpend = monthSpend,
                     monthIncome = monthIncome,
@@ -137,7 +139,7 @@ fun HomeScreen(
 
             // Personal vs Household Split Cards
             item {
-                NeoPersonalHouseholdSplitRow(
+                ChromaPersonalHouseholdSplitRow(
                     personalSpend = personalMonth,
                     householdSpend = householdMonth
                 )
@@ -158,20 +160,21 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .neoShadow(offset = if (isSelected) 3.dp else 1.dp, cornerRadius = 6.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(if (isSelected) NeoBlack else MaterialTheme.colorScheme.surface)
-                                .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                                .chromaShadow(offset = if (isSelected) 2.dp else 1.dp, cornerRadius = 4.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(if (isSelected) ChromaBlack else MaterialTheme.colorScheme.surface)
+                                .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
                                 .clickable { viewModel.selectedScopeFilter.value = scopeItem }
-                                .padding(vertical = 10.dp),
+                                .padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = label,
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
+                                text = "[ $label ]",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold
                                 ),
-                                color = if (isSelected) NeoWhite else MaterialTheme.colorScheme.onSurface
+                                color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -186,9 +189,10 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "RECENT ACTIVITY",
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.Black,
+                        text = "RECENT_ACTIVITY.LOG",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         )
                     )
@@ -197,16 +201,12 @@ fun HomeScreen(
                         contentPadding = PaddingValues(horizontal = 8.dp)
                     ) {
                         Text(
-                            text = "SEE ALL",
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Black),
+                            text = "VIEW ALL →",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
+                            ),
                             color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -215,7 +215,7 @@ fun HomeScreen(
             // Recent Transactions List
             if (recentTxs.isEmpty()) {
                 item {
-                    NeoEmptyTransactionsPlaceholder(onAddClick = onNavigateToAdd)
+                    ChromaEmptyTransactionsPlaceholder(onAddClick = onNavigateToAdd)
                 }
             } else {
                 items(recentTxs, key = { it.id }) { tx ->
@@ -232,48 +232,43 @@ fun HomeScreen(
 }
 
 @Composable
-fun NeoTodayHeroCard(
+fun ChromaTodayHeroCard(
     todaySpend: Double,
     monthSpend: Double,
     monthIncome: Double,
     totalBudget: Double
 ) {
-    NeoCard(
+    ChromaCard(
         modifier = Modifier.fillMaxWidth(),
-        backgroundColor = MaterialTheme.colorScheme.surface,
-        shadowOffset = 5.dp
+        windowTitle = "today.spend // realtime",
+        statusIndicator = "[ LIVE ]",
+        shadowOffset = 3.dp
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                NeoBadge(text = "TODAY'S SPEND", backgroundColor = NeoYellow, textColor = NeoBlack)
-                Text(
-                    text = "TOTAL",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "TODAY'S TOTAL",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = FormatUtils.formatCurrency(todaySpend),
                 style = MaterialTheme.typography.displaySmall.copy(
-                    fontWeight = FontWeight.Black,
-                    fontFamily = FontFamily.SansSerif
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Black
                 ),
-                color = if (todaySpend > 0) NeoRed else MaterialTheme.colorScheme.onSurface
+                color = if (todaySpend > 0) ChromaRed else MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(thickness = 2.dp, color = MaterialTheme.colorScheme.outline)
             Spacer(modifier = Modifier.height(14.dp))
+            HorizontalDivider(thickness = 1.dp, color = ChromaStone200)
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Month summary row
             Row(
@@ -282,43 +277,61 @@ fun NeoTodayHeroCard(
             ) {
                 Column {
                     Text(
-                        text = "MONTH SPENT",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        text = "MONTH_SPENT",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = FormatUtils.formatCurrency(monthSpend),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 }
 
                 if (monthIncome > 0) {
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = "MONTH INCOME",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            text = "MONTH_INCOME",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
+                            ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = FormatUtils.formatCurrency(monthIncome),
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
-                            color = NeoGreen
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = ChromaGreen
                         )
                     }
                 } else if (totalBudget > 0) {
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = "BUDGET LIMIT",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            text = "BUDGET_LIMIT",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
+                            ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = FormatUtils.formatCurrency(totalBudget),
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
-                            color = NeoCyan
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = ChromaCyan
                         )
                     }
                 }
@@ -333,16 +346,16 @@ fun NeoTodayHeroCard(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(14.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(NeoGray200)
-                        .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                        .height(10.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(ChromaStone200)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
                             .fillMaxWidth(progress)
-                            .background(if (isOverBudget) NeoRed else NeoLime)
+                            .background(if (isOverBudget) ChromaRed else ChromaOrange)
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
@@ -352,14 +365,18 @@ fun NeoTodayHeroCard(
                 ) {
                     Text(
                         text = "${(progress * 100).toInt()}% USED",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black)
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                     Text(
-                        text = if (isOverBudget) "EXCEEDED BY ${FormatUtils.formatCurrency(monthSpend - totalBudget)}"
-                        else "${FormatUtils.formatCurrency(totalBudget - monthSpend)} LEFT",
+                        text = if (isOverBudget) "OVER: ${FormatUtils.formatCurrency(monthSpend - totalBudget)}"
+                        else "LEFT: ${FormatUtils.formatCurrency(totalBudget - monthSpend)}",
                         style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold,
-                            color = if (isOverBudget) NeoRed else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isOverBudget) ChromaRed else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }
@@ -369,7 +386,7 @@ fun NeoTodayHeroCard(
 }
 
 @Composable
-fun NeoPersonalHouseholdSplitRow(
+fun ChromaPersonalHouseholdSplitRow(
     personalSpend: Double,
     householdSpend: Double
 ) {
@@ -378,40 +395,48 @@ fun NeoPersonalHouseholdSplitRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         // Personal Card
-        NeoCard(
+        ChromaCard(
             modifier = Modifier.weight(1f),
-            shadowOffset = 3.dp
+            windowTitle = "personal.db",
+            shadowOffset = 2.dp
         ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                NeoBadge(text = "PERSONAL", backgroundColor = NeoBlue, textColor = NeoWhite)
-                Spacer(modifier = Modifier.height(8.dp))
+            Column(modifier = Modifier.padding(12.dp)) {
+                ChromaBadge(text = "PERSONAL", backgroundColor = ChromaBlue, textColor = ChromaWhite)
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = FormatUtils.formatCurrency(personalSpend),
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
+                    )
                 )
                 Text(
                     text = "This Month",
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
 
         // Household Card
-        NeoCard(
+        ChromaCard(
             modifier = Modifier.weight(1f),
-            shadowOffset = 3.dp
+            windowTitle = "household.db",
+            shadowOffset = 2.dp
         ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                NeoBadge(text = "HOUSEHOLD", backgroundColor = NeoOrange, textColor = NeoWhite)
-                Spacer(modifier = Modifier.height(8.dp))
+            Column(modifier = Modifier.padding(12.dp)) {
+                ChromaBadge(text = "HOUSEHOLD", backgroundColor = ChromaOrange, textColor = ChromaWhite)
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = FormatUtils.formatCurrency(householdSpend),
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black)
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
+                    )
                 )
                 Text(
                     text = "This Month",
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -428,9 +453,9 @@ fun TransactionCard(
 ) {
     val isExpense = transaction.type == TransactionType.EXPENSE
 
-    NeoCard(
+    ChromaCard(
         modifier = modifier.fillMaxWidth(),
-        shadowOffset = 3.dp,
+        shadowOffset = 2.dp,
         onClick = onClick
     ) {
         Row(
@@ -442,17 +467,17 @@ fun TransactionCard(
             // Boxy Category Icon Badge
             Box(
                 modifier = Modifier
-                    .size(42.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(NeoYellow)
-                    .border(2.dp, NeoBlack, RoundedCornerShape(6.dp)),
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(ChromaStone100)
+                    .border(1.dp, ChromaStone400, RoundedCornerShape(4.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = FormatUtils.getCategoryIcon(category?.icon ?: "category"),
                     contentDescription = null,
-                    tint = NeoBlack,
-                    modifier = Modifier.size(22.dp)
+                    tint = ChromaBlack,
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
@@ -462,7 +487,7 @@ fun TransactionCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = if (transaction.note.isNotBlank()) transaction.note else (category?.name ?: "Expense"),
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                     maxLines = 1
                 )
                 Spacer(modifier = Modifier.height(2.dp))
@@ -472,20 +497,29 @@ fun TransactionCard(
                 ) {
                     Text(
                         text = category?.name ?: "Misc",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 10.sp
+                        ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text("•", style = MaterialTheme.typography.labelSmall)
                     Text(
                         text = transaction.paymentMode.name,
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black)
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                     Text("•", style = MaterialTheme.typography.labelSmall)
                     Text(
                         text = transaction.scope.name,
                         style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Black,
-                            color = if (transaction.scope == TransactionScope.PERSONAL) NeoBlue else NeoOrange
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (transaction.scope == TransactionScope.PERSONAL) ChromaBlue else ChromaOrange
                         )
                     )
                 }
@@ -496,14 +530,17 @@ fun TransactionCard(
                 Text(
                     text = (if (isExpense) "- " else "+ ") + FormatUtils.formatCurrency(transaction.amount),
                     style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.SansSerif
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
                     ),
-                    color = if (isExpense) NeoRed else NeoGreen
+                    color = if (isExpense) ChromaRed else ChromaGreen
                 )
                 Text(
                     text = FormatUtils.formatDate(transaction.date),
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.sp
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -512,50 +549,53 @@ fun TransactionCard(
 }
 
 @Composable
-fun NeoEmptyTransactionsPlaceholder(onAddClick: () -> Unit) {
-    NeoCard(
+fun ChromaEmptyTransactionsPlaceholder(onAddClick: () -> Unit) {
+    ChromaCard(
         modifier = Modifier.fillMaxWidth(),
-        shadowOffset = 4.dp
+        windowTitle = "status // empty",
+        shadowOffset = 2.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(28.dp),
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(NeoYellow)
-                    .border(2.dp, NeoBlack, RoundedCornerShape(8.dp)),
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(ChromaStone100)
+                    .border(1.dp, ChromaStone400, RoundedCornerShape(4.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.ReceiptLong,
+                    imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
                     contentDescription = null,
-                    tint = NeoBlack,
-                    modifier = Modifier.size(30.dp)
+                    tint = ChromaBlack,
+                    modifier = Modifier.size(24.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "NO EXPENSES RECORDED YET",
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Black)
+                text = "NO TRANSACTIONS LOGGED",
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Tap the button below to add your first spend in under 5 seconds.",
+                text = "Record an expense in under 5 seconds.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            NeoButton(
+            Spacer(modifier = Modifier.height(14.dp))
+            ChromaButton(
                 text = "+ ADD TRANSACTION",
                 onClick = onAddClick,
-                backgroundColor = NeoBlack,
-                textColor = NeoWhite,
-                borderColor = NeoBlack
+                backgroundColor = ChromaBlack,
+                textColor = ChromaWhite
             )
         }
     }

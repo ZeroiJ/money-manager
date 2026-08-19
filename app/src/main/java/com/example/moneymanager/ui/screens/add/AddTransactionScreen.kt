@@ -65,10 +65,11 @@ fun AddTransactionScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (isEditMode) "EDIT EXPENSE" else "QUICK ENTRY",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp
+                        text = if (isEditMode) "transaction // edit" else "quick_entry.sh",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
                         )
                     )
                 },
@@ -76,10 +77,10 @@ fun AddTransactionScreen(
                     Box(
                         modifier = Modifier
                             .padding(start = 12.dp, end = 8.dp)
-                            .size(38.dp)
-                            .clip(RoundedCornerShape(6.dp))
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(4.dp))
                             .background(MaterialTheme.colorScheme.surface)
-                            .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
                             .clickable { onNavigateBack() },
                         contentAlignment = Alignment.Center
                     ) {
@@ -87,7 +88,7 @@ fun AddTransactionScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 },
@@ -113,57 +114,49 @@ fun AddTransactionScreen(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .neoShadow(offset = if (isSelected) 3.dp else 1.dp, cornerRadius = 6.dp)
-                            .clip(RoundedCornerShape(6.dp))
+                            .chromaShadow(offset = if (isSelected) 2.dp else 1.dp, cornerRadius = 4.dp)
+                            .clip(RoundedCornerShape(4.dp))
                             .background(
                                 if (isSelected) {
-                                    if (type == TransactionType.EXPENSE) NeoRed else NeoGreen
+                                    if (type == TransactionType.EXPENSE) ChromaRed else ChromaGreen
                                 } else MaterialTheme.colorScheme.surface
                             )
-                            .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
                             .clickable { viewModel.transactionType.value = type }
-                            .padding(vertical = 10.dp),
+                            .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = label,
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
+                            text = "[ $label ]",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
                             ),
-                            color = if (isSelected) NeoWhite else MaterialTheme.colorScheme.onSurface
+                            color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
             }
 
-            // Amount Display Card with Arithmetic Sub-expression
-            NeoCard(
+            // Amount Display Card
+            ChromaCard(
                 modifier = Modifier.fillMaxWidth(),
-                backgroundColor = MaterialTheme.colorScheme.surface,
-                shadowOffset = 4.dp
+                windowTitle = "amount.inr // keypad",
+                shadowOffset = 3.dp
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(14.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "AMOUNT (INR)",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
                         text = "₹ ${if (amount.isEmpty()) "0" else amount}",
                         style = MaterialTheme.typography.displaySmall.copy(
-                            fontWeight = FontWeight.Black,
-                            fontFamily = FontFamily.SansSerif
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Black
                         ),
-                        color = if (txType == TransactionType.EXPENSE) NeoRed else NeoGreen,
+                        color = if (txType == TransactionType.EXPENSE) ChromaRed else ChromaGreen,
                         maxLines = 1
                     )
 
@@ -176,16 +169,19 @@ fun AddTransactionScreen(
                         listOf("+50", "+100", "+500", "+2000").forEach { incStr ->
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(NeoGray100)
-                                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(ChromaStone100)
+                                    .border(1.dp, ChromaStone400, RoundedCornerShape(2.dp))
                                     .clickable { viewModel.onNumpadClick(incStr) }
-                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
                                 Text(
                                     text = incStr,
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                                    color = NeoBlack
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = ChromaBlack
                                 )
                             }
                         }
@@ -194,42 +190,38 @@ fun AddTransactionScreen(
             }
 
             // Scope Selector: Personal vs Household
-            NeoCard(
+            ChromaCard(
                 modifier = Modifier.fillMaxWidth(),
-                shadowOffset = 3.dp
+                windowTitle = "scope.tag // required",
+                shadowOffset = 2.dp
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text = "SCOPE (REQUIRED)",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         listOf(
-                            Triple(TransactionScope.PERSONAL, "PERSONAL", NeoBlue),
-                            Triple(TransactionScope.HOUSEHOLD, "HOUSEHOLD", NeoOrange)
+                            Triple(TransactionScope.PERSONAL, "PERSONAL", ChromaBlue),
+                            Triple(TransactionScope.HOUSEHOLD, "HOUSEHOLD", ChromaOrange)
                         ).forEach { (scopeItem, label, color) ->
                             val isSelected = scope == scopeItem
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .clip(RoundedCornerShape(6.dp))
+                                    .clip(RoundedCornerShape(4.dp))
                                     .background(if (isSelected) color else MaterialTheme.colorScheme.surface)
-                                    .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
                                     .clickable { viewModel.transactionScope.value = scopeItem }
-                                    .padding(vertical = 10.dp),
+                                    .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = label,
+                                    text = "[ $label ]",
                                     style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = FontWeight.Black
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold
                                     ),
-                                    color = if (isSelected) NeoWhite else MaterialTheme.colorScheme.onSurface
+                                    color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -239,8 +231,11 @@ fun AddTransactionScreen(
                     if (scope == TransactionScope.HOUSEHOLD && householdMembers.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "PAID BY:",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black)
+                            text = "PAID_BY:",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
+                            )
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Row(
@@ -251,16 +246,19 @@ fun AddTransactionScreen(
                                 val isPaidBy = paidBy == member.name
                                 Box(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(if (isPaidBy) NeoYellow else NeoGray100)
-                                        .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(if (isPaidBy) ChromaYellow else ChromaStone100)
+                                        .border(1.dp, ChromaStone400, RoundedCornerShape(2.dp))
                                         .clickable { viewModel.selectedPaidBy.value = member.name }
-                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                        .padding(horizontal = 10.dp, vertical = 4.dp)
                                 ) {
                                     Text(
                                         text = member.name,
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                                        color = NeoBlack
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold
+                                        ),
+                                        color = ChromaBlack
                                     )
                                 }
                             }
@@ -270,17 +268,12 @@ fun AddTransactionScreen(
             }
 
             // Payment Mode Selector: UPI, Cash, Card
-            NeoCard(
+            ChromaCard(
                 modifier = Modifier.fillMaxWidth(),
-                shadowOffset = 3.dp
+                windowTitle = "payment_mode.select",
+                shadowOffset = 2.dp
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text = "PAYMENT MODE",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -290,17 +283,20 @@ fun AddTransactionScreen(
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(if (isSelected) NeoYellow else MaterialTheme.colorScheme.surface)
-                                    .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(if (isSelected) ChromaBlack else MaterialTheme.colorScheme.surface)
+                                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
                                     .clickable { viewModel.paymentMode.value = paymentModeItem }
-                                    .padding(vertical = 10.dp),
+                                    .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = paymentModeItem.name,
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Black),
-                                    color = if (isSelected) NeoBlack else MaterialTheme.colorScheme.onSurface
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -309,34 +305,28 @@ fun AddTransactionScreen(
             }
 
             // Category Picker Grid
-            NeoCard(
+            ChromaCard(
                 modifier = Modifier.fillMaxWidth(),
-                shadowOffset = 3.dp
+                windowTitle = "category.picker",
+                shadowOffset = 2.dp
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text = "CATEGORY",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(4),
-                        modifier = Modifier.height(200.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.height(190.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         items(categories, key = { it.id }) { cat ->
                             val isSelected = selectedCatId == cat.id
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(if (isSelected) NeoYellow else MaterialTheme.colorScheme.surface)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(if (isSelected) ChromaStone200 else MaterialTheme.colorScheme.surface)
                                     .border(
-                                        width = if (isSelected) 2.5.dp else 1.5.dp,
-                                        color = MaterialTheme.colorScheme.outline,
-                                        shape = RoundedCornerShape(6.dp)
+                                        width = if (isSelected) 2.dp else 1.dp,
+                                        color = if (isSelected) ChromaBlack else ChromaStone300,
+                                        shape = RoundedCornerShape(4.dp)
                                     )
                                     .clickable { viewModel.selectedCategoryId.value = cat.id }
                                     .padding(vertical = 8.dp, horizontal = 4.dp),
@@ -346,17 +336,18 @@ fun AddTransactionScreen(
                                     Icon(
                                         imageVector = FormatUtils.getCategoryIcon(cat.icon),
                                         contentDescription = cat.name,
-                                        tint = if (isSelected) NeoBlack else MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.size(22.dp)
+                                        tint = ChromaBlack,
+                                        modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = cat.name,
                                         style = MaterialTheme.typography.labelSmall.copy(
+                                            fontFamily = FontFamily.Monospace,
                                             fontSize = 9.sp,
-                                            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                         ),
-                                        color = if (isSelected) NeoBlack else MaterialTheme.colorScheme.onSurface,
+                                        color = ChromaBlack,
                                         maxLines = 1,
                                         textAlign = TextAlign.Center
                                     )
@@ -371,33 +362,33 @@ fun AddTransactionScreen(
             OutlinedTextField(
                 value = note,
                 onValueChange = { viewModel.noteInput.value = it },
-                label = { Text("Note / Tag (optional)", fontWeight = FontWeight.Bold) },
+                label = { Text("Note / Tag (optional)", fontFamily = FontFamily.Monospace) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(6.dp),
+                shape = RoundedCornerShape(4.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.outline,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    focusedBorderColor = ChromaBlack,
+                    unfocusedBorderColor = ChromaStone300
                 )
             )
 
             // Calculator Keypad
-            NeoCalculatorKeypad(
+            ChromaCalculatorKeypad(
                 onKeyClick = { key -> viewModel.onNumpadClick(key) }
             )
 
             // Save Action Button
-            NeoButton(
-                text = if (isEditMode) "UPDATE TRANSACTION" else "SAVE TRANSACTION",
+            ChromaButton(
+                text = if (isEditMode) "[ COMMIT UPDATE ]" else "[ COMMIT TRANSACTION ]",
                 onClick = {
                     viewModel.saveTransaction {
                         onNavigateBack()
                     }
                 },
-                backgroundColor = NeoYellow,
-                textColor = NeoBlack,
-                borderColor = NeoBlack,
-                shadowOffset = 5.dp,
+                backgroundColor = ChromaOrange,
+                textColor = ChromaWhite,
+                borderColor = ChromaBlack,
+                shadowOffset = 3.dp,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -407,7 +398,7 @@ fun AddTransactionScreen(
 }
 
 @Composable
-fun NeoCalculatorKeypad(onKeyClick: (String) -> Unit) {
+fun ChromaCalculatorKeypad(onKeyClick: (String) -> Unit) {
     val rows = listOf(
         listOf("7", "8", "9", "DEL"),
         listOf("4", "5", "6", "+"),
@@ -417,12 +408,12 @@ fun NeoCalculatorKeypad(onKeyClick: (String) -> Unit) {
 
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         rows.forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 row.forEach { key ->
                     val isAction = key in listOf("+", "-", "=", "DEL", "C")
@@ -432,30 +423,31 @@ fun NeoCalculatorKeypad(onKeyClick: (String) -> Unit) {
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(52.dp)
-                            .neoShadow(offset = 2.dp, cornerRadius = 6.dp)
-                            .clip(RoundedCornerShape(6.dp))
+                            .height(48.dp)
+                            .chromaShadow(offset = 1.5.dp, cornerRadius = 4.dp)
+                            .clip(RoundedCornerShape(4.dp))
                             .background(
                                 when {
-                                    isEquals -> NeoGreen
-                                    isClear -> NeoRed.copy(alpha = 0.2f)
-                                    isAction -> NeoYellow
+                                    isEquals -> ChromaGreen
+                                    isClear -> ChromaStone200
+                                    isAction -> ChromaStone100
                                     else -> MaterialTheme.colorScheme.surface
                                 }
                             )
-                            .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
                             .clickable { onKeyClick(key) },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = key,
                             style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Black,
-                                fontSize = 18.sp
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
                             ),
                             color = when {
-                                isEquals -> NeoWhite
-                                isClear -> NeoRed
+                                isEquals -> ChromaWhite
+                                isClear -> ChromaRed
                                 else -> MaterialTheme.colorScheme.onSurface
                             }
                         )
