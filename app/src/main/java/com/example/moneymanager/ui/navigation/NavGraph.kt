@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +44,10 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object EditTransaction : Screen("edit_transaction/{transactionId}", "EDIT", Icons.Default.Edit) {
         fun createRoute(transactionId: Long) = "edit_transaction/$transactionId"
     }
+    object AddPreset : Screen("add_preset/{presetCategory}/{presetPaymentMode}", "ADD", Icons.Default.Add) {
+        fun createRoute(category: String, paymentMode: String = "") = 
+            "add_preset/${java.net.URLEncoder.encode(category, "UTF-8")}/${java.net.URLEncoder.encode(paymentMode, "UTF-8")}"
+    }
 }
 
 val bottomNavItems = listOf(
@@ -53,17 +58,35 @@ val bottomNavItems = listOf(
 )
 
 @Composable
-fun MainNavigation() {
+fun MainNavigation(
+    presetCategory: String? = null,
+    presetPaymentMode: String? = null
+) {
     val navController = rememberNavController()
-    AppNavGraph(navController = navController)
+    AppNavGraph(
+        navController = navController,
+        presetCategory = presetCategory,
+        presetPaymentMode = presetPaymentMode
+    )
 }
 
 @Composable
-fun AppNavGraph(navController: NavHostController) {
+fun AppNavGraph(
+    navController: NavHostController,
+    presetCategory: String? = null,
+    presetPaymentMode: String? = null
+) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    LaunchedEffect(presetCategory) {
+        if (presetCategory != null) {
+            navController.navigate(Screen.AddPreset.createRoute(presetCategory, presetPaymentMode ?: ""))
+        }
+    }
+
     Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
             val shouldShowBottomBar = androidx.compose.runtime.remember(currentRoute) {
                 bottomNavItems.any { it.route == currentRoute }
@@ -138,6 +161,25 @@ fun AppNavGraph(navController: NavHostController) {
                 val txId = backStackEntry.arguments?.getLong("transactionId") ?: -1L
                 AddTransactionScreen(
                     transactionId = txId,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable(
+                route = Screen.AddPreset.route,
+                arguments = listOf(
+                    navArgument("presetCategory") { type = NavType.StringType },
+                    navArgument("presetPaymentMode") { type = NavType.StringType; defaultValue = "" }
+                )
+            ) { backStackEntry ->
+                val category = java.net.URLDecoder.decode(
+                    backStackEntry.arguments?.getString("presetCategory") ?: "", "UTF-8"
+                )
+                val paymentMode = java.net.URLDecoder.decode(
+                    backStackEntry.arguments?.getString("presetPaymentMode") ?: "", "UTF-8"
+                )
+                AddTransactionScreen(
+                    presetCategory = category.ifBlank { null },
+                    presetPaymentMode = paymentMode.ifBlank { null },
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

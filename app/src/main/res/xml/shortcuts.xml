@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="add_chai"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_chai_short"
+        android:shortcutLongLabel="@string/shortcut_chai_long">
+        <intent
+            android:action="com.example.moneymanager.ADD_TRANSACTION"
+            android:targetPackage="com.example.moneymanager"
+            android:targetClass="com.example.moneymanager.MainActivity">
+            <extra
+                android:name="preset_category"
+                android:value="Chai/Snacks" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="add_groceries"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_groceries_short"
+        android:shortcutLongLabel="@string/shortcut_groceries_long">
+        <intent
+            android:action="com.example.moneymanager.ADD_TRANSACTION"
+            android:targetPackage="com.example.moneymanager"
+            android:targetClass="com.example.moneymanager.MainActivity">
+            <extra
+                android:name="preset_category"
+                android:value="Groceries" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="add_upi"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_upi_short"
+        android:shortcutLongLabel="@string/shortcut_upi_long">
+        <intent
+            android:action="com.example.moneymanager.ADD_TRANSACTION"
+            android:targetPackage="com.example.moneymanager"
+            android:targetClass="com.example.moneymanager.MainActivity">
+            <extra
+                android:name="preset_category"
+                android:value="Transport" />
+            <extra
+                android:name="preset_payment_mode"
+                android:value="UPI" />
+        </intent>
+    </shortcut>
+</shortcuts>

@@ -1,5 +1,7 @@
 package com.example.moneymanager.ui.screens.settings
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moneymanager.data.dao.MoneyDao
@@ -12,6 +14,7 @@ import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
 import com.example.moneymanager.data.prefs.UserPreferences
 import com.example.moneymanager.util.BackupUtils
+import com.example.moneymanager.util.XlsxImporter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +32,12 @@ class SettingsViewModel @Inject constructor(
 
     fun setUseIndianGrouping(enabled: Boolean) {
         userPreferences.setUseIndianGrouping(enabled)
+    }
+
+    val biometricEnabled: StateFlow<Boolean> = userPreferences.biometricEnabled
+
+    fun toggleBiometric() {
+        userPreferences.setBiometricEnabled(!userPreferences.biometricEnabled.value)
     }
 
     val categories: StateFlow<List<Category>> = moneyDao.getAllCategories()
@@ -141,5 +150,15 @@ class SettingsViewModel @Inject constructor(
             e.printStackTrace()
             false
         }
+    }
+
+    data class XlsxImportResult(val inserted: Int, val total: Int)
+
+    suspend fun importXlsx(context: Context, uri: Uri): XlsxImportResult {
+        val result = XlsxImporter.importFromUri(context, uri)
+        if (result.transactions.isNotEmpty()) {
+            moneyDao.insertTransactions(result.transactions)
+        }
+        return XlsxImportResult(inserted = result.parsedRows, total = result.totalRows)
     }
 }

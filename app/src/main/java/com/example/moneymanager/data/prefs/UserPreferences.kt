@@ -23,7 +23,18 @@ class UserPreferences @Inject constructor(
         _useIndianGrouping.value = enabled
     }
 
+    private val _biometricEnabled = MutableStateFlow(
+        prefs.getBoolean(KEY_BIOMETRIC_ENABLED, false)
+    )
+    val biometricEnabled: StateFlow<Boolean> = _biometricEnabled
+
+    fun setBiometricEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_BIOMETRIC_ENABLED, enabled).apply()
+        _biometricEnabled.value = enabled
+    }
+
     companion object {
         private const val KEY_INDIAN_GROUPING = "use_indian_grouping"
+        private const val KEY_BIOMETRIC_ENABLED = "biometric_enabled"
     }
 }

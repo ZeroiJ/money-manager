@@ -18,5 +18,6 @@ data class Transaction(
     val date: Long, // Storing as Unix timestamp for simplicity
     val paymentMode: PaymentMode,
     val scope: TransactionScope,
-    val paidBy: String? = null
+    val paidBy: String? = null,
+    val receiptUri: String? = null
 )

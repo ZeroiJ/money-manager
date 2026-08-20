@@ -43,6 +43,15 @@ interface MoneyDao {
     @Query("DELETE FROM transactions")
     suspend fun deleteAllTransactions()
 
+    @Query("SELECT SUM(amount) FROM transactions WHERE type = 'EXPENSE' AND date BETWEEN :start AND :end")
+    suspend fun getTodaySpend(start: Long, end: Long): Double?
+
+    @Query("SELECT SUM(amount) FROM transactions WHERE type = 'EXPENSE' AND date BETWEEN :start AND :end")
+    suspend fun getMonthSpend(start: Long, end: Long): Double?
+
+    @Query("SELECT SUM(amountLimit) FROM budgets WHERE month = :month")
+    suspend fun getTotalBudgetForMonth(month: String): Double?
+
     // --- Categories ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategory(category: Category): Long
@@ -100,8 +109,17 @@ interface MoneyDao {
     @Query("SELECT * FROM recurring_rules WHERE nextDueDate <= :now")
     suspend fun getDueRecurringRules(now: Long): List<RecurringRule>
 
+    @Query("SELECT * FROM recurring_rules WHERE nextDueDate > :now AND nextDueDate <= :futureDate ORDER BY nextDueDate ASC")
+    suspend fun getUpcomingRecurringRules(now: Long, futureDate: Long): List<RecurringRule>
+
     @Query("SELECT * FROM recurring_rules")
     suspend fun getAllRecurringRulesList(): List<RecurringRule>
+
+    @Query("SELECT * FROM recurring_rules WHERE id = :id")
+    suspend fun getRecurringRuleById(id: Long): RecurringRule?
+
+    @Query("UPDATE recurring_rules SET nextDueDate = :nextDate WHERE id = :id")
+    suspend fun updateRecurringRuleNextDue(id: Long, nextDate: Long)
 
     // --- Household Members ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)

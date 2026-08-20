@@ -9,13 +9,13 @@ plugins {
 
 android {
     namespace = "com.example.moneymanager"
-    compileSdk = 34
+    compileSdk = 35
     defaultConfig {
         applicationId = "com.example.moneymanager"
-        minSdk = 24
-        targetSdk = 34
-        versionCode = 6
-        versionName = "1.4.0"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 7
+        versionName = "1.5.0"
     }
 
     buildTypes {
@@ -116,4 +116,21 @@ dependencies {
   implementation(libs.vico.compose)
   implementation(libs.vico.compose.m3)
   implementation(libs.vico.core)
+
+  // Glance (Widgets)
+  implementation(libs.glance.appwidget)
+  implementation(libs.glance.glance)
+
+  // Biometric (local device lock)
+  implementation(libs.biometric)
+
+  // Apache POI (XLSX/Excel import)
+  implementation(libs.poi)
+  implementation(libs.poi.ooxml) {
+      exclude(group = "org.apache.xmlbeans", module = "xmlbeans")
+  }
+  implementation(libs.xmlbeans)
+
+  // DocumentFile (SAF helpers)
+  implementation(libs.androidx.documentfile)
 }

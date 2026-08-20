@@ -1,5 +1,6 @@
 package com.example.moneymanager.ui.screens.transactions
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moneymanager.data.dao.MoneyDao
@@ -9,7 +10,9 @@ import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
 import com.example.moneymanager.util.FormatUtils
+import com.example.moneymanager.util.ReceiptStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -26,7 +29,8 @@ data class DayGroupedTransactions(
 
 @HiltViewModel
 class TransactionsViewModel @Inject constructor(
-    private val moneyDao: MoneyDao
+    private val moneyDao: MoneyDao,
+    @ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
     val searchQuery = MutableStateFlow("")
@@ -128,6 +132,7 @@ class TransactionsViewModel @Inject constructor(
 
     fun deleteTransaction(transaction: Transaction) {
         viewModelScope.launch {
+            transaction.receiptUri?.let { ReceiptStorage.deleteReceipt(appContext, it) }
             moneyDao.deleteTransaction(transaction)
         }
     }

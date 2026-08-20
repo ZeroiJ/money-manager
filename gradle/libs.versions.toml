@@ -19,6 +19,11 @@ hiltNav = "1.2.0"
 ksp = "2.0.20-1.0.24"
 workManager = "2.9.1"
 vico = "1.15.0"
+glance = "1.1.1"
+biometric = "1.2.0-alpha05"
+poi = "5.2.5"
+xmlbeans = "5.1.1"
+documentfile = "1.0.1"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -51,6 +56,13 @@ work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "w
 vico-compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vico" }
 vico-compose-m3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref = "vico" }
 vico-core = { module = "com.patrykandpatrick.vico:core", version.ref = "vico" }
+glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
+glance-glance = { module = "androidx.glance:glance", version.ref = "glance" }
+biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
+poi = { module = "org.apache.poi:poi", version.ref = "poi" }
+poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poi" }
+xmlbeans = { module = "org.apache.xmlbeans:xmlbeans", version.ref = "xmlbeans" }
+androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

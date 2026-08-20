@@ -13,9 +13,13 @@ import androidx.work.WorkerParameters
 import com.example.moneymanager.R
 import com.example.moneymanager.data.db.AppDatabase
 import com.example.moneymanager.data.model.Frequency
+import com.example.moneymanager.data.model.RecurringRule
 import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.util.FormatUtils
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class RecurringExpenseWorker(
     private val context: Context,
@@ -61,7 +65,13 @@ class RecurringExpenseWorker(
                     dao.updateRecurringRule(updatedRule)
                 }
 
-                showNotification(dueRules.size)
+                showProcessedNotification(dueRules.size)
+            }
+
+            val futureDate = now + 7L * 24 * 60 * 60 * 1000
+            val upcomingRules = dao.getUpcomingRecurringRules(now, futureDate)
+            if (upcomingRules.isNotEmpty()) {
+                showUpcomingBillsNotification(upcomingRules)
             }
 
             db.close()
@@ -73,7 +83,7 @@ class RecurringExpenseWorker(
     }
 
     @SuppressLint("MissingPermission")
-    private fun showNotification(count: Int) {
+    private fun showProcessedNotification(count: Int) {
         val channelId = "recurring_expenses_channel"
         val notificationManager = NotificationManagerCompat.from(context)
 
@@ -97,5 +107,43 @@ class RecurringExpenseWorker(
             .build()
 
         notificationManager.notify(1001, notification)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun showUpcomingBillsNotification(upcomingRules: List<RecurringRule>) {
+        val channelId = "upcoming_bills_channel"
+        val notificationManager = NotificationManagerCompat.from(context)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                "Upcoming Bills",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Shows upcoming recurring bills for the next 7 days"
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val dateFormat = SimpleDateFormat("dd MMM", Locale.US)
+        val lines = upcomingRules.take(5).map { rule ->
+            val dateStr = dateFormat.format(Date(rule.nextDueDate))
+            "$dateStr - ${rule.note} (\u20B9${rule.amount.toInt()})"
+        }
+
+        val bigText = lines.joinToString("\n")
+        val summaryText = "${upcomingRules.size} bill(s) due in next 7 days"
+
+        val notification = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("Upcoming Bills")
+            .setContentText(summaryText)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
+            .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .build()
+
+        notificationManager.notify(1002, notification)
     }
 }

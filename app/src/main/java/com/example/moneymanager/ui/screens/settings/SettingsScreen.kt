@@ -39,6 +39,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val useIndianGrouping by viewModel.useIndianGrouping.collectAsState()
+    val biometricEnabled by viewModel.biometricEnabled.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val householdMembers by viewModel.householdMembers.collectAsState()
     val recurringRules by viewModel.recurringRules.collectAsState()
@@ -113,6 +114,25 @@ fun SettingsScreen(
         }
     }
 
+    val importXlsxLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                try {
+                    val result = viewModel.importXlsx(context, uri)
+                    Toast.makeText(
+                        context,
+                        "Imported ${result.inserted} of ${result.total} rows",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Import error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -177,6 +197,57 @@ fun SettingsScreen(
                             text = "Zero tracking, zero analytics, zero telemetry. All records reside purely on your device in local SQLite.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            // Biometric Lock
+            item {
+                ChromaCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    windowTitle = "security.cfg",
+                    statusIndicator = if (biometricEnabled) "[ LOCKED ]" else "[ UNLOCKED ]",
+                    shadowOffset = 2.dp
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "BIOMETRIC_LOCK",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                                Text(
+                                    text = "Local device lock only — no account, no cloud",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            ChromaBadge(
+                                text = if (biometricEnabled) "[ LOCKED ]" else "[ UNLOCKED ]",
+                                backgroundColor = if (biometricEnabled) ChromaGreen else ChromaStone100,
+                                textColor = if (biometricEnabled) ChromaWhite else ChromaBlack,
+                                borderColor = if (biometricEnabled) ChromaGreen else ChromaBlack
+                            )
+                        }
+
+                        ChromaButton(
+                            text = if (biometricEnabled) "DISABLE BIOMETRIC" else "ENABLE BIOMETRIC",
+                            onClick = { viewModel.toggleBiometric() },
+                            backgroundColor = if (biometricEnabled) ChromaRed else ChromaBlack,
+                            textColor = ChromaWhite,
+                            shadowOffset = 1.dp,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
@@ -377,6 +448,16 @@ fun SettingsScreen(
                             backgroundColor = ChromaStone100,
                             textColor = ChromaBlack,
                             borderColor = ChromaStone400,
+                            shadowOffset = 1.dp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        ChromaButton(
+                            text = "IMPORT EXCEL (.XLSX)",
+                            onClick = { importXlsxLauncher.launch(arrayOf("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel")) },
+                            backgroundColor = ChromaStone200,
+                            textColor = ChromaBlack,
+                            borderColor = ChromaBlack,
                             shadowOffset = 1.dp,
                             modifier = Modifier.fillMaxWidth()
                         )

@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Money Manager</string>
+    <string name="widget_description">Today\'s spend and budget overview</string>
+    <string name="shortcut_chai_short">Add Chai</string>
+    <string name="shortcut_chai_long">Add Chai ₹20</string>
+    <string name="shortcut_groceries_short">Groceries</string>
+    <string name="shortcut_groceries_long">Add Groceries</string>
+    <string name="shortcut_upi_short">Add UPI</string>
+    <string name="shortcut_upi_long">Add UPI Transaction</string>
 </resources>

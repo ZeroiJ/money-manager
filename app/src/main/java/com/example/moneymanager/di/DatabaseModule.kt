@@ -47,6 +47,7 @@ object DatabaseModule {
                 db.execSQL("INSERT INTO household_members (name) VALUES ('Roommate')")
             }
         })
+        .addMigrations(AppDatabase.MIGRATION_1_2)
         .fallbackToDestructiveMigration()
         .build()
     }

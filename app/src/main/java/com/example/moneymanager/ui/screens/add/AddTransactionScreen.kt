@@ -1,5 +1,10 @@
 package com.example.moneymanager.ui.screens.add
 
+import android.graphics.BitmapFactory
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -33,11 +40,14 @@ import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
 import com.example.moneymanager.theme.*
 import com.example.moneymanager.util.FormatUtils
+import com.example.moneymanager.util.ReceiptStorage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionScreen(
     transactionId: Long? = null,
+    presetCategory: String? = null,
+    presetPaymentMode: String? = null,
     viewModel: AddTransactionViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {}
 ) {
@@ -51,12 +61,31 @@ fun AddTransactionScreen(
     val selectedCatId by viewModel.selectedCategoryId.collectAsState()
     val note by viewModel.noteInput.collectAsState()
     val paidBy by viewModel.selectedPaidBy.collectAsState()
+    val receiptUri by viewModel.receiptUri.collectAsState()
+
+    val context = LocalContext.current
+    val launchPhotoPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            val savedPath = ReceiptStorage.saveReceipt(context, uri)
+            if (savedPath != null) {
+                viewModel.setReceipt(savedPath)
+            }
+        }
+    }
 
     val isEditMode = editingId != null && editingId!! > 0
 
     LaunchedEffect(transactionId) {
         if (transactionId != null && transactionId > 0) {
             viewModel.loadTransaction(transactionId)
+        }
+    }
+
+    LaunchedEffect(presetCategory, presetPaymentMode) {
+        if (presetCategory != null) {
+            viewModel.applyPreset(categoryName = presetCategory, paymentModeName = presetPaymentMode)
         }
     }
 
@@ -370,6 +399,92 @@ fun AddTransactionScreen(
                     unfocusedBorderColor = ChromaStone300
                 )
             )
+
+            // Receipt Attachment
+            ChromaCard(
+                modifier = Modifier.fillMaxWidth(),
+                windowTitle = "receipt.jpg",
+                shadowOffset = 2.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val receiptBitmap = remember(receiptUri) {
+                        receiptUri?.let { path ->
+                            ReceiptStorage.getReceiptFile(path)?.let { file ->
+                                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                                BitmapFactory.decodeFile(file.absolutePath, bounds)
+                                var sampleSize = 1
+                                while (bounds.outWidth / (sampleSize * 2) >= 800 ||
+                                    bounds.outHeight / (sampleSize * 2) >= 800
+                                ) {
+                                    sampleSize *= 2
+                                }
+                                BitmapFactory.decodeFile(
+                                    file.absolutePath,
+                                    BitmapFactory.Options().apply { inSampleSize = sampleSize }
+                                )
+                            }
+                        }
+                    }
+
+                    if (receiptBitmap != null) {
+                        Image(
+                            bitmap = receiptBitmap.asImageBitmap(),
+                            contentDescription = "Receipt",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .border(1.5.dp, ChromaBlack, RoundedCornerShape(4.dp))
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            ChromaButton(
+                                text = "📎 ATTACH RECEIPT",
+                                onClick = {
+                                    launchPhotoPicker.launch(
+                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                    )
+                                },
+                                backgroundColor = ChromaBlack,
+                                textColor = ChromaWhite,
+                                borderColor = ChromaBlack,
+                                shadowOffset = 2.dp,
+                                modifier = Modifier.weight(1f)
+                            )
+                            ChromaButton(
+                                text = "REMOVE",
+                                onClick = { viewModel.removeReceipt() },
+                                backgroundColor = ChromaRed,
+                                textColor = ChromaWhite,
+                                borderColor = ChromaBlack,
+                                shadowOffset = 2.dp,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    } else {
+                        ChromaButton(
+                            text = "📎 ATTACH RECEIPT",
+                            onClick = {
+                                launchPhotoPicker.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            },
+                            backgroundColor = ChromaBlack,
+                            textColor = ChromaWhite,
+                            borderColor = ChromaBlack,
+                            shadowOffset = 2.dp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
 
             // Calculator Keypad
             ChromaCalculatorKeypad(

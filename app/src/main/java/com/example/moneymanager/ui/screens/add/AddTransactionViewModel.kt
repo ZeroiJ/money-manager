@@ -1,5 +1,6 @@
 package com.example.moneymanager.ui.screens.add
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moneymanager.data.dao.MoneyDao
@@ -9,7 +10,9 @@ import com.example.moneymanager.data.model.PaymentMode
 import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
+import com.example.moneymanager.util.ReceiptStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -17,7 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
-    private val moneyDao: MoneyDao
+    private val moneyDao: MoneyDao,
+    @ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
     val editingTransactionId = MutableStateFlow<Long?>(null)
@@ -36,6 +40,7 @@ class AddTransactionViewModel @Inject constructor(
     val transactionScope = MutableStateFlow(TransactionScope.PERSONAL)
     val selectedPaidBy = MutableStateFlow<String?>("Me")
     val selectedDate = MutableStateFlow(System.currentTimeMillis())
+    val receiptUri = MutableStateFlow<String?>(null)
 
     init {
         // Automatically select the first category once available
@@ -60,6 +65,31 @@ class AddTransactionViewModel @Inject constructor(
             transactionScope.value = tx.scope
             selectedPaidBy.value = tx.paidBy ?: "Me"
             selectedDate.value = tx.date
+            receiptUri.value = tx.receiptUri
+        }
+    }
+
+    fun setReceipt(uri: String) {
+        receiptUri.value = uri
+    }
+
+    fun removeReceipt() {
+        receiptUri.value?.let { ReceiptStorage.deleteReceipt(appContext, it) }
+        receiptUri.value = null
+    }
+
+    fun applyPreset(categoryName: String, paymentModeName: String?) {
+        viewModelScope.launch {
+            val cats = categories.value
+            val match = cats.find { it.name.equals(categoryName, ignoreCase = true) }
+            if (match != null) {
+                selectedCategoryId.value = match.id
+            }
+            if (paymentModeName != null) {
+                try {
+                    paymentMode.value = PaymentMode.valueOf(paymentModeName.uppercase())
+                } catch (_: Exception) { }
+            }
         }
     }
 
@@ -185,7 +215,8 @@ class AddTransactionViewModel @Inject constructor(
                 date = selectedDate.value,
                 paymentMode = paymentMode.value,
                 scope = transactionScope.value,
-                paidBy = if (transactionScope.value == TransactionScope.HOUSEHOLD) selectedPaidBy.value else null
+                paidBy = if (transactionScope.value == TransactionScope.HOUSEHOLD) selectedPaidBy.value else null,
+                receiptUri = receiptUri.value
             )
             if (existingId != null && existingId > 0) {
                 moneyDao.updateTransaction(transaction)
