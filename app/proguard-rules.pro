@@ -21,3 +21,12 @@
 
 # Keep Compose
 -keep class androidx.compose.** { *; }
+
+# Apache POI (XLSX import) — desktop classes not on Android
+-dontwarn aQute.bnd.annotation.spi.ServiceConsumer
+-dontwarn aQute.bnd.annotation.spi.ServiceProvider
+-dontwarn java.awt.**
+-dontwarn javax.xml.stream.**
+-dontwarn net.sf.saxon.**
+-dontwarn org.apache.batik.**
+-dontwarn org.osgi.framework.**
