@@ -8,6 +8,10 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -230,13 +234,15 @@ fun TransactionListScreen(
                     )
                 }
             } else {
-                LazyColumn(
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Adaptive(minSize = 160.dp),
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalItemSpacing = 8.dp,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     groupedTxs.forEach { dayGroup ->
-                        stickyHeader {
+                        item(span = StaggeredGridItemSpan.FullLine) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()

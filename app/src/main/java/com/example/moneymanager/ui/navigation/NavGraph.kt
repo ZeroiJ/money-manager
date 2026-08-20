@@ -73,16 +73,12 @@ fun AppNavGraph(navController: NavHostController) {
                     items = bottomNavItems,
                     currentRoute = currentRoute,
                     onItemClick = { screen ->
-                        if (screen == Screen.Add) {
-                            navController.navigate(Screen.Add.route)
-                        } else {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
+                        navController.navigate(screen.route) {
+                            popUpTo(Screen.Home.route) {
+                                saveState = true
                             }
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     }
                 )
@@ -96,7 +92,15 @@ fun AppNavGraph(navController: NavHostController) {
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
-                    onNavigateToAdd = { navController.navigate(Screen.Add.route) },
+                    onNavigateToAdd = {
+                        navController.navigate(Screen.Add.route) {
+                            popUpTo(Screen.Home.route) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                     onNavigateToTransactions = { navController.navigate(Screen.Transactions.route) },
                     onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                     onNavigateToEditTransaction = { txId ->

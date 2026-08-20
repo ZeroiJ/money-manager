@@ -4,7 +4,9 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import android.annotation.SuppressLint
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.room.Room
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -70,9 +72,10 @@ class RecurringExpenseWorker(
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun showNotification(count: Int) {
         val channelId = "recurring_expenses_channel"
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = NotificationManagerCompat.from(context)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(

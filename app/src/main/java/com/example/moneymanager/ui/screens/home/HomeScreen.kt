@@ -88,53 +88,7 @@ fun HomeScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // ── Inline compact header row (replaces TopAppBar) ──────────────
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp, bottom = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Wordmark + month badge
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "chroma//money",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = 0.5.sp
-                            )
-                        )
-                        ChromaBadge(
-                            text = FormatUtils.formatMonth(FormatUtils.getCurrentMonthKey()).uppercase(),
-                            backgroundColor = ChromaStone200,
-                            textColor = ChromaBlack
-                        )
-                    }
-                    // Settings icon button
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(MaterialTheme.colorScheme.surface)
-                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
-                            .clickable { onNavigateToSettings() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-            }
+
 
             // ── Hero Today's Spend card ──────────────────────────────────────
             item {
@@ -182,15 +136,33 @@ fun HomeScreen(
                                 text = "[ $label ]",
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontFamily = FontFamily.Monospace,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
                                 ),
                                 color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
+                    // Settings button moved here
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .chromaShadow(offset = 1.dp, cornerRadius = 4.dp)
+                            .clip(scopeShape)
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(1.5.dp, MaterialTheme.colorScheme.outline, scopeShape)
+                            .clickable { onNavigateToSettings() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
-
             // ── Recent activity header ───────────────────────────────────────
             item {
                 Row(
