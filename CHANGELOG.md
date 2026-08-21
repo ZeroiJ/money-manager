@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.7.1] - 2026-08-22
+### Fixed
+- **Inter Font Corruption:** Replaced corrupt Inter font files (GitHub raw URLs returned HTML pages instead of TTF data) with valid Inter 4.0 TTFs from the official release zip. Fixed launch crash.
+
 ## [v1.7.0] - 2026-08-22
 ### Changed
 - **Stripped Material 3 Theming:** Removed `MoneyManagerTheme`, `Theme.kt`, and all `MaterialTheme.colorScheme` / `MaterialTheme.typography` references across every screen. Colors and typography now flow through a `Chroma` singleton object with exact design tokens extracted from trychroma.com.

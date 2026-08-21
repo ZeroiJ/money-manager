@@ -34,4 +34,4 @@ The app features a **Chroma (trychroma.com)** inspired Neo-Brutalist design lang
 - `docs/money-manager-spec.md` — full feature/architecture spec.
 
 ## Status
-Active development. Current version: **v1.7.0**.
+Active development. Current version: **v1.7.1**.
