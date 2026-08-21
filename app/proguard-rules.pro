@@ -27,10 +27,12 @@
 -dontwarn aQute.bnd.annotation.spi.ServiceProvider
 -dontwarn java.awt.**
 -dontwarn javax.xml.stream.**
+-dontwarn javax.xml.crypto.**
 -dontwarn net.sf.saxon.**
 -dontwarn org.apache.batik.**
+-dontwarn org.apache.maven.**
+-dontwarn org.apache.tools.ant.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.ietf.jgss.**
 -dontwarn org.osgi.framework.**
--keep class org.apache.poi.** { *; }
--keep class org.apache.xmlbeans.** { *; }
--keep class org.openxmlformats.** { *; }
--keep class schemasMicrosoft.** { *; }
+-dontwarn com.github.javaparser.**

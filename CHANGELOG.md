@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.6.1] - 2026-08-22
+### Fixed
+- **XLSX Import Crash:** Fixed app crashing when importing XLSX files by copying stream to temp file before POI processes it, catching all throwable errors (not just exceptions), and adding R8 keep rules for Apache POI classes.
+
 ## [v1.6.0] - 2026-08-22
 ### Added
 - **Custom Date for Transactions:** Added Material 3 DatePickerDialog with quick-select chips (Today, Yesterday, 3 Days Ago, 1 Week Ago) to the Add Transaction screen.
