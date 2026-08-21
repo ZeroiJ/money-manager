@@ -126,7 +126,7 @@ fun SettingsScreen(
                         "Imported ${result.inserted} of ${result.total} rows",
                         Toast.LENGTH_LONG
                     ).show()
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     Toast.makeText(context, "Import error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }

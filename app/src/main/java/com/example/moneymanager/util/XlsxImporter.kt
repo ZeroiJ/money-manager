@@ -28,28 +28,35 @@ object XlsxImporter {
         var totalRows = 0
         var parsedRows = 0
 
+        val tempFile = java.io.File.createTempFile("import_", ".xlsx", context.cacheDir)
         try {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                val workbook = WorkbookFactory.create(inputStream)
-                val sheet = workbook.getSheetAt(0)
-
-                val headerRow = sheet.getRow(0)
-                val colMap = if (headerRow != null) buildColumnMap(headerRow) else ColumnMap()
-                Log.d(TAG, "Column map: amount=${colMap.amountCol}, date=${colMap.dateCol}, note=${colMap.noteCol}, category=${colMap.categoryCol}")
-
-                for (i in 1..sheet.lastRowNum) {
-                    totalRows++
-                    val row = sheet.getRow(i) ?: continue
-                    val tx = parseRow(row, colMap) ?: continue
-                    transactions.add(tx)
-                    parsedRows++
+                tempFile.outputStream().use { out ->
+                    inputStream.copyTo(out)
                 }
+            } ?: throw IllegalStateException("Could not open file")
 
-                workbook.close()
+            val workbook = WorkbookFactory.create(tempFile)
+            val sheet = workbook.getSheetAt(0)
+
+            val headerRow = sheet.getRow(0)
+            val colMap = if (headerRow != null) buildColumnMap(headerRow) else ColumnMap()
+            Log.d(TAG, "Column map: amount=${colMap.amountCol}, date=${colMap.dateCol}, note=${colMap.noteCol}, category=${colMap.categoryCol}")
+
+            for (i in 1..sheet.lastRowNum) {
+                totalRows++
+                val row = sheet.getRow(i) ?: continue
+                val tx = parseRow(row, colMap) ?: continue
+                transactions.add(tx)
+                parsedRows++
             }
-        } catch (e: Exception) {
+
+            workbook.close()
+        } catch (e: Throwable) {
             Log.e(TAG, "Import failed", e)
             throw e
+        } finally {
+            tempFile.delete()
         }
 
         Log.d(TAG, "Import complete: $parsedRows/$totalRows rows parsed")
