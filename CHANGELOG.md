@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.6.0] - 2026-08-22
+### Added
+- **Custom Date for Transactions:** Added Material 3 DatePickerDialog with quick-select chips (Today, Yesterday, 3 Days Ago, 1 Week Ago) to the Add Transaction screen.
+- **Delete Transactions:** Added delete button on each transaction card in the Transactions list, wired to a confirmation dialog.
+### Fixed
+- **XLSX Import:** Fixed off-by-one cell iteration, expanded header column matching with auto-detect fallback, added more date format patterns, and improved error handling.
+
 ## [v1.4.0] - 2026-08-20
 ### Added
 - **Responsive Masonry Layout:** Replaced standard lists with `LazyVerticalStaggeredGrid` for a responsive, two-column Pinterest-style transaction feed on the Home screen.
