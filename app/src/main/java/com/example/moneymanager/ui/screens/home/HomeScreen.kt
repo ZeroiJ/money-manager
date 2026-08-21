@@ -64,8 +64,8 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "+ ADD SPEND",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.labelMedium.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         ),
@@ -126,20 +126,20 @@ fun HomeScreen(
                                 .weight(1f)
                                 .chromaShadow(offset = if (isSelected) 2.dp else 1.dp, cornerRadius = 4.dp)
                                 .clip(scopeShape)
-                                .background(if (isSelected) ChromaBlack else MaterialTheme.colorScheme.surface)
-                                .border(1.5.dp, MaterialTheme.colorScheme.outline, scopeShape)
+                                .background(if (isSelected) ChromaBlack else Chroma.color.surface)
+                                .border(1.5.dp, Chroma.color.outline, scopeShape)
                                 .clickable { viewModel.selectedScopeFilter.value = scopeItem }
                                 .padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "[ $label ]",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = FontFamily.Monospace,
+                                style = Chroma.type.labelSmall.copy(
+                                    fontFamily = PlexMono,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 11.sp
                                 ),
-                                color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
+                                color = if (isSelected) ChromaWhite else Chroma.color.onSurface
                             )
                         }
                     }
@@ -149,15 +149,15 @@ fun HomeScreen(
                             .size(36.dp)
                             .chromaShadow(offset = 1.dp, cornerRadius = 4.dp)
                             .clip(scopeShape)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .border(1.5.dp, MaterialTheme.colorScheme.outline, scopeShape)
+                            .background(Chroma.color.surface)
+                            .border(1.5.dp, Chroma.color.outline, scopeShape)
                             .clickable { onNavigateToSettings() },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            tint = Chroma.color.onSurface,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -172,8 +172,8 @@ fun HomeScreen(
                 ) {
                     Text(
                         text = "RECENT_ACTIVITY.LOG",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.labelSmall.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         )
@@ -184,11 +184,11 @@ fun HomeScreen(
                     ) {
                         Text(
                             text = "VIEW ALL →",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelSmall.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = Chroma.color.onSurface
                         )
                     }
                 }
@@ -236,21 +236,21 @@ fun ChromaTodayHeroCard(
                 Column {
                     Text(
                         text = "TODAY'S TOTAL",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.labelSmall.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = Chroma.color.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = FormatUtils.formatCurrency(todaySpend),
-                        style = MaterialTheme.typography.displaySmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.displaySmall.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Black
                         ),
-                        color = if (todaySpend > 0) ChromaRed else MaterialTheme.colorScheme.onSurface
+                        color = if (todaySpend > 0) ChromaRed else Chroma.color.onSurface
                     )
                 }
                 // Month info column on the right
@@ -258,16 +258,16 @@ fun ChromaTodayHeroCard(
                     if (monthIncome > 0) {
                         Text(
                             text = "MONTH_IN",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelSmall.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = Chroma.color.onSurfaceVariant
                         )
                         Text(
                             text = FormatUtils.formatCurrency(monthIncome),
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.titleMedium.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold
                             ),
                             color = ChromaGreen
@@ -275,16 +275,16 @@ fun ChromaTodayHeroCard(
                     } else if (totalBudget > 0) {
                         Text(
                             text = "BUDGET",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelSmall.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = Chroma.color.onSurfaceVariant
                         )
                         Text(
                             text = FormatUtils.formatCurrency(totalBudget),
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.titleMedium.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold
                             ),
                             color = ChromaCyan
@@ -306,16 +306,16 @@ fun ChromaTodayHeroCard(
                 Column {
                     Text(
                         text = "MONTH_SPENT",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.labelSmall.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold
                         ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = Chroma.color.onSurfaceVariant
                     )
                     Text(
                         text = FormatUtils.formatCurrency(monthSpend),
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.titleMedium.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold
                         )
                     )
@@ -329,11 +329,11 @@ fun ChromaTodayHeroCard(
                         Text(
                             text = if (isOverBudget) "OVER: ${FormatUtils.formatCurrency(monthSpend - totalBudget)}"
                             else "LEFT: ${FormatUtils.formatCurrency(totalBudget - monthSpend)}",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelSmall.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = if (isOverBudget) ChromaRed else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isOverBudget) ChromaRed else Chroma.color.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         // Inline budget bar
@@ -343,7 +343,7 @@ fun ChromaTodayHeroCard(
                                 .height(8.dp)
                                 .clip(RoundedCornerShape(2.dp))
                                 .background(ChromaStone200)
-                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
+                                .border(1.dp, Chroma.color.outline, RoundedCornerShape(2.dp))
                         ) {
                             Box(
                                 modifier = Modifier
@@ -354,11 +354,11 @@ fun ChromaTodayHeroCard(
                         }
                         Text(
                             text = "${(progress * 100).toInt()}% used",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelSmall.copy(
+                                fontFamily = PlexMono,
                                 fontSize = 9.sp
                             ),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = Chroma.color.onSurfaceVariant
                         )
                     }
                 }
@@ -391,15 +391,15 @@ fun ChromaPersonalHouseholdSplitRow(
                 Column {
                     Text(
                         text = FormatUtils.formatCurrency(personalSpend),
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.titleSmall.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold
                         )
                     )
                     Text(
                         text = "personal",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = Chroma.type.labelSmall.copy(fontSize = 9.sp),
+                        color = Chroma.color.onSurfaceVariant
                     )
                 }
             }
@@ -420,15 +420,15 @@ fun ChromaPersonalHouseholdSplitRow(
                 Column {
                     Text(
                         text = FormatUtils.formatCurrency(householdSpend),
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.titleSmall.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold
                         )
                     )
                     Text(
                         text = "household",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = Chroma.type.labelSmall.copy(fontSize = 9.sp),
+                        color = Chroma.color.onSurfaceVariant
                     )
                 }
             }
@@ -479,7 +479,7 @@ fun TransactionCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = if (transaction.note.isNotBlank()) transaction.note else (category?.name ?: "Expense"),
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                    style = Chroma.type.bodyMedium.copy(fontWeight = FontWeight.Bold),
                     maxLines = 1
                 )
                 Row(
@@ -488,26 +488,26 @@ fun TransactionCard(
                 ) {
                     Text(
                         text = category?.name ?: "Misc",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.labelSmall.copy(
+                            fontFamily = PlexMono,
                             fontSize = 10.sp
                         ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = Chroma.color.onSurfaceVariant
                     )
-                    Text("·", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("·", style = Chroma.type.labelSmall, color = Chroma.color.onSurfaceVariant)
                     Text(
                         text = transaction.paymentMode.name,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.labelSmall.copy(
+                            fontFamily = PlexMono,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
                     )
-                    Text("·", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("·", style = Chroma.type.labelSmall, color = Chroma.color.onSurfaceVariant)
                     Text(
                         text = transaction.scope.name,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.labelSmall.copy(
+                            fontFamily = PlexMono,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (transaction.scope == TransactionScope.PERSONAL) ChromaBlue else ChromaOrange
@@ -520,19 +520,19 @@ fun TransactionCard(
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = (if (isExpense) "- " else "+ ") + FormatUtils.formatCurrency(transaction.amount),
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontFamily = FontFamily.Monospace,
+                    style = Chroma.type.titleSmall.copy(
+                        fontFamily = PlexMono,
                         fontWeight = FontWeight.Bold
                     ),
                     color = if (isExpense) ChromaRed else ChromaGreen
                 )
                 Text(
                     text = FormatUtils.formatDate(transaction.date),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontFamily = FontFamily.Monospace,
+                    style = Chroma.type.labelSmall.copy(
+                        fontFamily = PlexMono,
                         fontSize = 9.sp
                     ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Chroma.color.onSurfaceVariant
                 )
             }
         }
@@ -570,16 +570,16 @@ fun ChromaEmptyTransactionsPlaceholder(onAddClick: () -> Unit) {
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = "NO TRANSACTIONS LOGGED",
-                style = MaterialTheme.typography.titleSmall.copy(
-                    fontFamily = FontFamily.Monospace,
+                style = Chroma.type.titleSmall.copy(
+                    fontFamily = PlexMono,
                     fontWeight = FontWeight.Bold
                 )
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Record an expense in under 5 seconds.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = Chroma.type.bodySmall,
+                color = Chroma.color.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(12.dp))
             ChromaButton(

@@ -107,23 +107,23 @@ fun AddTransactionScreen(
                     .padding(end = 12.dp)
                     .size(36.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                    .background(Chroma.color.surface)
+                    .border(1.5.dp, Chroma.color.outline, RoundedCornerShape(4.dp))
                     .clickable { onNavigateBack() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onSurface,
+                    tint = Chroma.color.onSurface,
                     modifier = Modifier.size(18.dp)
                 )
             }
             
             Text(
                 text = if (isEditMode) "transaction // edit" else "quick_entry.sh",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = FontFamily.Monospace,
+                style = Chroma.type.titleMedium.copy(
+                    fontFamily = PlexMono,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp
                 )
@@ -147,20 +147,20 @@ fun AddTransactionScreen(
                             .background(
                                 if (isSelected) {
                                     if (type == TransactionType.EXPENSE) ChromaRed else ChromaGreen
-                                } else MaterialTheme.colorScheme.surface
+                                } else Chroma.color.surface
                             )
-                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                            .border(1.5.dp, Chroma.color.outline, RoundedCornerShape(4.dp))
                             .clickable { viewModel.transactionType.value = type }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "[ $label ]",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelMedium.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
+                            color = if (isSelected) ChromaWhite else Chroma.color.onSurface
                         )
                     }
                 }
@@ -180,8 +180,8 @@ fun AddTransactionScreen(
                 ) {
                     Text(
                         text = "₹ ${if (amount.isEmpty()) "0" else amount}",
-                        style = MaterialTheme.typography.displaySmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.displaySmall.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Black
                         ),
                         color = if (txType == TransactionType.EXPENSE) ChromaRed else ChromaGreen,
@@ -205,8 +205,8 @@ fun AddTransactionScreen(
                             ) {
                                 Text(
                                     text = incStr,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.labelSmall.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Bold
                                     ),
                                     color = ChromaBlack
@@ -237,19 +237,19 @@ fun AddTransactionScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(if (isSelected) color else MaterialTheme.colorScheme.surface)
-                                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                                    .background(if (isSelected) color else Chroma.color.surface)
+                                    .border(1.5.dp, Chroma.color.outline, RoundedCornerShape(4.dp))
                                     .clickable { viewModel.transactionScope.value = scopeItem }
                                     .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "[ $label ]",
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.labelMedium.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
+                                    color = if (isSelected) ChromaWhite else Chroma.color.onSurface
                                 )
                             }
                         }
@@ -260,8 +260,8 @@ fun AddTransactionScreen(
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             text = "PAID_BY:",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelSmall.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold
                             )
                         )
@@ -282,8 +282,8 @@ fun AddTransactionScreen(
                                 ) {
                                     Text(
                                         text = member.name,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontFamily = FontFamily.Monospace,
+                                        style = Chroma.type.labelSmall.copy(
+                                            fontFamily = PlexMono,
                                             fontWeight = FontWeight.Bold
                                         ),
                                         color = ChromaBlack
@@ -312,19 +312,19 @@ fun AddTransactionScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(if (isSelected) ChromaBlack else MaterialTheme.colorScheme.surface)
-                                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                                    .background(if (isSelected) ChromaBlack else Chroma.color.surface)
+                                    .border(1.5.dp, Chroma.color.outline, RoundedCornerShape(4.dp))
                                     .clickable { viewModel.paymentMode.value = paymentModeItem }
                                     .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = paymentModeItem.name,
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.labelMedium.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
+                                    color = if (isSelected) ChromaWhite else Chroma.color.onSurface
                                 )
                             }
                         }
@@ -350,7 +350,7 @@ fun AddTransactionScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(if (isSelected) ChromaStone200 else MaterialTheme.colorScheme.surface)
+                                    .background(if (isSelected) ChromaStone200 else Chroma.color.surface)
                                     .border(
                                         width = if (isSelected) 2.dp else 1.dp,
                                         color = if (isSelected) ChromaBlack else ChromaStone300,
@@ -370,8 +370,8 @@ fun AddTransactionScreen(
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = cat.name,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontFamily = FontFamily.Monospace,
+                                        style = Chroma.type.labelSmall.copy(
+                                            fontFamily = PlexMono,
                                             fontSize = 9.sp,
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                         ),
@@ -390,7 +390,7 @@ fun AddTransactionScreen(
             OutlinedTextField(
                 value = note,
                 onValueChange = { viewModel.noteInput.value = it },
-                label = { Text("Note / Tag (optional)", fontFamily = FontFamily.Monospace) },
+                label = { Text("Note / Tag (optional)", fontFamily = PlexMono) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(4.dp),
@@ -412,8 +412,8 @@ fun AddTransactionScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(4.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                    .background(Chroma.color.surface)
+                    .border(1.5.dp, Chroma.color.outline, RoundedCornerShape(4.dp))
                     .clickable { showDatePicker = true }
                     .padding(horizontal = 12.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -422,13 +422,13 @@ fun AddTransactionScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "📅",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = Chroma.type.bodyMedium
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "DATE:",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.labelSmall.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold
                         )
                     )
@@ -436,8 +436,8 @@ fun AddTransactionScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = dateLabel.uppercase(),
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.bodyMedium.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold
                         )
                     )
@@ -479,8 +479,8 @@ fun AddTransactionScreen(
                     ) {
                         Text(
                             text = label,
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelSmall.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 9.sp
                             ),
@@ -664,24 +664,24 @@ fun ChromaCalculatorKeypad(onKeyClick: (String) -> Unit) {
                                     isEquals -> ChromaGreen
                                     isClear -> ChromaStone200
                                     isAction -> ChromaStone100
-                                    else -> MaterialTheme.colorScheme.surface
+                                    else -> Chroma.color.surface
                                 }
                             )
-                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                            .border(1.5.dp, Chroma.color.outline, RoundedCornerShape(4.dp))
                             .clickable { onKeyClick(key) },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = key,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.titleMedium.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp
                             ),
                             color = when {
                                 isEquals -> ChromaWhite
                                 isClear -> ChromaRed
-                                else -> MaterialTheme.colorScheme.onSurface
+                                else -> Chroma.color.onSurface
                             }
                         )
                     }

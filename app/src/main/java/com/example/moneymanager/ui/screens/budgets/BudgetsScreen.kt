@@ -53,8 +53,8 @@ fun BudgetsScreen(
         item {
             Text(
                 text = "budgets // limits",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = FontFamily.Monospace,
+                style = Chroma.type.titleMedium.copy(
+                    fontFamily = PlexMono,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp
                 ),
@@ -80,8 +80,8 @@ fun BudgetsScreen(
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(MaterialTheme.colorScheme.surface)
-                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                                .background(Chroma.color.surface)
+                                .border(1.dp, Chroma.color.outline, RoundedCornerShape(4.dp))
                                 .clickable { viewModel.navigateMonth(-1) },
                             contentAlignment = Alignment.Center
                         ) {
@@ -90,8 +90,8 @@ fun BudgetsScreen(
 
                         Text(
                             text = FormatUtils.formatMonth(currentMonth).uppercase(),
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.titleSmall.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold
                             )
                         )
@@ -100,8 +100,8 @@ fun BudgetsScreen(
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(MaterialTheme.colorScheme.surface)
-                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                                .background(Chroma.color.surface)
+                                .border(1.dp, Chroma.color.outline, RoundedCornerShape(4.dp))
                                 .clickable { viewModel.navigateMonth(1) },
                             contentAlignment = Alignment.Center
                         ) {
@@ -128,16 +128,16 @@ fun BudgetsScreen(
                             Column {
                                 Text(
                                     text = "TOTAL_SPENT",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.labelSmall.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = Chroma.color.onSurfaceVariant
                                 )
                                 Text(
                                     text = FormatUtils.formatCurrency(totalSpent),
-                                    style = MaterialTheme.typography.titleLarge.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.titleLarge.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Black
                                     )
                                 )
@@ -145,19 +145,19 @@ fun BudgetsScreen(
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
                                     text = "TOTAL_LIMIT",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.labelSmall.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = Chroma.color.onSurfaceVariant
                                 )
                                 Text(
                                     text = if (totalBudget > 0) FormatUtils.formatCurrency(totalBudget) else "NO LIMIT",
-                                    style = MaterialTheme.typography.titleLarge.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.titleLarge.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Black
                                     ),
-                                    color = if (totalBudget > 0) ChromaCyan else MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (totalBudget > 0) ChromaCyan else Chroma.color.onSurfaceVariant
                                 )
                             }
                         }
@@ -173,7 +173,7 @@ fun BudgetsScreen(
                                     .height(10.dp)
                                     .clip(RoundedCornerShape(2.dp))
                                     .background(ChromaStone200)
-                                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
+                                    .border(1.dp, Chroma.color.outline, RoundedCornerShape(2.dp))
                             ) {
                                 Box(
                                     modifier = Modifier
@@ -196,8 +196,8 @@ fun BudgetsScreen(
                 ) {
                     Text(
                         text = "CATEGORY_LIMITS.CONFIG",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.labelSmall.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         )
@@ -210,11 +210,11 @@ fun BudgetsScreen(
                         }) {
                             Text(
                                 text = "+ SET LIMIT",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = FontFamily.Monospace,
+                                style = Chroma.type.labelSmall.copy(
+                                    fontFamily = PlexMono,
                                     fontWeight = FontWeight.Bold
                                 ),
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = Chroma.color.onSurface
                             )
                         }
                     }
@@ -237,16 +237,16 @@ fun BudgetsScreen(
                         ) {
                             Text(
                                 text = "NO BUDGETS SET FOR THIS MONTH",
-                                style = MaterialTheme.typography.titleSmall.copy(
-                                    fontFamily = FontFamily.Monospace,
+                                style = Chroma.type.titleSmall.copy(
+                                    fontFamily = PlexMono,
                                     fontWeight = FontWeight.Bold
                                 )
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = "Set monthly spending limits for categories to stay on track.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                style = Chroma.type.bodySmall,
+                                color = Chroma.color.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(14.dp))
                             ChromaButton(
@@ -301,14 +301,14 @@ fun BudgetsScreen(
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(
                                         text = item.category.name,
-                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                        style = Chroma.type.bodyMedium.copy(fontWeight = FontWeight.Bold)
                                     )
                                 }
 
                                 Text(
                                     text = "${FormatUtils.formatCurrency(item.spent)} / ${if (item.limit > 0) FormatUtils.formatCurrency(item.limit) else "No limit"}",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.labelSmall.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
@@ -323,7 +323,7 @@ fun BudgetsScreen(
                                         .height(8.dp)
                                         .clip(RoundedCornerShape(2.dp))
                                         .background(ChromaStone200)
-                                        .border(0.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
+                                        .border(0.5.dp, Chroma.color.outline, RoundedCornerShape(2.dp))
                                 ) {
                                     Box(
                                         modifier = Modifier
@@ -340,19 +340,19 @@ fun BudgetsScreen(
                                 ) {
                                     Text(
                                         text = "${(progress * 100).toInt()}% USED",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontFamily = FontFamily.Monospace,
+                                        style = Chroma.type.labelSmall.copy(
+                                            fontFamily = PlexMono,
                                             fontSize = 10.sp
                                         )
                                     )
                                     Text(
                                         text = if (isExceeded) "OVER BY ${FormatUtils.formatCurrency(item.spent - item.limit)}"
                                         else "${FormatUtils.formatCurrency(item.remaining)} LEFT",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontFamily = FontFamily.Monospace,
+                                        style = Chroma.type.labelSmall.copy(
+                                            fontFamily = PlexMono,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (isExceeded) ChromaRed else MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = if (isExceeded) ChromaRed else Chroma.color.onSurfaceVariant
                                         )
                                     )
                                 }
@@ -368,12 +368,12 @@ fun BudgetsScreen(
         AlertDialog(
             onDismissRequest = { showAddBudgetDialog = false },
             shape = RoundedCornerShape(4.dp),
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = Chroma.color.surface,
             title = {
                 Text(
                     text = "SET_LIMIT // ${cat.name.uppercase()}",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = FontFamily.Monospace,
+                    style = Chroma.type.titleMedium.copy(
+                        fontFamily = PlexMono,
                         fontWeight = FontWeight.Bold
                     )
                 )
@@ -382,13 +382,13 @@ fun BudgetsScreen(
                 Column {
                     Text(
                         text = "Enter monthly limit for ${FormatUtils.formatMonth(currentMonth)}:",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = Chroma.type.bodyMedium
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     OutlinedTextField(
                         value = budgetAmountInput,
                         onValueChange = { budgetAmountInput = it.filter { ch -> ch.isDigit() } },
-                        label = { Text("Limit Amount (₹)", fontFamily = FontFamily.Monospace) },
+                        label = { Text("Limit Amount (₹)", fontFamily = PlexMono) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -417,7 +417,7 @@ fun BudgetsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showAddBudgetDialog = false }) {
-                    Text("CANCEL", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("CANCEL", fontWeight = FontWeight.Bold, color = Chroma.color.onSurface)
                 }
             }
         )

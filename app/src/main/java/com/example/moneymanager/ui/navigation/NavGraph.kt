@@ -199,7 +199,7 @@ fun ChromaBottomNavigationBar(
             .background(ChromaStone50)
             .border(
                 width = 1.5.dp,
-                color = MaterialTheme.colorScheme.outline
+                color = Chroma.color.outline
             )
     ) {
         Row(
@@ -233,18 +233,18 @@ fun ChromaBottomNavigationBar(
                         Icon(
                             imageVector = screen.icon,
                             contentDescription = screen.title,
-                            tint = if (isSelected) ChromaOrange else MaterialTheme.colorScheme.onSurface,
+                            tint = if (isSelected) ChromaOrange else Chroma.color.onSurface,
                             modifier = Modifier.size(26.dp)
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
                             text = screen.title,
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelSmall.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 10.sp
                             ),
-                            color = if (isSelected) ChromaBlack else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isSelected) ChromaBlack else Chroma.color.onSurfaceVariant
                         )
                     }
                 }

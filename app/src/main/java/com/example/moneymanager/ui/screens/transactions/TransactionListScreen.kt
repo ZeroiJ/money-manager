@@ -59,8 +59,8 @@ fun TransactionListScreen(
         // Inline header
         Text(
             text = "query // transactions",
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontFamily = FontFamily.Monospace,
+            style = Chroma.type.titleMedium.copy(
+                fontFamily = PlexMono,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 0.5.sp
             ),
@@ -74,8 +74,8 @@ fun TransactionListScreen(
                     .padding(horizontal = 16.dp)
                     .chromaShadow(offset = 2.dp, cornerRadius = 4.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                    .background(Chroma.color.surface)
+                    .border(1.5.dp, Chroma.color.outline, RoundedCornerShape(4.dp))
                     .padding(horizontal = 12.dp, vertical = 2.dp)
             ) {
                 Row(
@@ -84,8 +84,8 @@ fun TransactionListScreen(
                 ) {
                     Text(
                         text = "❯",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.bodyMedium.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold,
                             color = ChromaOrange
                         )
@@ -97,7 +97,7 @@ fun TransactionListScreen(
                         placeholder = {
                             Text(
                                 "filter by note, category, amount...",
-                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace)
+                                style = Chroma.type.bodyMedium.copy(fontFamily = PlexMono)
                             )
                         },
                         singleLine = true,
@@ -144,20 +144,20 @@ fun TransactionListScreen(
                                         TransactionScope.HOUSEHOLD -> ChromaOrange
                                         else -> ChromaBlack
                                     }
-                                } else MaterialTheme.colorScheme.surface
+                                } else Chroma.color.surface
                             )
-                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
+                            .border(1.dp, Chroma.color.outline, RoundedCornerShape(2.dp))
                             .clickable { viewModel.scopeFilter.value = scope }
                             .padding(horizontal = 8.dp, vertical = 5.dp)
                     ) {
                         Text(
                             text = "[ $label ]",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelSmall.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 10.sp
                             ),
-                            color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
+                            color = if (isSelected) ChromaWhite else Chroma.color.onSurface
                         )
                     }
                 }
@@ -168,8 +168,8 @@ fun TransactionListScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(2.dp))
-                            .background(if (isSelected) ChromaStone200 else MaterialTheme.colorScheme.surface)
-                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
+                            .background(if (isSelected) ChromaStone200 else Chroma.color.surface)
+                            .border(1.dp, Chroma.color.outline, RoundedCornerShape(2.dp))
                             .clickable {
                                 viewModel.paymentModeFilter.value = if (isSelected) null else mode
                             }
@@ -177,8 +177,8 @@ fun TransactionListScreen(
                     ) {
                         Text(
                             text = "[ ${mode.name} ]",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelSmall.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 10.sp
                             ),
@@ -200,15 +200,15 @@ fun TransactionListScreen(
             ) {
                 Text(
                     text = "RECORDS: ${filteredTxs.size}",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontFamily = FontFamily.Monospace,
+                    style = Chroma.type.labelSmall.copy(
+                        fontFamily = PlexMono,
                         fontWeight = FontWeight.Bold
                     )
                 )
                 Text(
                     text = "TOTAL: ${FormatUtils.formatCurrency(totalFilteredSpend)}",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontFamily = FontFamily.Monospace,
+                    style = Chroma.type.labelSmall.copy(
+                        fontFamily = PlexMono,
                         fontWeight = FontWeight.Bold,
                         color = ChromaRed
                     )
@@ -227,8 +227,8 @@ fun TransactionListScreen(
                 ) {
                     Text(
                         text = "NO MATCHING RECORDS",
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.titleSmall.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold
                         )
                     )
@@ -246,7 +246,7 @@ fun TransactionListScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.background)
+                                    .background(Chroma.color.background)
                                     .padding(vertical = 4.dp)
                             ) {
                                 Row(
@@ -261,8 +261,8 @@ fun TransactionListScreen(
                                 ) {
                                     Text(
                                         text = dayGroup.dateLabel.uppercase(),
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontFamily = FontFamily.Monospace,
+                                        style = Chroma.type.labelSmall.copy(
+                                            fontFamily = PlexMono,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 10.sp
                                         ),
@@ -271,8 +271,8 @@ fun TransactionListScreen(
                                     if (dayGroup.dayTotalSpend > 0) {
                                         Text(
                                             text = "- " + FormatUtils.formatCurrency(dayGroup.dayTotalSpend),
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontFamily = FontFamily.Monospace,
+                                            style = Chroma.type.labelSmall.copy(
+                                                fontFamily = PlexMono,
                                                 fontWeight = FontWeight.Bold,
                                                 color = ChromaRed,
                                                 fontSize = 10.sp
@@ -321,12 +321,12 @@ fun TransactionListScreen(
         AlertDialog(
             onDismissRequest = { transactionToDelete = null },
             shape = RoundedCornerShape(4.dp),
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = Chroma.color.surface,
             title = {
                 Text(
                     text = "DELETE_RECORD // CONFIRM",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = FontFamily.Monospace,
+                    style = Chroma.type.titleMedium.copy(
+                        fontFamily = PlexMono,
                         fontWeight = FontWeight.Bold
                     )
                 )
@@ -334,7 +334,7 @@ fun TransactionListScreen(
             text = {
                 Text(
                     text = "Delete record for ${FormatUtils.formatCurrency(tx.amount)}?",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = Chroma.type.bodyMedium
                 )
             },
             confirmButton = {
@@ -351,7 +351,7 @@ fun TransactionListScreen(
             },
             dismissButton = {
                 TextButton(onClick = { transactionToDelete = null }) {
-                    Text("CANCEL", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("CANCEL", fontWeight = FontWeight.Bold, color = Chroma.color.onSurface)
                 }
             }
         )

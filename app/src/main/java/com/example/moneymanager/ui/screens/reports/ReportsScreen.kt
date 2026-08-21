@@ -56,8 +56,8 @@ fun ReportsScreen(
         item {
             Text(
                 text = "analytics // reports",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = FontFamily.Monospace,
+                style = Chroma.type.titleMedium.copy(
+                    fontFamily = PlexMono,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp
                 ),
@@ -82,20 +82,20 @@ fun ReportsScreen(
                                 .weight(1f)
                                 .chromaShadow(offset = if (isSelected) 2.dp else 1.dp, cornerRadius = 4.dp)
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(if (isSelected) ChromaBlack else MaterialTheme.colorScheme.surface)
-                                .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                                .background(if (isSelected) ChromaBlack else Chroma.color.surface)
+                                .border(1.5.dp, Chroma.color.outline, RoundedCornerShape(4.dp))
                                 .clickable { viewModel.selectedPeriod.value = period }
                                 .padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "[ $label ]",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = FontFamily.Monospace,
+                                style = Chroma.type.labelSmall.copy(
+                                    fontFamily = PlexMono,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 10.sp
                                 ),
-                                color = if (isSelected) ChromaWhite else MaterialTheme.colorScheme.onSurface
+                                color = if (isSelected) ChromaWhite else Chroma.color.onSurface
                             )
                         }
                     }
@@ -119,16 +119,16 @@ fun ReportsScreen(
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = FormatUtils.formatCurrency(totalExpense),
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontFamily = FontFamily.Monospace,
+                                style = Chroma.type.titleMedium.copy(
+                                    fontFamily = PlexMono,
                                     fontWeight = FontWeight.Black
                                 ),
                                 color = ChromaRed
                             )
                             Text(
                                 text = "Total Outflow",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                style = Chroma.type.labelSmall.copy(fontSize = 10.sp),
+                                color = Chroma.color.onSurfaceVariant
                             )
                         }
                     }
@@ -144,16 +144,16 @@ fun ReportsScreen(
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = FormatUtils.formatCurrency(totalIncome),
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontFamily = FontFamily.Monospace,
+                                style = Chroma.type.titleMedium.copy(
+                                    fontFamily = PlexMono,
                                     fontWeight = FontWeight.Black
                                 ),
                                 color = ChromaGreen
                             )
                             Text(
                                 text = "Total Inflow",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                style = Chroma.type.labelSmall.copy(fontSize = 10.sp),
+                                color = Chroma.color.onSurfaceVariant
                             )
                         }
                     }
@@ -174,16 +174,16 @@ fun ReportsScreen(
                         ) {
                             Text(
                                 text = "PERSONAL: ${FormatUtils.formatCurrency(personalSpend)}",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = FontFamily.Monospace,
+                                style = Chroma.type.labelSmall.copy(
+                                    fontFamily = PlexMono,
                                     fontWeight = FontWeight.Bold,
                                     color = ChromaBlue
                                 )
                             )
                             Text(
                                 text = "HOUSEHOLD: ${FormatUtils.formatCurrency(householdSpend)}",
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = FontFamily.Monospace,
+                                style = Chroma.type.labelSmall.copy(
+                                    fontFamily = PlexMono,
                                     fontWeight = FontWeight.Bold,
                                     color = ChromaOrange
                                 )
@@ -201,7 +201,7 @@ fun ReportsScreen(
                                 .height(12.dp)
                                 .clip(RoundedCornerShape(2.dp))
                                 .background(ChromaStone200)
-                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp))
+                                .border(1.dp, Chroma.color.outline, RoundedCornerShape(2.dp))
                         ) {
                             if (personalSpend > 0) {
                                 Box(
@@ -241,12 +241,12 @@ fun ReportsScreen(
                             listOf("M", "T", "W", "T", "F", "S", "S").forEach { dayLabel ->
                                 Text(
                                     text = dayLabel,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.labelSmall.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 10.sp
                                     ),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    color = Chroma.color.onSurfaceVariant,
                                     modifier = Modifier.width(36.dp),
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                 )
@@ -282,8 +282,8 @@ fun ReportsScreen(
                                 ) {
                                     Text(
                                         text = "${day.dayNumber}",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontFamily = FontFamily.Monospace,
+                                        style = Chroma.type.labelSmall.copy(
+                                            fontFamily = PlexMono,
                                             fontWeight = if (day.intensityLevel > 0) FontWeight.Bold else FontWeight.Normal,
                                             fontSize = 9.sp
                                         ),
@@ -307,8 +307,8 @@ fun ReportsScreen(
                             ) {
                                 Text(
                                     text = "DAY ${d.dayNumber}: SPEND = ${FormatUtils.formatCurrency(d.spendAmount)}",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.labelSmall.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
@@ -345,15 +345,15 @@ fun ReportsScreen(
                                     Column {
                                         Text(
                                             text = balance.memberName,
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                            style = Chroma.type.bodyMedium.copy(fontWeight = FontWeight.Bold)
                                         )
                                         Text(
                                             text = "Paid: ${FormatUtils.formatCurrency(balance.totalPaid)} | Fair Share: ${FormatUtils.formatCurrency(balance.fairShare)}",
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontFamily = FontFamily.Monospace,
+                                            style = Chroma.type.labelSmall.copy(
+                                                fontFamily = PlexMono,
                                                 fontSize = 10.sp
                                             ),
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = Chroma.color.onSurfaceVariant
                                         )
                                     }
 
@@ -361,16 +361,16 @@ fun ReportsScreen(
                                         Text(
                                             text = if (isOwed) "+ ${FormatUtils.formatCurrency(balance.netBalance)}"
                                             else "- ${FormatUtils.formatCurrency(-balance.netBalance)}",
-                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                fontFamily = FontFamily.Monospace,
+                                            style = Chroma.type.bodyMedium.copy(
+                                                fontFamily = PlexMono,
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (isOwed) ChromaGreen else ChromaRed
                                             )
                                         )
                                         Text(
                                             text = if (isOwed) "GETS BACK" else "OWES",
-                                            style = MaterialTheme.typography.labelSmall.copy(
-                                                fontFamily = FontFamily.Monospace,
+                                            style = Chroma.type.labelSmall.copy(
+                                                fontFamily = PlexMono,
                                                 fontSize = 9.sp,
                                                 fontWeight = FontWeight.Bold
                                             ),
@@ -409,16 +409,16 @@ fun ReportsScreen(
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
                                         text = "SPENT",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontFamily = FontFamily.Monospace,
+                                        style = Chroma.type.labelSmall.copy(
+                                            fontFamily = PlexMono,
                                             fontSize = 9.sp
                                         ),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = Chroma.color.onSurfaceVariant
                                     )
                                     Text(
                                         text = FormatUtils.formatCurrency(totalExpense),
-                                        style = MaterialTheme.typography.labelMedium.copy(
-                                            fontFamily = FontFamily.Monospace,
+                                        style = Chroma.type.labelMedium.copy(
+                                            fontFamily = PlexMono,
                                             fontWeight = FontWeight.Bold
                                         )
                                     )
@@ -447,25 +447,25 @@ fun ReportsScreen(
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(
                                                 text = item.category.name,
-                                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                                                style = Chroma.type.bodySmall.copy(fontWeight = FontWeight.Bold)
                                             )
                                         }
 
                                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                             Text(
                                                 text = FormatUtils.formatCurrency(item.amount),
-                                                style = MaterialTheme.typography.labelSmall.copy(
-                                                    fontFamily = FontFamily.Monospace,
+                                                style = Chroma.type.labelSmall.copy(
+                                                    fontFamily = PlexMono,
                                                     fontWeight = FontWeight.Bold
                                                 )
                                             )
                                             Text(
                                                 text = "(${(item.percentage * 100).toInt()}%)",
-                                                style = MaterialTheme.typography.labelSmall.copy(
-                                                    fontFamily = FontFamily.Monospace,
+                                                style = Chroma.type.labelSmall.copy(
+                                                    fontFamily = PlexMono,
                                                     fontSize = 10.sp
                                                 ),
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                color = Chroma.color.onSurfaceVariant
                                             )
                                         }
                                     }

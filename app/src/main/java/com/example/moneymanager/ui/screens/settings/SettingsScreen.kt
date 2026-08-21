@@ -139,8 +139,8 @@ fun SettingsScreen(
                 title = {
                     Text(
                         text = "system // config",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFamily = FontFamily.Monospace,
+                        style = Chroma.type.titleMedium.copy(
+                            fontFamily = PlexMono,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.5.sp
                         )
@@ -152,20 +152,20 @@ fun SettingsScreen(
                             .padding(start = 12.dp, end = 8.dp)
                             .size(36.dp)
                             .clip(RoundedCornerShape(4.dp))
-                            .background(MaterialTheme.colorScheme.surface)
-                            .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                            .background(Chroma.color.surface)
+                            .border(1.5.dp, Chroma.color.outline, RoundedCornerShape(4.dp))
                             .clickable { onNavigateBack() },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            tint = Chroma.color.onSurface,
                             modifier = Modifier.size(18.dp)
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Chroma.color.background)
             )
         }
     ) { padding ->
@@ -187,16 +187,16 @@ fun SettingsScreen(
                     Column(modifier = Modifier.padding(14.dp)) {
                         Text(
                             text = "AIR-GAPPED OFFLINE ROOM DATABASE",
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.titleSmall.copy(
+                                fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold
                             )
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Zero tracking, zero analytics, zero telemetry. All records reside purely on your device in local SQLite.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = Chroma.type.bodySmall,
+                            color = Chroma.color.onSurfaceVariant
                         )
                     }
                 }
@@ -222,15 +222,15 @@ fun SettingsScreen(
                             Column {
                                 Text(
                                     text = "BIOMETRIC_LOCK",
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.bodyMedium.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
                                 Text(
                                     text = "Local device lock only — no account, no cloud",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    style = Chroma.type.labelSmall.copy(fontSize = 10.sp),
+                                    color = Chroma.color.onSurfaceVariant
                                 )
                             }
                             ChromaBadge(
@@ -269,15 +269,15 @@ fun SettingsScreen(
                             Column {
                                 Text(
                                     text = "INDIAN_NUMBER_GROUPING",
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.bodyMedium.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
                                 Text(
                                     text = if (useIndianGrouping) "e.g. ₹1,50,000 (Lakhs/Crores)" else "e.g. ₹150,000.00 (Standard)",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    style = Chroma.type.labelSmall.copy(fontSize = 10.sp),
+                                    color = Chroma.color.onSurfaceVariant
                                 )
                             }
                             Switch(
@@ -314,8 +314,8 @@ fun SettingsScreen(
                             ) {
                                 Text(
                                     text = member.name,
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontFamily = FontFamily.Monospace,
+                                    style = Chroma.type.bodyMedium.copy(
+                                        fontFamily = PlexMono,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
@@ -374,7 +374,7 @@ fun SettingsScreen(
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = cat.name,
-                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                        style = Chroma.type.bodyMedium.copy(fontWeight = FontWeight.Bold)
                                     )
                                 }
 
@@ -388,8 +388,8 @@ fun SettingsScreen(
                                 } else {
                                     Text(
                                         text = "[ SYSTEM ]",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontFamily = FontFamily.Monospace,
+                                        style = Chroma.type.labelSmall.copy(
+                                            fontFamily = PlexMono,
                                             fontSize = 9.sp
                                         ),
                                         color = ChromaStone500
@@ -471,12 +471,12 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showAddCategoryDialog = false },
             shape = RoundedCornerShape(4.dp),
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = Chroma.color.surface,
             title = {
                 Text(
                     text = "CATEGORY // NEW",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = FontFamily.Monospace,
+                    style = Chroma.type.titleMedium.copy(
+                        fontFamily = PlexMono,
                         fontWeight = FontWeight.Bold
                     )
                 )
@@ -485,7 +485,7 @@ fun SettingsScreen(
                 OutlinedTextField(
                     value = newCategoryName,
                     onValueChange = { newCategoryName = it },
-                    label = { Text("Category Name", fontFamily = FontFamily.Monospace) },
+                    label = { Text("Category Name", fontFamily = PlexMono) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(4.dp)
@@ -507,7 +507,7 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showAddCategoryDialog = false }) {
-                    Text("CANCEL", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("CANCEL", fontWeight = FontWeight.Bold, color = Chroma.color.onSurface)
                 }
             }
         )
@@ -517,12 +517,12 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showAddMemberDialog = false },
             shape = RoundedCornerShape(4.dp),
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = Chroma.color.surface,
             title = {
                 Text(
                     text = "HOUSEHOLD_MEMBER // NEW",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = FontFamily.Monospace,
+                    style = Chroma.type.titleMedium.copy(
+                        fontFamily = PlexMono,
                         fontWeight = FontWeight.Bold
                     )
                 )
@@ -531,7 +531,7 @@ fun SettingsScreen(
                 OutlinedTextField(
                     value = newMemberName,
                     onValueChange = { newMemberName = it },
-                    label = { Text("Member Name", fontFamily = FontFamily.Monospace) },
+                    label = { Text("Member Name", fontFamily = PlexMono) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(4.dp)
@@ -553,7 +553,7 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showAddMemberDialog = false }) {
-                    Text("CANCEL", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text("CANCEL", fontWeight = FontWeight.Bold, color = Chroma.color.onSurface)
                 }
             }
         )

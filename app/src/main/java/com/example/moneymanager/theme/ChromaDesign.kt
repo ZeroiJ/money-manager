@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -62,11 +61,11 @@ fun ChromaCard(
     modifier: Modifier = Modifier,
     windowTitle: String? = null,
     statusIndicator: String? = null,
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    borderColor: Color = MaterialTheme.colorScheme.outline,
+    backgroundColor: Color = Chroma.color.surface,
+    borderColor: Color = Chroma.color.outline,
     borderWidth: Dp = 1.5.dp,
     shadowOffset: Dp = 3.dp,
-    shadowColor: Color = MaterialTheme.colorScheme.outline,
+    shadowColor: Color = Chroma.color.outline,
     cornerRadius: Dp = 4.dp,
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
@@ -86,7 +85,6 @@ fun ChromaCard(
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Window Header Bar if title is provided
             if (windowTitle != null) {
                 val headerShape = remember(cornerRadius) {
                     RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius)
@@ -108,7 +106,6 @@ fun ChromaCard(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
-                        // Retro window square dot
                         Box(
                             modifier = Modifier
                                 .size(8.dp)
@@ -117,8 +114,7 @@ fun ChromaCard(
                         )
                         Text(
                             text = windowTitle.uppercase(),
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 10.sp,
                                 letterSpacing = 0.8.sp
@@ -130,8 +126,7 @@ fun ChromaCard(
                     if (statusIndicator != null) {
                         Text(
                             text = statusIndicator,
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontFamily = FontFamily.Monospace,
+                            style = Chroma.type.labelSmall.copy(
                                 fontSize = 9.sp
                             ),
                             color = ChromaStone600
@@ -171,8 +166,7 @@ fun ChromaBadge(
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontFamily = FontFamily.Monospace,
+            style = Chroma.type.labelSmall.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = 10.sp,
                 letterSpacing = 0.5.sp
@@ -216,8 +210,7 @@ fun ChromaButton(
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontFamily = FontFamily.Monospace,
+            style = Chroma.type.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
             ),
