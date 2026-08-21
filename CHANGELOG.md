@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.7.0] - 2026-08-22
+### Changed
+- **Stripped Material 3 Theming:** Removed `MoneyManagerTheme`, `Theme.kt`, and all `MaterialTheme.colorScheme` / `MaterialTheme.typography` references across every screen. Colors and typography now flow through a `Chroma` singleton object with exact design tokens extracted from trychroma.com.
+- **Bundled Fonts:** Added Inter (sans-serif) and IBM Plex Mono (monospace) as bundled `.ttf` font files in `res/font/`, replacing system `FontFamily.Monospace` fallback with the actual extracted typeface.
+
 ## [v1.6.1] - 2026-08-22
 ### Fixed
 - **XLSX Import Crash:** Fixed app crashing when importing XLSX files by copying stream to temp file before POI processes it, catching all throwable errors (not just exceptions), and adding R8 keep rules for Apache POI classes.

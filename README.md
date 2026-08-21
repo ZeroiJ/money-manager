@@ -14,7 +14,7 @@ The app features a **Chroma (trychroma.com)** inspired Neo-Brutalist design lang
 - No bulky `TopAppBar`s — pure content focus.
 
 ## Stack
-- **UI:** Kotlin + Jetpack Compose (Material 3)
+- **UI:** Kotlin + Jetpack Compose, Chroma design tokens (Inter + IBM Plex Mono)
 - **Architecture:** MVVM, Coroutines/Flow, Compose Navigation
 - **Local Storage:** Room (SQLite), fully offline
 - **Background Tasks:** WorkManager for recurring-expense reminders
@@ -34,4 +34,4 @@ The app features a **Chroma (trychroma.com)** inspired Neo-Brutalist design lang
 - `docs/money-manager-spec.md` — full feature/architecture spec.
 
 ## Status
-Active development. Current version: **v1.4.0**.
+Active development. Current version: **v1.7.0**.
