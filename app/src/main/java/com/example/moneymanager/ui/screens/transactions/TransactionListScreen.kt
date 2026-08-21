@@ -285,11 +285,31 @@ fun TransactionListScreen(
 
                         items(dayGroup.transactions, key = { it.id }) { tx ->
                             val category = categoriesMap[tx.categoryId]
-                            TransactionCard(
-                                transaction = tx,
-                                category = category,
-                                onClick = { onNavigateToEditTransaction(tx.id) }
-                            )
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                TransactionCard(
+                                    transaction = tx,
+                                    category = category,
+                                    onClick = { onNavigateToEditTransaction(tx.id) }
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(4.dp)
+                                        .size(24.dp)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(ChromaRed.copy(alpha = 0.9f))
+                                        .border(1.dp, ChromaBlack, RoundedCornerShape(2.dp))
+                                        .clickable { transactionToDelete = tx },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = ChromaWhite,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }

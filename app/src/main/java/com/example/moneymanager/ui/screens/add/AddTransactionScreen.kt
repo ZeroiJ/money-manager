@@ -400,6 +400,126 @@ fun AddTransactionScreen(
                 )
             )
 
+            // Date Picker
+            var showDatePicker by remember { mutableStateOf(false) }
+            val selectedDate by viewModel.selectedDate.collectAsState()
+            val dateLabel = remember(selectedDate) {
+                val sdf = java.text.SimpleDateFormat("dd MMM yyyy, EEE", java.util.Locale.US)
+                sdf.format(java.util.Date(selectedDate))
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(1.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(4.dp))
+                    .clickable { showDatePicker = true }
+                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "📅",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "DATE:",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = dateLabel.uppercase(),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.EditCalendar,
+                        contentDescription = "Pick date",
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            // Quick date chips
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                listOf(
+                    "TODAY" to { viewModel.setDateToToday() },
+                    "YESTERDAY" to { viewModel.setDateToYesterday() },
+                    "3 DAYS AGO" to {
+                        val cal = java.util.Calendar.getInstance().apply { add(java.util.Calendar.DAY_OF_YEAR, -3) }
+                        viewModel.selectedDate.value = cal.timeInMillis
+                    },
+                    "1 WEEK AGO" to {
+                        val cal = java.util.Calendar.getInstance().apply { add(java.util.Calendar.DAY_OF_YEAR, -7) }
+                        viewModel.selectedDate.value = cal.timeInMillis
+                    }
+                ).forEach { (label, action) ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(ChromaStone100)
+                            .border(1.dp, ChromaStone400, RoundedCornerShape(2.dp))
+                            .clickable { action() }
+                            .padding(vertical = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.sp
+                            ),
+                            color = ChromaBlack
+                        )
+                    }
+                }
+            }
+
+            if (showDatePicker) {
+                val datePickerState = rememberDatePickerState(
+                    initialSelectedDateMillis = selectedDate
+                )
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        ChromaButton(
+                            text = "SET DATE",
+                            onClick = {
+                                datePickerState.selectedDateMillis?.let {
+                                    viewModel.selectedDate.value = it
+                                }
+                                showDatePicker = false
+                            },
+                            backgroundColor = ChromaBlack,
+                            textColor = ChromaWhite,
+                            shadowOffset = 2.dp
+                        )
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text("CANCEL", fontWeight = FontWeight.Bold)
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
+
             // Receipt Attachment
             ChromaCard(
                 modifier = Modifier.fillMaxWidth(),
