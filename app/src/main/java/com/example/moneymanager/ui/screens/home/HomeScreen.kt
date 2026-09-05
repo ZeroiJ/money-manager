@@ -8,15 +8,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,6 +23,13 @@ import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
 import com.example.moneymanager.theme.*
+import com.example.moneymanager.ui.ascii.Ascii
+import com.example.moneymanager.ui.ascii.AsciiDivider
+import com.example.moneymanager.ui.ascii.AsciiEmptyState
+import com.example.moneymanager.ui.ascii.AsciiHeroFigure
+import com.example.moneymanager.ui.ascii.AsciiMoodBar
+import com.example.moneymanager.ui.ascii.AsciiSectionHeader
+import com.example.moneymanager.ui.ascii.AsciiSelectChip
 import com.example.moneymanager.util.FormatUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,8 +44,6 @@ fun HomeScreen(
     val todaySpend by viewModel.todaySpend.collectAsState()
     val monthSpend by viewModel.monthSpend.collectAsState()
     val monthIncome by viewModel.monthIncome.collectAsState()
-    val personalMonth by viewModel.personalSpendMonth.collectAsState()
-    val householdMonth by viewModel.householdSpendMonth.collectAsState()
     val totalBudget by viewModel.totalBudgetLimit.collectAsState()
     val recentTxs by viewModel.recentTransactions.collectAsState()
     val categoriesMap by viewModel.categoriesMap.collectAsState()
@@ -51,7 +53,7 @@ fun HomeScreen(
         floatingActionButton = {
             Box(
                 modifier = Modifier
-                    .chromaShadow(offset = 3.dp, cornerRadius = 4.dp)
+                    .chromaShadow(offset = 1.dp, cornerRadius = 4.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(ChromaOrange)
                     .border(1.5.dp, ChromaBlack, RoundedCornerShape(4.dp))
@@ -79,7 +81,6 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            // Top padding respects status bar; small gap so content sits right under it
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
@@ -89,8 +90,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
-
-            // ── Hero Today's Spend card ──────────────────────────────────────
+            // ── Hero — ASCII ₹ figure + today/month/budget ──────────────────
             item {
                 ChromaTodayHeroCard(
                     todaySpend = todaySpend,
@@ -100,57 +100,40 @@ fun HomeScreen(
                 )
             }
 
-            // ── Personal vs Household split ──────────────────────────────────
+            // ── Scope filter selector (flat segmented chips) ────────────────
             item {
-                ChromaPersonalHouseholdSplitRow(
-                    personalSpend = personalMonth,
-                    householdSpend = householdMonth
-                )
-            }
-
-            // ── Scope filter selector ────────────────────────────────────────
-            item {
-                val scopeShape = remember { RoundedCornerShape(4.dp) }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    listOf(
-                        HomeScopeFilter.ALL to "ALL",
-                        HomeScopeFilter.PERSONAL to "PERSONAL",
-                        HomeScopeFilter.HOUSEHOLD to "HOUSEHOLD"
-                    ).forEach { (scopeItem, label) ->
-                        val isSelected = selectedScope == scopeItem
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .chromaShadow(offset = if (isSelected) 2.dp else 1.dp, cornerRadius = 4.dp)
-                                .clip(scopeShape)
-                                .background(if (isSelected) ChromaBlack else Chroma.color.surface)
-                                .border(1.5.dp, Chroma.color.outline, scopeShape)
-                                .clickable { viewModel.selectedScopeFilter.value = scopeItem }
-                                .padding(vertical = 8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "[ $label ]",
-                                style = Chroma.type.labelSmall.copy(
-                                    fontFamily = PlexMono,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 11.sp
-                                ),
-                                color = if (isSelected) ChromaWhite else Chroma.color.onSurface
-                            )
-                        }
-                    }
-                    // Settings button moved here
+                    AsciiSelectChip(
+                        label = "ALL",
+                        selected = selectedScope == HomeScopeFilter.ALL,
+                        onClick = { viewModel.selectedScopeFilter.value = HomeScopeFilter.ALL },
+                        modifier = Modifier.weight(1f),
+                        selectedColor = ChromaBlack
+                    )
+                    AsciiSelectChip(
+                        label = "PERSONAL",
+                        selected = selectedScope == HomeScopeFilter.PERSONAL,
+                        onClick = { viewModel.selectedScopeFilter.value = HomeScopeFilter.PERSONAL },
+                        modifier = Modifier.weight(1f),
+                        selectedColor = ChromaBlue
+                    )
+                    AsciiSelectChip(
+                        label = "HOUSEHOLD",
+                        selected = selectedScope == HomeScopeFilter.HOUSEHOLD,
+                        onClick = { viewModel.selectedScopeFilter.value = HomeScopeFilter.HOUSEHOLD },
+                        modifier = Modifier.weight(1f),
+                        selectedColor = ChromaOrange
+                    )
+                    // Settings button — flat, no shadow
                     Box(
                         modifier = Modifier
                             .size(36.dp)
-                            .chromaShadow(offset = 1.dp, cornerRadius = 4.dp)
-                            .clip(scopeShape)
+                            .clip(RoundedCornerShape(2.dp))
                             .background(Chroma.color.surface)
-                            .border(1.5.dp, Chroma.color.outline, scopeShape)
+                            .border(1.dp, Ascii.hairlineStrong, RoundedCornerShape(2.dp))
                             .clickable { onNavigateToSettings() },
                         contentAlignment = Alignment.Center
                     ) {
@@ -163,6 +146,7 @@ fun HomeScreen(
                     }
                 }
             }
+
             // ── Recent activity header ───────────────────────────────────────
             item {
                 Row(
@@ -170,14 +154,9 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "RECENT_ACTIVITY.LOG",
-                        style = Chroma.type.labelSmall.copy(
-                            fontFamily = PlexMono,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
-                        )
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        AsciiSectionHeader(text = "RECENT_ACTIVITY.LOG", showRule = false)
+                    }
                     TextButton(
                         onClick = onNavigateToTransactions,
                         contentPadding = PaddingValues(horizontal = 8.dp)
@@ -194,17 +173,21 @@ fun HomeScreen(
                 }
             }
 
-            // ── Transaction list ─────────────────────────────────────────────
+            // ── Transaction feed — top 3 ─────────────────────────────────────
             if (recentTxs.isEmpty()) {
                 item {
-                    ChromaEmptyTransactionsPlaceholder(onAddClick = onNavigateToAdd)
+                    AsciiEmptyState(
+                        title = "NO TRANSACTIONS LOGGED",
+                        subtitle = "Record an expense in under 5 seconds.",
+                        actionLabel = "+ ADD TRANSACTION",
+                        onAction = onNavigateToAdd
+                    )
                 }
             } else {
-                items(recentTxs, key = { it.id }) { tx ->
-                    val category = categoriesMap[tx.categoryId]
-                    TransactionCard(
+                items(recentTxs.take(3), key = { it.id }) { tx ->
+                    HomeFeedRow(
                         transaction = tx,
-                        category = category,
+                        category = categoriesMap[tx.categoryId],
                         onClick = { onNavigateToEditTransaction(tx.id) }
                     )
                 }
@@ -213,6 +196,10 @@ fun HomeScreen(
     }
 }
 
+/**
+ * Flat hero block: ASCII ₹ figure, today's total, month income/budget, then a
+ * block-glyph mood bar when a budget limit is set. No shadow — hairline border only.
+ */
 @Composable
 fun ChromaTodayHeroCard(
     todaySpend: Double,
@@ -220,84 +207,42 @@ fun ChromaTodayHeroCard(
     monthIncome: Double,
     totalBudget: Double
 ) {
-    ChromaCard(
-        modifier = Modifier.fillMaxWidth(),
-        windowTitle = "today.spend // realtime",
-        statusIndicator = "[ LIVE ]",
-        shadowOffset = 3.dp
+    val shape = RoundedCornerShape(2.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(Chroma.color.surface)
+            .border(1.dp, Ascii.hairlineStrong, shape)
+            .padding(14.dp)
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            // Today label + amount on same row to save vertical space
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
-            ) {
-                Column {
-                    Text(
-                        text = "TODAY'S TOTAL",
-                        style = Chroma.type.labelSmall.copy(
-                            fontFamily = PlexMono,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
-                        ),
-                        color = Chroma.color.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = FormatUtils.formatCurrency(todaySpend),
-                        style = Chroma.type.displaySmall.copy(
-                            fontFamily = PlexMono,
-                            fontWeight = FontWeight.Black
-                        ),
-                        color = if (todaySpend > 0) ChromaRed else Chroma.color.onSurface
-                    )
-                }
-                // Month info column on the right
-                Column(horizontalAlignment = Alignment.End) {
-                    if (monthIncome > 0) {
-                        Text(
-                            text = "MONTH_IN",
-                            style = Chroma.type.labelSmall.copy(
-                                fontFamily = PlexMono,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = Chroma.color.onSurfaceVariant
-                        )
-                        Text(
-                            text = FormatUtils.formatCurrency(monthIncome),
-                            style = Chroma.type.titleMedium.copy(
-                                fontFamily = PlexMono,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = ChromaGreen
-                        )
-                    } else if (totalBudget > 0) {
-                        Text(
-                            text = "BUDGET",
-                            style = Chroma.type.labelSmall.copy(
-                                fontFamily = PlexMono,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = Chroma.color.onSurfaceVariant
-                        )
-                        Text(
-                            text = FormatUtils.formatCurrency(totalBudget),
-                            style = Chroma.type.titleMedium.copy(
-                                fontFamily = PlexMono,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = ChromaCyan
-                        )
-                    }
-                }
-            }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            AsciiHeroFigure(color = ChromaBlack)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "TODAY'S TOTAL",
+                style = Chroma.type.labelSmall.copy(
+                    fontFamily = PlexMono,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                ),
+                color = Chroma.color.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = FormatUtils.formatCurrency(todaySpend),
+                style = Chroma.type.displaySmall.copy(
+                    fontFamily = PlexMono,
+                    fontWeight = FontWeight.Black
+                ),
+                color = if (todaySpend > 0) ChromaRed else Chroma.color.onSurface
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(thickness = 1.dp, color = ChromaStone200)
+            AsciiDivider(color = Ascii.hairline)
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Month spend row
+            // Month info row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -320,117 +265,133 @@ fun ChromaTodayHeroCard(
                         )
                     )
                 }
-
-                // Budget progress inline if applicable
-                if (totalBudget > 0) {
-                    val progress = (monthSpend / totalBudget).toFloat().coerceIn(0f, 1f)
-                    val isOverBudget = monthSpend > totalBudget
+                if (monthIncome > 0) {
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = if (isOverBudget) "OVER: ${FormatUtils.formatCurrency(monthSpend - totalBudget)}"
-                            else "LEFT: ${FormatUtils.formatCurrency(totalBudget - monthSpend)}",
+                            text = "MONTH_IN",
                             style = Chroma.type.labelSmall.copy(
                                 fontFamily = PlexMono,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = if (isOverBudget) ChromaRed else Chroma.color.onSurfaceVariant
+                            color = Chroma.color.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        // Inline budget bar
-                        Box(
-                            modifier = Modifier
-                                .width(100.dp)
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(ChromaStone200)
-                                .border(1.dp, Chroma.color.outline, RoundedCornerShape(2.dp))
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .fillMaxWidth(progress)
-                                    .background(if (isOverBudget) ChromaRed else ChromaOrange)
-                            )
-                        }
                         Text(
-                            text = "${(progress * 100).toInt()}% used",
+                            text = FormatUtils.formatCurrency(monthIncome),
+                            style = Chroma.type.titleMedium.copy(
+                                fontFamily = PlexMono,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = ChromaGreen
+                        )
+                    }
+                } else if (totalBudget > 0) {
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "BUDGET",
                             style = Chroma.type.labelSmall.copy(
                                 fontFamily = PlexMono,
-                                fontSize = 9.sp
+                                fontWeight = FontWeight.Bold
                             ),
                             color = Chroma.color.onSurfaceVariant
                         )
+                        Text(
+                            text = FormatUtils.formatCurrency(totalBudget),
+                            style = Chroma.type.titleMedium.copy(
+                                fontFamily = PlexMono,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = ChromaCyan
+                        )
                     }
                 }
+            }
+
+            // Block mood bar inline if a budget limit exists
+            if (totalBudget > 0) {
+                val progress = (monthSpend / totalBudget).toFloat().coerceIn(0f, 1f)
+                val isOverBudget = monthSpend > totalBudget
+                Spacer(modifier = Modifier.height(8.dp))
+                AsciiMoodBar(
+                    progress = progress,
+                    overBudget = isOverBudget,
+                    label = if (isOverBudget) {
+                        "OVER ${FormatUtils.formatCurrency(monthSpend - totalBudget)}"
+                    } else {
+                        "${(progress * 100).toInt()}% · LEFT ${FormatUtils.formatCurrency(totalBudget - monthSpend)}"
+                    }
+                )
             }
         }
     }
 }
 
+/**
+ * Compact one-line feed row for the home shortcut (top 3). Flat hairline box,
+ * scope prefix, category · payment mode, amount + date. Tap → edit transaction.
+ */
 @Composable
-fun ChromaPersonalHouseholdSplitRow(
-    personalSpend: Double,
-    householdSpend: Double
+private fun HomeFeedRow(
+    transaction: Transaction,
+    category: Category?,
+    onClick: () -> Unit
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    val isExpense = transaction.type == TransactionType.EXPENSE
+    val shape = RoundedCornerShape(2.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(Chroma.color.surface)
+            .border(1.dp, Ascii.hairline, shape)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 8.dp)
     ) {
-        // Personal Card
-        ChromaCard(
-            modifier = Modifier.weight(1f),
-            windowTitle = "personal.db",
-            shadowOffset = 2.dp
-        ) {
-            Row(
-                modifier = Modifier.padding(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ChromaBadge(text = "P", backgroundColor = ChromaBlue, textColor = ChromaWhite)
-                Column {
-                    Text(
-                        text = FormatUtils.formatCurrency(personalSpend),
-                        style = Chroma.type.titleSmall.copy(
-                            fontFamily = PlexMono,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                    Text(
-                        text = "personal",
-                        style = Chroma.type.labelSmall.copy(fontSize = 9.sp),
-                        color = Chroma.color.onSurfaceVariant
-                    )
-                }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = if (transaction.scope == TransactionScope.PERSONAL) "[P]" else "[H]",
+                style = Chroma.type.labelSmall.copy(
+                    fontFamily = PlexMono,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 10.sp
+                ),
+                color = if (transaction.scope == TransactionScope.PERSONAL) ChromaBlue else ChromaOrange
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = if (transaction.note.isNotBlank()) transaction.note else (category?.name ?: "Expense"),
+                    style = Chroma.type.bodySmall.copy(fontWeight = FontWeight.Bold),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "${category?.name ?: "Misc"} · ${transaction.paymentMode.name}",
+                    style = Chroma.type.labelSmall.copy(
+                        fontFamily = PlexMono,
+                        fontSize = 10.sp
+                    ),
+                    color = Chroma.color.onSurfaceVariant,
+                    maxLines = 1
+                )
             }
-        }
-
-        // Household Card
-        ChromaCard(
-            modifier = Modifier.weight(1f),
-            windowTitle = "household.db",
-            shadowOffset = 2.dp
-        ) {
-            Row(
-                modifier = Modifier.padding(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ChromaBadge(text = "H", backgroundColor = ChromaOrange, textColor = ChromaWhite)
-                Column {
-                    Text(
-                        text = FormatUtils.formatCurrency(householdSpend),
-                        style = Chroma.type.titleSmall.copy(
-                            fontFamily = PlexMono,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                    Text(
-                        text = "household",
-                        style = Chroma.type.labelSmall.copy(fontSize = 9.sp),
-                        color = Chroma.color.onSurfaceVariant
-                    )
-                }
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = (if (isExpense) "- " else "+ ") + FormatUtils.formatCurrency(transaction.amount),
+                    style = Chroma.type.titleSmall.copy(
+                        fontFamily = PlexMono,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = if (isExpense) ChromaRed else ChromaGreen
+                )
+                Text(
+                    text = FormatUtils.formatDate(transaction.date),
+                    style = Chroma.type.labelSmall.copy(
+                        fontFamily = PlexMono,
+                        fontSize = 9.sp
+                    ),
+                    color = Chroma.color.onSurfaceVariant
+                )
             }
         }
     }
@@ -535,59 +496,6 @@ fun TransactionCard(
                     color = Chroma.color.onSurfaceVariant
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun ChromaEmptyTransactionsPlaceholder(onAddClick: () -> Unit) {
-    ChromaCard(
-        modifier = Modifier.fillMaxWidth(),
-        windowTitle = "status // empty",
-        shadowOffset = 2.dp
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(ChromaStone100)
-                    .border(1.dp, ChromaStone400, RoundedCornerShape(4.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
-                    contentDescription = null,
-                    tint = ChromaBlack,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = "NO TRANSACTIONS LOGGED",
-                style = Chroma.type.titleSmall.copy(
-                    fontFamily = PlexMono,
-                    fontWeight = FontWeight.Bold
-                )
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Record an expense in under 5 seconds.",
-                style = Chroma.type.bodySmall,
-                color = Chroma.color.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            ChromaButton(
-                text = "+ ADD TRANSACTION",
-                onClick = onAddClick,
-                backgroundColor = ChromaBlack,
-                textColor = ChromaWhite
-            )
         }
     }
 }

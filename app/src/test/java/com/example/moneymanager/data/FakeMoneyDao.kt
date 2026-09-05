@@ -42,6 +42,16 @@ class FakeMoneyDao : MoneyDao {
         return transactions.value.find { it.id == id }
     }
 
+    override suspend fun getTodaySpend(start: Long, end: Long): Double? {
+        val expenses = transactions.value.filter { it.type == TransactionType.EXPENSE && it.date in start..end }
+        return if (expenses.isEmpty()) null else expenses.sumOf { it.amount }
+    }
+
+    override suspend fun getMonthSpend(start: Long, end: Long): Double? {
+        val expenses = transactions.value.filter { it.type == TransactionType.EXPENSE && it.date in start..end }
+        return if (expenses.isEmpty()) null else expenses.sumOf { it.amount }
+    }
+
     override fun getAllTransactions(): Flow<List<Transaction>> = transactions
 
     override suspend fun getAllTransactionsList(): List<Transaction> = transactions.value
@@ -108,6 +118,11 @@ class FakeMoneyDao : MoneyDao {
         return budgets.value.find { it.categoryId == categoryId && it.month == month }
     }
 
+    override suspend fun getTotalBudgetForMonth(month: String): Double? {
+        val total = budgets.value.filter { it.month == month }.sumOf { it.amountLimit }
+        return if (budgets.value.none { it.month == month }) null else total
+    }
+
     override suspend fun insertRecurringRule(rule: RecurringRule): Long {
         val id = if (rule.id > 0) rule.id else nextRuleId++
         val newRule = rule.copy(id = id)
@@ -129,7 +144,21 @@ class FakeMoneyDao : MoneyDao {
         return recurringRules.value.filter { it.nextDueDate <= now }
     }
 
+    override suspend fun getUpcomingRecurringRules(now: Long, futureDate: Long): List<RecurringRule> {
+        return recurringRules.value.filter { it.nextDueDate > now && it.nextDueDate <= futureDate }
+    }
+
     override suspend fun getAllRecurringRulesList(): List<RecurringRule> = recurringRules.value
+
+    override suspend fun getRecurringRuleById(id: Long): RecurringRule? {
+        return recurringRules.value.find { it.id == id }
+    }
+
+    override suspend fun updateRecurringRuleNextDue(id: Long, nextDate: Long) {
+        recurringRules.value = recurringRules.value.map {
+            if (it.id == id) it.copy(nextDueDate = nextDate) else it
+        }
+    }
 
     override suspend fun insertHouseholdMember(member: HouseholdMember): Long {
         val id = if (member.id > 0) member.id else nextMemberId++

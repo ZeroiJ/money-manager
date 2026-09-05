@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.8.0] - 2026-09-05 — reducto+ASCII redesign
+
+**Design system**
+- New shared ASCII component contract in `ui/ascii/AsciiArt.kt`: `AsciiDivider`, `AsciiSectionHeader`, `AsciiHeroFigure`, `AsciiEmptyState`, `AsciiMoodBar`, `AsciiSelectChip`.
+- `Chroma.flat` token group: card/button/FAB shadow offsets flattened to 1dp; corners standardized at 2dp.
+- Hero rupee block art, mood bars, and prompt-header vocabulary.
+
+**Screens**
+- **Home:** removed the Personal/Household split row; ASCII rupee hero figure with flat mood bar; flat segmented scope filter (ALL/PERSONAL/HOUSEHOLD); top-3 recent feed above view-all; ASCII empty state.
+- **Add/Edit:** metadata (scope, pay mode, category) compacted into flat bordered sections with ASCII dividers; chip-based scope and pay-mode pickers; calculator keypad flattened.
+- **Reports:** tabbed layout — CATEGORY (donut + top-5 with SHOW ALL + household settle-up ledger) / TREND (ASCII block flame-graph of daily spend) / HEATMAP (calendar density grid); period switcher (THIS MONTH / LAST MONTH / ALL TIME) as flat chips.
+- **Budgets:** current (active) month first by default; past months gated behind a PAST MODE toggle; month arrows flat and disabled at bounds; ASCII mood bars with OVER/LEFT labels; ASCII empty state.
+- **Transactions:** masonry grid → dense one-line terminal rows, day groups as ASCII headers; flat search + filter chips; delete-with-confirm and tap-to-edit preserved.
+- **Settings:** flattened grouped sections with ASCII headers (`SECURITY_STATUS`, `BIOMETRIC_LOCK`, `DISPLAY_FORMAT`, `HOUSEHOLD_MEMBERS`, `CATEGORIES_CONFIG`, `BACKUP_RESTORE`).
+
+**Internal**
+- Raised `compileSdk`/`targetSdk` 35 → 36; added `uses-feature` telephony flag (SMS import no longer blocks non-telephony devices).
+- Added mockk test dependency; `AddTransactionViewModel` now takes `ReceiptStorage` for photo-receipt persistence tests.
+- Recurring-expense DAO additions: `getUpcomingRecurringRules`, `getRecurringRuleById`, `updateRecurringRuleNextDue` (also mirrored in `FakeMoneyDao`).
+
 ## [v1.7.1] - 2026-08-22
 ### Fixed
 - **Inter Font Corruption:** Replaced corrupt Inter font files (GitHub raw URLs returned HTML pages instead of TTF data) with valid Inter 4.0 TTFs from the official release zip. Fixed launch crash.

@@ -9,13 +9,13 @@ plugins {
 
 android {
     namespace = "com.example.moneymanager"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig {
         applicationId = "com.example.moneymanager"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 11
-        versionName = "1.7.1"
+        targetSdk = 36
+        versionCode = 12
+        versionName = "1.8.0"
     }
 
     buildTypes {
@@ -87,6 +87,7 @@ dependencies {
   // Local tests: jUnit, coroutines, Android runner
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.mockk)
   testImplementation("org.json:json:20240303")
 
   // Instrumented tests: jUnit rules and runners

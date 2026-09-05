@@ -64,9 +64,9 @@ fun ChromaCard(
     backgroundColor: Color = Chroma.color.surface,
     borderColor: Color = Chroma.color.outline,
     borderWidth: Dp = 1.5.dp,
-    shadowOffset: Dp = 3.dp,
+    shadowOffset: Dp = Chroma.flat.cardShadowOffset,
     shadowColor: Color = Chroma.color.outline,
-    cornerRadius: Dp = 4.dp,
+    cornerRadius: Dp = Chroma.flat.cornerRadius,
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -188,7 +188,7 @@ fun ChromaButton(
     backgroundColor: Color = ChromaBlack,
     textColor: Color = ChromaWhite,
     borderColor: Color = ChromaBlack,
-    shadowOffset: Dp = 3.dp,
+    shadowOffset: Dp = Chroma.flat.buttonShadowOffset,
     enabled: Boolean = true
 ) {
     val shape = remember { RoundedCornerShape(4.dp) }

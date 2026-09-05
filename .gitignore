@@ -17,3 +17,8 @@ local.properties
 *.jks
 # Allow APKs in the releases folder for direct download
 !releases/*.apk
+
+# Local agent workspace / scratch output
+.hermes/
+.omo/
+output/

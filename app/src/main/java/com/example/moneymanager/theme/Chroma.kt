@@ -3,9 +3,24 @@ package com.example.moneymanager.theme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 object Chroma {
+
+    /**
+     * reducto+ASCII flattening tokens (Wave 1).
+     * Components default to these values — call sites may still pass explicit
+     * shadow/radius when a particular element needs more depth.
+     */
+    object flat {
+        val cardShadowOffset: Dp = 1.dp
+        val buttonShadowOffset: Dp = 1.dp
+        val cornerRadius: Dp = 2.dp
+        val hairline: Color = ChromaStone400
+        val hairlineStrong: Color = ChromaBlack
+    }
 
     object color {
         val primary = ChromaPrimary

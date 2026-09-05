@@ -1,7 +1,9 @@
 package com.example.moneymanager.ui.screens.add
 
+import android.content.Context
 import com.example.moneymanager.data.FakeMoneyDao
 import com.example.moneymanager.data.model.*
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -25,7 +27,7 @@ class AddTransactionViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeDao = FakeMoneyDao()
-        viewModel = AddTransactionViewModel(fakeDao)
+        viewModel = AddTransactionViewModel(fakeDao, mockk(relaxed = true))
     }
 
     @After
