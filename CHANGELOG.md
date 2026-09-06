@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.8.2] - 2026-09-06 — home log + stepper quick-add
+
+**Home tab**
+- Reduced to the `RECENT_ACTIVITY.LOG` feed only. Hero/₹ figure, month spent/budget blocks, and scope filter chips removed. Settings gear moved next to the log header.
+
+**Quick add (was: full ADD page)**
+- `add_transaction` page and its bottom-nav tab deleted entirely; the **ADD SPEND** FAB now opens an inline `ModalBottomSheet` stepper (`ui/screens/add/AddSpendSheet.kt`).
+- Flow order: **amount/keypad → personal|household (+ paid-by) → payment mode → category picker → optional note** → commit. Date defaults to today.
+- Shortcut / UPI-SMS deep links (`preset_category`) now open the same stepper pre-filled on Home instead of routing to a standalone page.
+- Full-page transaction form remains solely for **editing** a tapped row (dates, receipts, income toggle intact).
+
+## [v1.8.1] - 2026-09-05 — recurring live updates
+
+**Recurring expenses**
+- New `util/LiveUpdateHelper.kt` centralizing channels and recurring-bill notifications.
+- Upcoming-bills notification upgraded to a live-update `Notification.ProgressStyle` (API 36): start/end icons, one milestone segment per bill, milestone points, styled-by-progress; graceful `NotificationCompat` progress fallback below API 36.
+- Notification actions: **LOG ₹amount** (logs the next due bill's transaction immediately and advances the cycle) and **SNOOZE 1D** (postpones the next due date by one day), handled by new `RecurringBillActionReceiver` (`worker/`) declared in the manifest.
+- `RecurringExpenseWorker` slimmed: DB building and notification posting delegated to `LiveUpdateHelper`; transaction construction and next-due advancement moved onto `RecurringRule` (`toTransaction`, `advanceNextDue`).
+- Channels created at app startup (`MoneyManagerApp.onCreate`).
+
 ## [v1.8.0] - 2026-09-05 — reducto+ASCII redesign
 
 **Design system**

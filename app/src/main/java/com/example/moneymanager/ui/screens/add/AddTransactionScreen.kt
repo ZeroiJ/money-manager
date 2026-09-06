@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,6 +42,7 @@ import com.example.moneymanager.ui.ascii.Ascii
 import com.example.moneymanager.ui.ascii.AsciiDivider
 import com.example.moneymanager.ui.ascii.AsciiSelectChip
 import com.example.moneymanager.util.FormatUtils
+import com.example.moneymanager.util.Haptics
 import com.example.moneymanager.util.ReceiptStorage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -122,7 +124,7 @@ fun AddTransactionScreen(
             }
 
             Text(
-                text = if (isEditMode) "transaction // edit" else "quick_entry.sh",
+                text = "transaction // edit",
                 style = Chroma.type.titleMedium.copy(
                     fontFamily = PlexMono,
                     fontWeight = FontWeight.Bold,
@@ -191,12 +193,16 @@ fun AddTransactionScreen(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 listOf("+50", "+100", "+500", "+2000").forEach { incStr ->
+                    val chipView = LocalView.current
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(2.dp))
                             .background(ChromaStone100)
                             .border(1.dp, ChromaStone400, RoundedCornerShape(2.dp))
-                            .clickable { viewModel.onNumpadClick(incStr) }
+                            .clickable {
+                                Haptics.keyPress(chipView)
+                                viewModel.onNumpadClick(incStr)
+                            }
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
@@ -623,9 +629,11 @@ fun AddTransactionScreen(
         )
 
         // Save Action Button
+        val saveButtonView = LocalView.current
         ChromaButton(
             text = if (isEditMode) "[ COMMIT UPDATE ]" else "[ COMMIT TRANSACTION ]",
             onClick = {
+                Haptics.saveConfirmed(saveButtonView)
                 viewModel.saveTransaction {
                     onNavigateBack()
                 }
@@ -643,6 +651,7 @@ fun AddTransactionScreen(
 
 @Composable
 fun ChromaCalculatorKeypad(onKeyClick: (String) -> Unit) {
+    val keypadView = LocalView.current
     val rows = listOf(
         listOf("7", "8", "9", "DEL"),
         listOf("4", "5", "6", "+"),
@@ -679,7 +688,10 @@ fun ChromaCalculatorKeypad(onKeyClick: (String) -> Unit) {
                                 }
                             )
                             .border(1.5.dp, Chroma.color.outline, RoundedCornerShape(4.dp))
-                            .clickable { onKeyClick(key) },
+                            .clickable {
+                                Haptics.keyPress(keypadView)
+                                onKeyClick(key)
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(

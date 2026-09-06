@@ -10,7 +10,6 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,22 +36,16 @@ import com.example.moneymanager.ui.screens.transactions.TransactionListScreen
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Home : Screen("home", "HOME", Icons.Default.Home)
     object Transactions : Screen("transactions", "FEED", Icons.AutoMirrored.Filled.List)
-    object Add : Screen("add_transaction", "ADD", Icons.Default.Add)
     object Budgets : Screen("budgets", "BUDGETS", Icons.Default.AccountBalanceWallet)
     object Reports : Screen("reports", "REPORTS", Icons.Default.PieChart)
     object Settings : Screen("settings", "SETTINGS", Icons.Default.Settings)
     object EditTransaction : Screen("edit_transaction/{transactionId}", "EDIT", Icons.Default.Edit) {
         fun createRoute(transactionId: Long) = "edit_transaction/$transactionId"
     }
-    object AddPreset : Screen("add_preset/{presetCategory}/{presetPaymentMode}", "ADD", Icons.Default.Add) {
-        fun createRoute(category: String, paymentMode: String = "") = 
-            "add_preset/${java.net.URLEncoder.encode(category, "UTF-8")}/${java.net.URLEncoder.encode(paymentMode, "UTF-8")}"
-    }
 }
 
 val bottomNavItems = listOf(
     Screen.Home,
-    Screen.Add,
     Screen.Budgets,
     Screen.Reports
 )
@@ -78,12 +71,6 @@ fun AppNavGraph(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-
-    LaunchedEffect(presetCategory) {
-        if (presetCategory != null) {
-            navController.navigate(Screen.AddPreset.createRoute(presetCategory, presetPaymentMode ?: ""))
-        }
-    }
 
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
@@ -115,15 +102,8 @@ fun AppNavGraph(
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
-                    onNavigateToAdd = {
-                        navController.navigate(Screen.Add.route) {
-                            popUpTo(Screen.Home.route) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
+                    presetCategory = presetCategory,
+                    presetPaymentMode = presetPaymentMode,
                     onNavigateToTransactions = { navController.navigate(Screen.Transactions.route) },
                     onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                     onNavigateToEditTransaction = { txId ->
@@ -136,11 +116,6 @@ fun AppNavGraph(
                     onNavigateToEditTransaction = { txId ->
                         navController.navigate(Screen.EditTransaction.createRoute(txId))
                     }
-                )
-            }
-            composable(Screen.Add.route) {
-                AddTransactionScreen(
-                    onNavigateBack = { navController.popBackStack() }
                 )
             }
             composable(Screen.Budgets.route) {
@@ -161,25 +136,6 @@ fun AppNavGraph(
                 val txId = backStackEntry.arguments?.getLong("transactionId") ?: -1L
                 AddTransactionScreen(
                     transactionId = txId,
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-            composable(
-                route = Screen.AddPreset.route,
-                arguments = listOf(
-                    navArgument("presetCategory") { type = NavType.StringType },
-                    navArgument("presetPaymentMode") { type = NavType.StringType; defaultValue = "" }
-                )
-            ) { backStackEntry ->
-                val category = java.net.URLDecoder.decode(
-                    backStackEntry.arguments?.getString("presetCategory") ?: "", "UTF-8"
-                )
-                val paymentMode = java.net.URLDecoder.decode(
-                    backStackEntry.arguments?.getString("presetPaymentMode") ?: "", "UTF-8"
-                )
-                AddTransactionScreen(
-                    presetCategory = category.ifBlank { null },
-                    presetPaymentMode = paymentMode.ifBlank { null },
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

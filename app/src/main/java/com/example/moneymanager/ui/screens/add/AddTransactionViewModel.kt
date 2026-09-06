@@ -191,6 +191,8 @@ class AddTransactionViewModel @Inject constructor(
         selectedDate.value = System.currentTimeMillis()
     }
 
+    fun evaluatedAmount(): Double? = evaluateExpression(amountInput.value)?.toDoubleOrNull()
+
     fun setDateToYesterday() {
         val cal = Calendar.getInstance().apply {
             add(Calendar.DAY_OF_YEAR, -1)

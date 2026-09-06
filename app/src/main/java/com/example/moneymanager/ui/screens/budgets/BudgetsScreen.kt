@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -32,6 +33,8 @@ import com.example.moneymanager.ui.ascii.AsciiMoodBar
 import com.example.moneymanager.ui.ascii.AsciiSectionHeader
 import com.example.moneymanager.ui.ascii.AsciiSelectChip
 import com.example.moneymanager.util.FormatUtils
+import com.example.moneymanager.util.HapticOnCrossing
+import com.example.moneymanager.util.Haptics
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -261,6 +264,12 @@ fun BudgetsScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     val progress = (totalSpent / totalBudget).toFloat().coerceIn(0f, 1f)
                     val isExceeded = totalSpent > totalBudget
+                    HapticOnCrossing(
+                        key = null,
+                        view = LocalView.current,
+                        crossed = isExceeded,
+                        effect = Haptics::budgetLimitCrossed
+                    )
                     AsciiMoodBar(
                         progress = progress,
                         overBudget = isExceeded,
@@ -331,6 +340,13 @@ fun BudgetsScreen(
                     budgetProgressList.forEach { item ->
                         val progress = item.progress.coerceIn(0f, 1f)
                         val isExceeded = item.isOverBudget
+
+                        HapticOnCrossing(
+                            key = item.category.id,
+                            view = LocalView.current,
+                            crossed = isExceeded,
+                            effect = Haptics::budgetLimitCrossed
+                        )
 
                         Row(
                             modifier = Modifier

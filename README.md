@@ -36,4 +36,4 @@ The app features a **reducto+ASCII** take on the Chroma (trychroma.com) Neo-Brut
 - `docs/money-manager-spec.md` — full feature/architecture spec.
 
 ## Status
-Active development. Current version: **v1.8.0**.
+Active development. Current version: **v1.8.2**.
