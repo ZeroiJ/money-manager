@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.9.0] - 2026-09-06 — XLSX import: crash fix + preview-before-commit
+
+**XLSX import (Settings → IMPORT EXCEL (.XLSX))**
+- Fixed the storage-file parse crash: Android does not ship `javax.xml.stream` (StAX), which POI OOXML/XMLBeans require to parse `.xlsx`. Added `stax-api` + `woodstox-core` and proguard keep rules for POI/XMLBeans/StAX so both debug and release builds work.
+- Parsing moved off the main thread (`Dispatchers.IO`).
+- New **preview-before-commit** flow: picking a file parses rows into an `IMPORT // XLSX` dialog listing every row that will be inserted, with a `COMMIT // INSERT` action to confirm. Summary line shows `X rows ready · Y skipped / Z total`.
+- Each preview row shows amount (+ income marker), note, category hint, date, scope, and payment mode.
+- Category column is now kept as a separate hint and resolved at commit time: hints matched case-insensitively against existing categories; unmatched hints auto-created as non-default categories.
+- Detected `scope` column (personal/household/shared/family/home) now sets the required scope field instead of forcing everything to PERSONAL.
+- Unparseable rows are counted as skipped and surfaced in the preview instead of silently dropped.
+
 ## [v1.8.2] - 2026-09-06 — home log + stepper quick-add
 
 **Home tab**

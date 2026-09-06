@@ -8,6 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -27,9 +28,13 @@ import com.example.moneymanager.theme.*
 import com.example.moneymanager.ui.ascii.Ascii
 import com.example.moneymanager.ui.ascii.AsciiDivider
 import com.example.moneymanager.ui.ascii.AsciiSectionHeader
+import com.example.moneymanager.util.FormatUtils
+import com.example.moneymanager.util.XlsxImporter
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun SettingsScreen(
@@ -42,6 +47,9 @@ fun SettingsScreen(
     val biometricEnabled by viewModel.biometricEnabled.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val householdMembers by viewModel.householdMembers.collectAsState()
+    val xlsxPreview by viewModel.xlsxPreview.collectAsState()
+    val xlsxBusy by viewModel.xlsxBusy.collectAsState()
+    val xlsxError by viewModel.xlsxError.collectAsState()
 
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
@@ -117,18 +125,7 @@ fun SettingsScreen(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         if (uri != null) {
-            scope.launch {
-                try {
-                    val result = viewModel.importXlsx(context, uri)
-                    Toast.makeText(
-                        context,
-                        "Imported ${result.inserted} of ${result.total} rows",
-                        Toast.LENGTH_LONG
-                    ).show()
-                } catch (e: Throwable) {
-                    Toast.makeText(context, "Import error: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
+            viewModel.parseXlsx(context, uri)
         }
     }
 
@@ -544,6 +541,149 @@ fun SettingsScreen(
                 }
             }
         )
+    }
+
+    if (xlsxBusy || xlsxPreview != null || xlsxError != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissXlsxPreview() },
+            shape = RoundedCornerShape(2.dp),
+            containerColor = Chroma.color.surface,
+            title = {
+                Text(
+                    text = "IMPORT // XLSX",
+                    style = Chroma.type.titleMedium.copy(
+                        fontFamily = PlexMono,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            },
+            text = {
+                when {
+                    xlsxBusy -> Text(
+                        text = "parsing workbook…",
+                        style = Chroma.type.bodyMedium.copy(fontFamily = PlexMono),
+                        color = Chroma.color.onSurfaceVariant
+                    )
+                    xlsxError != null -> Text(
+                        text = "ERR // $xlsxError",
+                        style = Chroma.type.bodyMedium.copy(fontFamily = PlexMono),
+                        color = ChromaRed
+                    )
+                    else -> {
+                        val preview = xlsxPreview
+                        if (preview != null) {
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                AsciiDivider(modifier = Modifier.padding(bottom = 8.dp))
+                                Text(
+                                    text = "${preview.rows.size} rows ready · ${preview.skippedRows} skipped / ${preview.totalRows} total",
+                                    style = Chroma.type.labelSmall.copy(
+                                        fontFamily = PlexMono,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 10.sp
+                                    ),
+                                    color = Chroma.color.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                if (preview.rows.isEmpty()) {
+                                    Text(
+                                        text = "No valid rows found in sheet.",
+                                        style = Chroma.type.bodyMedium.copy(fontFamily = PlexMono),
+                                        color = Chroma.color.onSurfaceVariant
+                                    )
+                                } else {
+                                    LazyColumn(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(320.dp)
+                                            .border(1.dp, Ascii.hairline, RoundedCornerShape(2.dp)),
+                                        contentPadding = PaddingValues(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        itemsIndexed(preview.rows) { _, row ->
+                                            XlsxPreviewRow(row)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                val preview = xlsxPreview
+                if (preview != null && preview.rows.isNotEmpty()) {
+                    ChromaButton(
+                        text = "COMMIT // INSERT",
+                        onClick = {
+                            scope.launch {
+                                val inserted = viewModel.commitImport()
+                                Toast.makeText(
+                                    context,
+                                    "Imported $inserted rows",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        },
+                        backgroundColor = ChromaOrange,
+                        textColor = ChromaWhite,
+                        shadowOffset = 1.dp
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissXlsxPreview() }) {
+                    Text("CANCEL", fontWeight = FontWeight.Bold, color = Chroma.color.onSurface)
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun XlsxPreviewRow(row: XlsxImporter.ParsedTransaction) {
+    val dateLabel = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(java.util.Date(row.date))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(2.dp))
+            .background(ChromaStone100)
+            .border(0.5.dp, ChromaStone300, RoundedCornerShape(2.dp))
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = FormatUtils.formatCurrency(row.amount) + if (row.type == com.example.moneymanager.data.model.TransactionType.INCOME) "  [+]" else "",
+                style = Chroma.type.bodyMedium.copy(
+                    fontFamily = PlexMono,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = if (row.type == com.example.moneymanager.data.model.TransactionType.INCOME) ChromaGreen else ChromaBlack
+            )
+            Text(
+                text = row.note.ifBlank { "(no note)" },
+                style = Chroma.type.labelSmall.copy(fontSize = 10.sp),
+                color = Chroma.color.onSurfaceVariant,
+                maxLines = 1
+            )
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = if (row.categoryHint.isBlank()) "—" else row.categoryHint,
+                style = Chroma.type.labelSmall.copy(
+                    fontFamily = PlexMono,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 9.sp
+                ),
+                color = ChromaBlack
+            )
+            Text(
+                text = "${dateLabel} · ${row.scope.name.take(4)} · ${row.paymentMode.name}",
+                style = Chroma.type.labelSmall.copy(fontSize = 9.sp),
+                color = Chroma.color.onSurfaceVariant
+            )
+        }
     }
 }
 

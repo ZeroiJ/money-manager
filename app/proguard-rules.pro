@@ -36,3 +36,26 @@
 -dontwarn org.ietf.jgss.**
 -dontwarn org.osgi.framework.**
 -dontwarn com.github.javaparser.**
+
+# POI + XMLBeans + StAX/Woodstox use reflection/service-loading heavily — keep everything
+-keep class org.apache.poi.** { *; }
+-keep class org.apache.xmlbeans.** { *; }
+-keep class com.ctc.wstx.** { *; }
+-keep class javax.xml.stream.** { *; }
+-keep class org.codehaus.stax2.** { *; }
+-keep class org.openxmlformats.schemas.** { *; }
+-keepclassmembers class org.apache.poi.** { *; }
+
+# R8-generated suppressions: desktop/optional deps referenced by kept POI classes but absent on Android
+-dontwarn com.ctc.wstx.shaded.**
+-dontwarn com.sun.org.apache.xml.internal.**
+-dontwarn de.rototor.pdfbox.graphics2d.**
+-dontwarn javax.imageio.**
+-dontwarn javax.swing.**
+-dontwarn org.apache.jcp.xml.dsig.**
+-dontwarn org.apache.pdfbox.**
+-dontwarn org.apache.xml.security.**
+-dontwarn org.openxmlformats.schemas.**
+-dontwarn org.w3c.dom.events.**
+-dontwarn org.w3c.dom.svg.**
+-dontwarn org.w3c.dom.traversal.**

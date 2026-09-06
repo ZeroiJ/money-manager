@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.example.moneymanager.data.model.PaymentMode
-import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
 import org.apache.poi.ss.usermodel.CellType
@@ -17,16 +16,28 @@ object XlsxImporter {
 
     private const val TAG = "XlsxImporter"
 
+    /** A row parsed from the sheet, before category resolution / DB insertion. */
+    data class ParsedTransaction(
+        val amount: Double,
+        val type: TransactionType,
+        val note: String,
+        val date: Long,
+        val paymentMode: PaymentMode,
+        val scope: TransactionScope,
+        /** Raw category column value ("" if none) — resolved against user categories at commit time. */
+        val categoryHint: String
+    )
+
     data class ImportResult(
-        val transactions: List<Transaction>,
+        val rows: List<ParsedTransaction>,
         val totalRows: Int,
-        val parsedRows: Int
+        val skippedRows: Int
     )
 
     fun importFromUri(context: Context, uri: Uri): ImportResult {
-        val transactions = mutableListOf<Transaction>()
+        val rows = mutableListOf<ParsedTransaction>()
         var totalRows = 0
-        var parsedRows = 0
+        var skippedRows = 0
 
         val tempFile = java.io.File.createTempFile("import_", ".xlsx", context.cacheDir)
         try {
@@ -41,14 +52,17 @@ object XlsxImporter {
 
             val headerRow = sheet.getRow(0)
             val colMap = if (headerRow != null) buildColumnMap(headerRow) else ColumnMap()
-            Log.d(TAG, "Column map: amount=${colMap.amountCol}, date=${colMap.dateCol}, note=${colMap.noteCol}, category=${colMap.categoryCol}")
+            Log.d(TAG, "Column map: amount=${colMap.amountCol}, date=${colMap.dateCol}, note=${colMap.noteCol}, category=${colMap.categoryCol}, type=${colMap.typeCol}, payment=${colMap.paymentModeCol}, scope=${colMap.scopeCol}")
 
             for (i in 1..sheet.lastRowNum) {
                 totalRows++
-                val row = sheet.getRow(i) ?: continue
-                val tx = parseRow(row, colMap) ?: continue
-                transactions.add(tx)
-                parsedRows++
+                val row = sheet.getRow(i)
+                if (row == null) {
+                    skippedRows++
+                    continue
+                }
+                val parsed = parseRow(row, colMap)
+                if (parsed != null) rows.add(parsed) else skippedRows++
             }
 
             workbook.close()
@@ -59,8 +73,8 @@ object XlsxImporter {
             tempFile.delete()
         }
 
-        Log.d(TAG, "Import complete: $parsedRows/$totalRows rows parsed")
-        return ImportResult(transactions, totalRows, parsedRows)
+        Log.d(TAG, "Import complete: ${rows.size}/$totalRows rows parsed, $skippedRows skipped")
+        return ImportResult(rows, totalRows, skippedRows)
     }
 
     private data class ColumnMap(
@@ -115,35 +129,27 @@ object XlsxImporter {
         return -1
     }
 
-    private fun parseRow(row: org.apache.poi.ss.usermodel.Row, colMap: ColumnMap): Transaction? {
+    private fun parseRow(row: org.apache.poi.ss.usermodel.Row, colMap: ColumnMap): ParsedTransaction? {
         val amount = if (colMap.amountCol >= 0) getCellDouble(row, colMap.amountCol) else getCellDoubleAuto(row)
         if (amount == null || amount <= 0) return null
 
         val date = if (colMap.dateCol >= 0) getCellDate(row, colMap.dateCol) ?: System.currentTimeMillis() else System.currentTimeMillis()
 
-        val note = if (colMap.noteCol >= 0) {
-            val raw = getCellString(row, colMap.noteCol).ifBlank { null }
-            raw ?: "Imported transaction"
-        } else "Imported transaction"
-
-        val categoryHint = if (colMap.categoryCol >= 0) getCellString(row, colMap.categoryCol) else ""
+        val rawNote = if (colMap.noteCol >= 0) getCellString(row, colMap.noteCol).ifBlank { null } else null
+        val categoryHint = if (colMap.categoryCol >= 0) getCellString(row, colMap.categoryCol).trim() else ""
 
         val type = resolveTransactionType(row, colMap)
-
         val paymentMode = resolvePaymentMode(row, colMap)
+        val scope = resolveScope(row, colMap)
 
-        val scope = TransactionScope.PERSONAL
-
-        val finalNote = if (categoryHint.isNotBlank()) "$categoryHint: $note" else note
-
-        return Transaction(
+        return ParsedTransaction(
             amount = amount,
             type = type,
-            categoryId = 0,
-            note = finalNote,
+            note = rawNote ?: "Imported transaction",
             date = date,
             paymentMode = paymentMode,
-            scope = scope
+            scope = scope,
+            categoryHint = categoryHint
         )
     }
 
@@ -168,6 +174,17 @@ object XlsxImporter {
             }
         }
         return PaymentMode.CASH
+    }
+
+    private fun resolveScope(row: org.apache.poi.ss.usermodel.Row, colMap: ColumnMap): TransactionScope {
+        if (colMap.scopeCol >= 0) {
+            val scopeStr = getCellString(row, colMap.scopeCol).lowercase()
+            when {
+                scopeStr.contains("household") || scopeStr.contains("shared") || scopeStr.contains("joint") ||
+                    scopeStr.contains("family") || scopeStr.contains("home") -> return TransactionScope.HOUSEHOLD
+            }
+        }
+        return TransactionScope.PERSONAL
     }
 
     private fun getCellDoubleAuto(row: org.apache.poi.ss.usermodel.Row): Double? {

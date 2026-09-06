@@ -23,6 +23,8 @@ glance = "1.1.1"
 biometric = "1.2.0-alpha05"
 poi = "5.2.5"
 xmlbeans = "5.1.1"
+stax = "1.0-2"
+woodstox = "6.5.1"
 documentfile = "1.0.1"
 mockk = "1.13.13"
 
@@ -63,6 +65,8 @@ biometric = { module = "androidx.biometric:biometric", version.ref = "biometric"
 poi = { module = "org.apache.poi:poi", version.ref = "poi" }
 poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poi" }
 xmlbeans = { module = "org.apache.xmlbeans:xmlbeans", version.ref = "xmlbeans" }
+stax-api = { module = "javax.xml.stream:stax-api", version.ref = "stax" }
+woodstox-core = { module = "com.fasterxml.woodstox:woodstox-core", version.ref = "woodstox" }
 androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 

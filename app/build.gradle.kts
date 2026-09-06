@@ -14,8 +14,8 @@ android {
         applicationId = "com.example.moneymanager"
         minSdk = 26
         targetSdk = 36
-        versionCode = 13
-        versionName = "1.8.2"
+        versionCode = 14
+        versionName = "1.9.0"
     }
 
     buildTypes {
@@ -131,6 +131,9 @@ dependencies {
       exclude(group = "org.apache.xmlbeans", module = "xmlbeans")
   }
   implementation(libs.xmlbeans)
+  // StAX (javax.xml.stream) — not shipped by Android but required by POI OOXML/XMLBeans to parse .xlsx
+  implementation(libs.stax.api)
+  implementation(libs.woodstox.core)
 
   // DocumentFile (SAF helpers)
   implementation(libs.androidx.documentfile)
