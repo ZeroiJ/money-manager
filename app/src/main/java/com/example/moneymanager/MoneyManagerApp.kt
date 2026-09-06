@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.moneymanager.util.LiveUpdateHelper
 import com.example.moneymanager.worker.RecurringExpenseWorker
 import dagger.hilt.android.HiltAndroidApp
 import java.util.concurrent.TimeUnit
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit
 class MoneyManagerApp : Application() {
     override fun onCreate() {
         super.onCreate()
+        LiveUpdateHelper.ensureChannels(this)
         setupRecurringWorker()
     }
 
