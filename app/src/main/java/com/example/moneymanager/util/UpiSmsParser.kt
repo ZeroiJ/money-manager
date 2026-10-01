@@ -1,10 +1,13 @@
 package com.example.moneymanager.util
 
+import com.example.moneymanager.data.model.TransactionType
+
 data class UpiParsedTransaction(
     val amount: Double,
     val merchant: String,
     val upiId: String?,
-    val referenceNo: String?
+    val referenceNo: String?,
+    val type: TransactionType
 )
 
 object UpiSmsParser {
@@ -51,8 +54,31 @@ object UpiSmsParser {
             amount = amount,
             merchant = merchant.trim(),
             upiId = upiId,
-            referenceNo = refNo
+            referenceNo = refNo,
+            type = transactionType(body)
         )
+    }
+
+    private val otpPattern =
+        Regex("""otp|one[\s-]?time[\s-]?password|do not share|valid for \d+\s*mins?""", RegexOption.IGNORE_CASE)
+
+    private val movementPattern =
+        Regex("""\b(debited?|credited?|paid|transferred?|sent|received|spent|withdrawn?)\b""", RegexOption.IGNORE_CASE)
+
+    fun isTransactionalSms(body: String): Boolean {
+        if (otpPattern.containsMatchIn(body)) return false
+        if (!movementPattern.containsMatchIn(body)) return false
+        return extractAmount(body) != null
+    }
+
+    fun transactionType(body: String): TransactionType {
+        if (body.contains(Regex("""\b(debited?|spent|paid|sent|transferred?|withdrawn?)\b""", RegexOption.IGNORE_CASE))) {
+            return TransactionType.EXPENSE
+        }
+        if (body.contains(Regex("""\b(credited?|received|refund)\b""", RegexOption.IGNORE_CASE))) {
+            return TransactionType.INCOME
+        }
+        return TransactionType.EXPENSE
     }
 
     private fun extractAmount(body: String): Double? {
