@@ -9,6 +9,7 @@ import androidx.room.Update
 import com.example.moneymanager.data.model.Budget
 import com.example.moneymanager.data.model.Category
 import com.example.moneymanager.data.model.HouseholdMember
+import com.example.moneymanager.data.model.PendingImport
 import com.example.moneymanager.data.model.RecurringRule
 import com.example.moneymanager.data.model.Transaction
 import kotlinx.coroutines.flow.Flow
@@ -136,4 +137,17 @@ interface MoneyDao {
 
     @Query("SELECT * FROM household_members ORDER BY name ASC")
     suspend fun getAllHouseholdMembersList(): List<HouseholdMember>
+
+    // --- Pending Imports (SMS review queue) ---
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertPendingImports(items: List<PendingImport>): List<Long>
+
+    @Query("SELECT * FROM pending_imports ORDER BY date DESC")
+    fun getPendingImports(): Flow<List<PendingImport>>
+
+    @Delete
+    suspend fun deletePendingImport(item: PendingImport)
+
+    @Query("DELETE FROM pending_imports")
+    suspend fun clearPendingImports()
 }
