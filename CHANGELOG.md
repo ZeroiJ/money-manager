@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased] — SMS auto-import with review queue
+
+**SMS auto-import (Settings → SMS_AUTO_IMPORT)**
+- Bank/UPI SMS parsed on-device into a review queue: `SCAN SMS INBOX` backfills the last 30 days; NotificationListener captures live SMS + GPay payment notifications.
+- `UpiSmsParser` now detects transaction type (credited → income, debited → expense) and rejects OTPs and balance-only updates.
+- Review queue shows amount, merchant, sender, and date per row with approve (logs the transaction) / discard actions. Duplicates suppressed by UPI reference number.
+- Approved transactions land uncategorized (`note = "<merchant> via UPI"`) — assign a category via edit. No per-merchant category pollution.
+- New `pending_imports` table (DB v3 with migration). SMS bodies are never logged or retained — only parsed fields.
+
 ## [v1.9.0] - 2026-09-06 — XLSX import: crash fix + preview-before-commit
 
 **XLSX import (Settings → IMPORT EXCEL (.XLSX))**
