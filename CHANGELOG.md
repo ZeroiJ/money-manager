@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] — SMS auto-import with review queue
+## [v1.10.0] - 2026-10-01 — SMS auto-import with review queue
 
 **SMS auto-import (Settings → SMS_AUTO_IMPORT)**
 - Bank/UPI SMS parsed on-device into a review queue: `SCAN SMS INBOX` backfills the last 30 days; NotificationListener captures live SMS + GPay payment notifications.
