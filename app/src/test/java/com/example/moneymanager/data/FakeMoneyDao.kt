@@ -12,12 +12,14 @@ class FakeMoneyDao : MoneyDao {
     val budgets = MutableStateFlow<List<Budget>>(emptyList())
     val recurringRules = MutableStateFlow<List<RecurringRule>>(emptyList())
     val householdMembers = MutableStateFlow<List<HouseholdMember>>(emptyList())
+    val pendingImports = MutableStateFlow<List<PendingImport>>(emptyList())
 
     private var nextTxId = 1L
     private var nextCatId = 1L
     private var nextBudgetId = 1L
     private var nextRuleId = 1L
     private var nextMemberId = 1L
+    private var nextPendingId = 1L
 
     override suspend fun insertTransaction(transaction: Transaction): Long {
         val id = if (transaction.id > 0) transaction.id else nextTxId++
@@ -178,4 +180,26 @@ class FakeMoneyDao : MoneyDao {
     override fun getAllHouseholdMembers(): Flow<List<HouseholdMember>> = householdMembers
 
     override suspend fun getAllHouseholdMembersList(): List<HouseholdMember> = householdMembers.value
+
+    override suspend fun insertPendingImports(items: List<PendingImport>): List<Long> {
+        return items.mapNotNull { item ->
+            val clash = item.referenceNo != null &&
+                pendingImports.value.any { it.referenceNo == item.referenceNo }
+            if (clash) null else {
+                val id = if (item.id > 0) item.id else nextPendingId++
+                pendingImports.value = pendingImports.value.filterNot { it.id == id } + item.copy(id = id)
+                id
+            }
+        }
+    }
+
+    override fun getPendingImports(): Flow<List<PendingImport>> = pendingImports
+
+    override suspend fun deletePendingImport(item: PendingImport) {
+        pendingImports.value = pendingImports.value.filterNot { it.id == item.id }
+    }
+
+    override suspend fun clearPendingImports() {
+        pendingImports.value = emptyList()
+    }
 }

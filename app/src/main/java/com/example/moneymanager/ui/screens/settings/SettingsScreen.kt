@@ -1,8 +1,12 @@
 package com.example.moneymanager.ui.screens.settings
 
 import android.widget.Toast
+import android.Manifest
+import android.content.pm.PackageManager
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,6 +27,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.moneymanager.theme.*
 import com.example.moneymanager.ui.ascii.Ascii
@@ -126,6 +132,35 @@ fun SettingsScreen(
     ) { uri ->
         if (uri != null) {
             viewModel.parseXlsx(context, uri)
+        }
+    }
+
+    val pendingImports by viewModel.pendingImports.collectAsState()
+    var listenerEnabled by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        listenerEnabled = NotificationManagerCompat.getEnabledListenerPackages(context)
+            .contains(context.packageName)
+    }
+    val notificationSettingsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        listenerEnabled = NotificationManagerCompat.getEnabledListenerPackages(context)
+            .contains(context.packageName)
+    }
+    val smsPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            scope.launch {
+                val n = viewModel.scanSmsInbox(context)
+                Toast.makeText(
+                    context,
+                    if (n > 0) "$n new payments found" else "No new payments in inbox",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        } else {
+            Toast.makeText(context, "SMS permission needed for auto-import", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -440,6 +475,116 @@ fun SettingsScreen(
                     )
                 }
             }
+
+            // SMS AUTO-IMPORT section
+            item { AsciiSectionHeader(text = "SMS_AUTO_IMPORT [ ${pendingImports.size} ]") }
+
+            item {
+                FlatSection {
+                    Text(
+                        text = "UPI_SMS_CAPTURE",
+                        style = Chroma.type.bodyMedium.copy(
+                            fontFamily = PlexMono,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Text(
+                        text = "Bank SMS + GPay notifications → review queue. All on-device, nothing leaves your phone.",
+                        style = Chroma.type.labelSmall.copy(fontSize = 10.sp),
+                        color = Chroma.color.onSurfaceVariant
+                    )
+
+                    AsciiDivider(modifier = Modifier.padding(vertical = 10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "NOTIFICATION_LISTENER",
+                            style = Chroma.type.bodyMedium.copy(
+                                fontFamily = PlexMono,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        if (listenerEnabled) {
+                            ChromaBadge(
+                                text = "[ ON ]",
+                                backgroundColor = ChromaGreen,
+                                textColor = ChromaWhite,
+                                borderColor = ChromaGreen
+                            )
+                        } else {
+                            ChromaBadge(
+                                text = "[ OFF ]",
+                                backgroundColor = ChromaStone100,
+                                textColor = ChromaBlack,
+                                borderColor = ChromaBlack
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ChromaButton(
+                        text = if (listenerEnabled) "NOTIFICATION ACCESS GRANTED" else "ENABLE NOTIFICATION ACCESS",
+                        onClick = {
+                            notificationSettingsLauncher.launch(
+                                android.content.Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                            )
+                        },
+                        backgroundColor = if (listenerEnabled) ChromaStone200 else ChromaBlack,
+                        textColor = if (listenerEnabled) ChromaBlack else ChromaWhite,
+                        borderColor = ChromaBlack,
+                        shadowOffset = 1.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ChromaButton(
+                        text = "SCAN SMS INBOX",
+                        onClick = {
+                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) {
+                                scope.launch {
+                                    val n = viewModel.scanSmsInbox(context)
+                                    Toast.makeText(
+                                        context,
+                                        if (n > 0) "$n new payments found" else "No new payments in inbox",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            } else {
+                                smsPermissionLauncher.launch(Manifest.permission.READ_SMS)
+                            }
+                        },
+                        backgroundColor = ChromaOrange,
+                        textColor = ChromaWhite,
+                        shadowOffset = 1.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    if (pendingImports.isNotEmpty()) {
+                        AsciiDivider(modifier = Modifier.padding(vertical = 10.dp))
+                        Text(
+                            text = "// REVIEW QUEUE — approve to log, × to discard",
+                            style = Chroma.type.labelSmall.copy(
+                                fontFamily = PlexMono,
+                                fontSize = 9.sp
+                            ),
+                            color = Chroma.color.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        pendingImports.forEach { item ->
+                            PendingImportRow(
+                                item = item,
+                                onApprove = { viewModel.approvePending(item) },
+                                onDiscard = { viewModel.discardPending(item) }
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -636,6 +781,75 @@ fun SettingsScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun PendingImportRow(
+    item: com.example.moneymanager.data.model.PendingImport,
+    onApprove: () -> Unit,
+    onDiscard: () -> Unit
+) {
+    val dateLabel = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(java.util.Date(item.date))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(2.dp))
+            .background(ChromaStone100)
+            .border(0.5.dp, ChromaStone300, RoundedCornerShape(2.dp))
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = FormatUtils.formatCurrency(item.amount) + if (item.type == com.example.moneymanager.data.model.TransactionType.INCOME) "  [+]" else "",
+                style = Chroma.type.bodyMedium.copy(
+                    fontFamily = PlexMono,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = if (item.type == com.example.moneymanager.data.model.TransactionType.INCOME) ChromaGreen else ChromaBlack
+            )
+            Text(
+                text = "${item.merchant} · $dateLabel · ${item.sender}",
+                style = Chroma.type.labelSmall.copy(fontSize = 10.sp),
+                color = Chroma.color.onSurfaceVariant,
+                maxLines = 1
+            )
+        }
+        Row {
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(ChromaGreen)
+                    .clickable(onClick = onApprove),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Check,
+                    contentDescription = "Approve",
+                    tint = ChromaWhite,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(6.dp))
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .border(1.dp, ChromaStone400, RoundedCornerShape(2.dp))
+                    .clickable(onClick = onDiscard),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Discard",
+                    tint = ChromaRed,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        }
     }
 }
 

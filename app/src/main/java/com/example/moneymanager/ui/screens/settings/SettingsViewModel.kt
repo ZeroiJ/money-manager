@@ -9,12 +9,14 @@ import com.example.moneymanager.data.model.Category
 import com.example.moneymanager.data.model.Frequency
 import com.example.moneymanager.data.model.HouseholdMember
 import com.example.moneymanager.data.model.PaymentMode
+import com.example.moneymanager.data.model.PendingImport
 import com.example.moneymanager.data.model.RecurringRule
 import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
 import com.example.moneymanager.data.prefs.UserPreferences
 import com.example.moneymanager.util.BackupUtils
+import com.example.moneymanager.util.SmsInboxReader
 import com.example.moneymanager.util.XlsxImporter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -233,5 +235,51 @@ class SettingsViewModel @Inject constructor(
         moneyDao.insertTransactions(transactions)
         _xlsxPreview.value = null
         return transactions.size
+    }
+
+    val pendingImports: StateFlow<List<PendingImport>> = moneyDao.getPendingImports()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    suspend fun scanSmsInbox(context: Context): Int {
+        val candidates = withContext(Dispatchers.IO) {
+            SmsInboxReader.readRecent(context)
+        }
+        if (candidates.isEmpty()) return 0
+        val rows = candidates.map { c ->
+            PendingImport(
+                amount = c.amount,
+                type = c.type,
+                merchant = c.merchant,
+                date = c.date,
+                paymentMode = PaymentMode.UPI,
+                scope = TransactionScope.PERSONAL,
+                referenceNo = c.referenceNo,
+                sender = c.sender
+            )
+        }
+        return moneyDao.insertPendingImports(rows).size
+    }
+
+    fun approvePending(item: PendingImport) {
+        viewModelScope.launch {
+            moneyDao.insertTransaction(
+                Transaction(
+                    amount = item.amount,
+                    type = item.type,
+                    categoryId = 0L,
+                    note = "${item.merchant} via UPI",
+                    date = item.date,
+                    paymentMode = item.paymentMode,
+                    scope = item.scope
+                )
+            )
+            moneyDao.deletePendingImport(item)
+        }
+    }
+
+    fun discardPending(item: PendingImport) {
+        viewModelScope.launch {
+            moneyDao.deletePendingImport(item)
+        }
     }
 }
