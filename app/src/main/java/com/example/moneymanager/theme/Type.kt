@@ -7,22 +7,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.moneymanager.R
 
-val Inter = FontFamily(
-    Font(R.font.inter_regular, FontWeight.Normal),
-    Font(R.font.inter_medium, FontWeight.Medium),
-    Font(R.font.inter_semi_bold, FontWeight.SemiBold),
-    Font(R.font.inter_bold, FontWeight.Bold)
-)
-
-val PlexMono = FontFamily(
-    Font(R.font.ibm_plex_mono_regular, FontWeight.Normal),
-    Font(R.font.ibm_plex_mono_medium, FontWeight.Medium),
-    Font(R.font.ibm_plex_mono_semi_bold, FontWeight.SemiBold),
-    Font(R.font.ibm_plex_mono_bold, FontWeight.Bold)
-)
-
 // iOS redesign families (bundled, both SIL OFL): Geist Sans for UI text,
-// Paper Mono for figures/labels. Inter/PlexMono stay until Task 11 cleanup.
+// Paper Mono for figures/labels.
 val Geist = FontFamily(
     Font(R.font.geist_regular, FontWeight.Normal),
     Font(R.font.geist_medium, FontWeight.Medium),
