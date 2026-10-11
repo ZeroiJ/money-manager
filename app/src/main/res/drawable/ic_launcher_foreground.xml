@@ -1,21 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Money Manager — Chroma//Money App Icon Foreground
+  Money Manager — iOS Liquid Glass app icon foreground
   Adaptive icon foreground layer (108dp x 108dp, safe zone 72dp centered)
-  Design: Bold white ₹ (Rupee) on dark, with retro corner square dots
-  Inspired by trychroma.com brutalist monochrome aesthetic
+  Design: clean white ₹ (Rupee) glyph centered, no ornament — iOS-style flat
+  glyph on the gradient background layer
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-
-    <!-- Corner accent squares (retro terminal dots) -->
-    <path android:fillColor="#CC27272A" android:pathData="M16,16 L23,16 L23,23 L16,23 Z"/>
-    <path android:fillColor="#CC27272A" android:pathData="M85,16 L92,16 L92,23 L85,23 Z"/>
-    <path android:fillColor="#CC27272A" android:pathData="M16,85 L23,85 L23,92 L16,92 Z"/>
-    <path android:fillColor="#CC27272A" android:pathData="M85,85 L92,85 L92,92 L85,92 Z"/>
 
     <!--
       ₹ Rupee Symbol — precise geometric construction
@@ -28,17 +22,17 @@
     <!-- Top horizontal bar (the topmost of the two parallel bars) -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M32,28 L76,28 L76,34 L32,34 Z"/>
+        android:pathData="M32,28 L76,28 L76,34 L32,34 Z" />
 
     <!-- Second horizontal bar (lower parallel bar) -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M32,40 L70,40 L70,46 L32,46 Z"/>
+        android:pathData="M32,40 L70,40 L70,46 L32,46 Z" />
 
     <!-- Left vertical stem (goes all the way from top to bottom) -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M32,28 L38,28 L38,80 L32,80 Z"/>
+        android:pathData="M32,28 L38,28 L38,80 L32,80 Z" />
 
     <!--
       Top-right arc (the 'P' bowl of ₹):
@@ -59,12 +53,12 @@
             Q70,40 70,37
             Q70,34 62,34
             L38,34
-            Z"/>
+            Z" />
 
     <!-- Diagonal slash: from right side of second bar down to bottom-left -->
     <!-- Goes from approximately (70, 43) down-left to (38, 80) -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M58,46 L76,46 L44,80 L26,80 Z"/>
+        android:pathData="M58,46 L76,46 L44,80 L26,80 Z" />
 
 </vector>
