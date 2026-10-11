@@ -88,9 +88,10 @@ fun AppNavGraph(
 
     Box(modifier = Modifier.fillMaxSize()) {
         AmbientBackground(mode = ambientMode, dark = dark)
+        // Default insets: content gets top + horizontal safe-drawing padding.
+        // The bottom inset is owned by IosTabBar (not double-padded here).
         Scaffold(
             containerColor = Color.Transparent,
-            contentWindowInsets = WindowInsets.safeDrawing,
             bottomBar = {
                 val shouldShowBottomBar = androidx.compose.runtime.remember(currentRoute) {
                     bottomNavItems.any { it.route == currentRoute }
