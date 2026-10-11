@@ -17,7 +17,7 @@
 - All 25 existing unit tests stay green (`./gradlew :app:testDebugUnitTest`).
 - Touch targets ≥ 44dp; text contrast ≥ 4.5:1 on every surface including over blur.
 - Blur/ translucency ONLY on bottom tab bar + modal sheets; content cards stay solid opaque.
-- Inter + IBM Plex Mono stay (no new fonts); legacy `mipmap-*/ic_launcher*.webp` untouched.
+- Fonts: Geist Sans (UI) + Paper Mono (figures/labels), both SIL OFL bundled in `res/font/`; Inter + IBM Plex Mono deleted in Task 11. Legacy `mipmap-*/ic_launcher*.webp` untouched.
 
 ## Review Focus
 
@@ -122,7 +122,7 @@ git commit -m "feat: add ambient gradient background with static fallback"
 Run: `./gradlew :app:testDebugUnitTest`
 Expected: PASS (baseline green before changes).
 
-- [ ] **Step 2: Implement the six composables** in the two files (44dp+ targets, solid cards, blur confined to `IosTabBar`/`GlassSheet` scrims).
+- [ ] **Step 2: Implement the six composables** in the two files (44dp+ targets, solid cards, blur confined to `IosTabBar`/`GlassSheet` scrims; type via `Geist`/`PaperMono` from `theme/Type.kt`).
 - [ ] **Step 3: Verify compile + suite still green**
 
 Run: `./gradlew :app:testDebugUnitTest`
@@ -311,6 +311,7 @@ git commit -m "feat: iOS Settings groups with ambient background toggle"
 
 **Files:**
 - Delete `app/src/main/java/com/example/moneymanager/ui/ascii/AsciiArt.kt` ONLY if zero references remain; else leave it (no dead-code risk allowed).
+- Delete old fonts `res/font/inter_*.ttf`, `res/font/ibm_plex_mono_*.ttf` and the `Inter`/`PlexMono` families in `theme/Type.kt` ONLY if zero references remain; new screens must use `Geist`/`PaperMono`.
 - Modify: none expected; remove any leftover `Chroma.*` usages in converted screens only.
 
 - [ ] **Step 1: Confirm no ASCII/Chroma references in converted screens**

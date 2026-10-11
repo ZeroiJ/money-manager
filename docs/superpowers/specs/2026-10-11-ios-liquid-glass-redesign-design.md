@@ -47,9 +47,10 @@ New file `theme/Ios.kt` with light + dark schemes, selected by system setting:
 | Separator | #C6C6C8 at 38% alpha | #38383A |
 
 - Shape: 12dp cards, 16dp sheets, continuous (no hairline black borders, no `chromaShadow`).
-- Type: keep bundled Inter (close to SF Pro, no new font dep). Titles 22–34sp semibold,
-  body 17sp/22, footnote 13sp. Numbers tabular semibold. Kill 9–10sp mono micro-labels except
-  debug-style metadata (then min 11sp and secondary color).
+- Type: Geist Sans for UI text, Paper Mono for figures/labels (both SIL OFL, bundled in
+  `res/font/`; Inter + IBM Plex Mono remain only until Task 11 cleanup). Titles 22–34sp
+  semibold, body 17sp/22, footnote 13sp. Numbers tabular semibold. Kill 9–10sp mono
+  micro-labels except debug-style metadata (then min 11sp and secondary color).
 - Blur rule: frosted blur (10–20px equivalent scrim + `Modifier.blur`) ONLY on bottom tab bar
   and modal sheets. Content cards stay solid so ₹ figures always pass 4.5:1.
 - Motion: sheet slide + fade 150–300ms, spring-ish easing, existing `util/Haptics.kt` kept,
