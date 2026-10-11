@@ -55,6 +55,20 @@ New file `theme/Ios.kt` with light + dark schemes, selected by system setting:
 - Motion: sheet slide + fade 150–300ms, spring-ish easing, existing `util/Haptics.kt` kept,
   respect reduced-motion (instant transitions, no blur animation).
 
+### 3b. Ambient background (full-screen live gradient wash)
+
+- One animated gradient layer sits behind everything on every tab (user chose full-screen
+  over header-only). All text and figures sit on solid opaque cards — the gradient is
+  decorative only, never behind bare text — so 4.5:1 contrast is preserved by construction.
+- Palette: light = warm orange wash (cream `#FFF6EA` → peach `#FFDFB5`, drifting `#FF9500`
+  glow at low alpha); dark = deep blue (near-black navy `#060B24` → `#101C4E`, drifting
+  `#0A84FF` glow at low alpha).
+- Motion: slow 10–12s drift loop (`rememberInfiniteTransition` driving gradient offsets in a
+  single background layer, content hoisted above so rows never recompose per frame).
+- Guardrails: static gradient when reduced-motion is on or on low-end devices; Settings →
+  Display gets an "Ambient background" toggle (default ON); animation stops with the UI
+  when the app is backgrounded.
+
 ## 4. Components (new `ui/ios/`, ViewModels untouched)
 
 - `IosScaffold`: large-title top area + content + floating glass tab bar slot.
@@ -65,6 +79,7 @@ New file `theme/Ios.kt` with light + dark schemes, selected by system setting:
 - `IosSegmented` (period/scope pickers), `IosSwitchRow`, `IosProgressBar` (replaces `AsciiMoodBar`),
   `GlassSheet` (16dp, drag handle, blur scrim) replacing `AddSpendSheet` stepper chrome.
 - Donut/flame/heatmap canvases in Reports keep their math, get iOS legends + card chrome.
+- `AmbientBackground`: the single full-screen animated gradient layer (§3b) + static fallback.
 
 ## 5. Screen changes
 
@@ -99,7 +114,8 @@ New file `theme/Ios.kt` with light + dark schemes, selected by system setting:
 
 ## 6. Files touched / untouched
 
-Touched: `theme/Ios.kt` (new), `ui/ios/*` (new), 5 screens + `AddSpendSheet.kt` +
+Touched: `theme/Ios.kt` (new, incl. gradient palettes), `ui/ios/*` (new, incl.
+`AmbientBackground`), 5 screens + `AddSpendSheet.kt` +
 `AddTransactionScreen.kt` + `NavGraph.kt`, 2 launcher drawables, this spec.
 Untouched: `data/`, `di/`, `worker/`, `service/`, `util/` (except no changes needed),
 `widget/`, ViewModels' public APIs, Room schema (no migration), manifest permissions.
