@@ -3,6 +3,7 @@ package com.example.moneymanager.ui.navigation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,6 +28,11 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.example.moneymanager.theme.*
+import com.example.moneymanager.ui.ios.AmbientBackground
+import com.example.moneymanager.ui.ios.IosTabBar
+import com.example.moneymanager.ui.ios.IosTabItem
+import com.example.moneymanager.ui.ios.readAnimatorScale
+import com.example.moneymanager.ui.ios.resolveAmbientMode
 import com.example.moneymanager.ui.screens.add.AddTransactionScreen
 import com.example.moneymanager.ui.screens.budgets.BudgetsScreen
 import com.example.moneymanager.ui.screens.home.HomeScreen
@@ -71,31 +78,48 @@ fun AppNavGraph(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val context = LocalContext.current
+    val dark = isSystemInDarkTheme()
+    // Ambient toggle wires to UserPreferences in Task 10; default ON until then.
+    val ambientMode = resolveAmbientMode(readAnimatorScale(context), true)
 
-    Scaffold(
-        contentWindowInsets = WindowInsets.safeDrawing,
-        bottomBar = {
-            val shouldShowBottomBar = androidx.compose.runtime.remember(currentRoute) {
-                bottomNavItems.any { it.route == currentRoute }
-            }
-            if (shouldShowBottomBar) {
-                ChromaBottomNavigationBar(
-                    items = bottomNavItems,
-                    currentRoute = currentRoute,
-                    onItemClick = { screen ->
-                        navController.navigate(screen.route) {
-                            popUpTo(Screen.Home.route) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
+    Box(modifier = Modifier.fillMaxSize()) {
+        AmbientBackground(mode = ambientMode, dark = dark)
+        Scaffold(
+            containerColor = Color.Transparent,
+            contentWindowInsets = WindowInsets.safeDrawing,
+            bottomBar = {
+                val shouldShowBottomBar = androidx.compose.runtime.remember(currentRoute) {
+                    bottomNavItems.any { it.route == currentRoute }
+                }
+                if (shouldShowBottomBar) {
+                    val tabItems = androidx.compose.runtime.remember {
+                        bottomNavItems.map {
+                            IosTabItem(
+                                title = it.title.lowercase().replaceFirstChar(Char::titlecase),
+                                icon = it.icon
+                            )
                         }
                     }
-                )
+                    val selectedIndex = bottomNavItems.indexOfFirst { it.route == currentRoute }
+                        .coerceAtLeast(0)
+                    IosTabBar(
+                        selected = selectedIndex,
+                        items = tabItems,
+                        onSelect = { index ->
+                            val screen = bottomNavItems[index]
+                            navController.navigate(screen.route) {
+                                popUpTo(Screen.Home.route) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
+                }
             }
-        }
-    ) { innerPadding ->
-        NavHost(
+        ) { innerPadding ->NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
             modifier = Modifier.padding(innerPadding)
@@ -142,69 +166,4 @@ fun AppNavGraph(
         }
     }
 }
-
-@Composable
-fun ChromaBottomNavigationBar(
-    items: List<Screen>,
-    currentRoute: String?,
-    onItemClick: (Screen) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(ChromaStone50)
-            .border(
-                width = 1.5.dp,
-                color = Chroma.color.outline
-            )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 10.dp, horizontal = 12.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val navItemShape = androidx.compose.runtime.remember { RoundedCornerShape(6.dp) }
-            items.forEach { screen ->
-                val isSelected = currentRoute == screen.route
-
-                Box(
-                    modifier = Modifier
-                        .clip(navItemShape)
-                        .background(if (isSelected) ChromaStone200 else Color.Transparent)
-                        .border(
-                            width = if (isSelected) 1.5.dp else 0.dp,
-                            color = if (isSelected) ChromaBlack else Color.Transparent,
-                            shape = navItemShape
-                        )
-                        .clickable { onItemClick(screen) }
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = screen.icon,
-                            contentDescription = screen.title,
-                            tint = if (isSelected) ChromaOrange else Chroma.color.onSurface,
-                            modifier = Modifier.size(26.dp)
-                        )
-                        Spacer(modifier = Modifier.height(3.dp))
-                        Text(
-                            text = screen.title,
-                            style = Chroma.type.labelSmall.copy(
-                                fontFamily = PlexMono,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = 10.sp
-                            ),
-                            color = if (isSelected) ChromaBlack else Chroma.color.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
-    }
 }
