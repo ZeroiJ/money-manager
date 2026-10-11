@@ -26,16 +26,16 @@ class HomeViewModel @Inject constructor(
         .map { list -> list.take(10) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Additive glanceable totals for the iOS Home card. Recomputed whenever the
-    // feed changes (any insert/update/delete emits a new list).
-    val todaySpend: StateFlow<Double> = recentTransactions
+    // Additive glanceable totals for the iOS Home card. Sourced from the UNCAPPED
+    // feed so backdated writes and edits beyond the top-10 still retrigger them.
+    val todaySpend: StateFlow<Double> = moneyDao.getAllTransactions()
         .mapLatest {
             val (start, end) = dayRange(System.currentTimeMillis())
             moneyDao.getTodaySpend(start, end) ?: 0.0
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
-    val monthSpend: StateFlow<Double> = recentTransactions
+    val monthSpend: StateFlow<Double> = moneyDao.getAllTransactions()
         .mapLatest {
             val (start, end) = monthRange(System.currentTimeMillis())
             moneyDao.getMonthSpend(start, end) ?: 0.0

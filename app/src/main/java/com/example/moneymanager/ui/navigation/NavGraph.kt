@@ -83,7 +83,8 @@ fun AppNavGraph(
     val context = LocalContext.current
     val dark = isSystemInDarkTheme()
     val ambientEnabled by hiltViewModel<com.example.moneymanager.ui.screens.settings.SettingsViewModel>().ambientEnabled.collectAsState()
-    val ambientMode = resolveAmbientMode(readAnimatorScale(context), ambientEnabled)
+    val animatorScale = androidx.compose.runtime.remember { readAnimatorScale(context) }
+    val ambientMode = resolveAmbientMode(animatorScale, ambientEnabled)
 
     Box(modifier = Modifier.fillMaxSize()) {
         AmbientBackground(mode = ambientMode, dark = dark)

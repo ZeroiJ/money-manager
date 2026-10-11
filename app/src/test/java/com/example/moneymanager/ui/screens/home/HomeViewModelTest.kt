@@ -124,4 +124,23 @@ class HomeViewModelTest {
         assertEquals(1000.0, viewModel.todaySpend.value, 0.001)
         assertEquals(1000.0, viewModel.monthSpend.value, 0.001)
     }
+
+    @Test
+    fun testTodaySpend_CountsBeyondTopTen() = runTest {
+        // Stepped virtual time: collectors run BEFORE each write, so a capped
+        // trigger source would go stale once the top-10 stops changing.
+        backgroundScope.launch(testDispatcher) { viewModel.todaySpend.collect() }
+        testScheduler.runCurrent()
+
+        val now = System.currentTimeMillis()
+        (1L..10L).forEach { id ->
+            fakeDao.insertTransaction(tx(id, 100.0, "Tx $id", now))
+            testScheduler.advanceUntilIdle()
+        }
+        assertEquals(1000.0, viewModel.todaySpend.value, 0.001)
+
+        fakeDao.insertTransaction(tx(11, 100.0, "Tx 11", now))
+        testScheduler.advanceUntilIdle()
+        assertEquals(1100.0, viewModel.todaySpend.value, 0.001)
+    }
 }
