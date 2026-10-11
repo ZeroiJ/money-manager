@@ -1,19 +1,43 @@
 package com.example.moneymanager.ui.screens.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -21,12 +45,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.moneymanager.data.model.Category
 import com.example.moneymanager.data.model.Transaction
-import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
-import com.example.moneymanager.theme.*
-import com.example.moneymanager.ui.ascii.Ascii
-import com.example.moneymanager.ui.ascii.AsciiEmptyState
-import com.example.moneymanager.ui.ascii.AsciiSectionHeader
+import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.ui.ios.IosAmount
+import com.example.moneymanager.ui.ios.IosGroupedList
+import com.example.moneymanager.ui.ios.IosRow
+import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.ui.screens.add.AddSpendSheet
 import com.example.moneymanager.util.FormatUtils
 
@@ -42,33 +66,21 @@ fun HomeScreen(
 ) {
     val recentTxs by viewModel.recentTransactions.collectAsState()
     val categoriesMap by viewModel.categoriesMap.collectAsState()
+    val todaySpend by viewModel.todaySpend.collectAsState()
+    val monthSpend by viewModel.monthSpend.collectAsState()
     var showAddSheet by remember { mutableStateOf(presetCategory != null) }
+    val scheme = currentScheme()
 
     Scaffold(
+        containerColor = Color.Transparent,
         floatingActionButton = {
-            Box(
-                modifier = Modifier
-                    .chromaShadow(offset = 1.dp, cornerRadius = 4.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(ChromaOrange)
-                    .border(1.5.dp, ChromaBlack, RoundedCornerShape(4.dp))
-                    .clickable { showAddSheet = true }
-                    .padding(horizontal = 18.dp, vertical = 12.dp),
-                contentAlignment = Alignment.Center
+            FloatingActionButton(
+                onClick = { showAddSheet = true },
+                shape = CircleShape,
+                containerColor = scheme.accent,
+                contentColor = Color.White
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Add, contentDescription = null, tint = ChromaWhite, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "+ ADD SPEND",
-                        style = Chroma.type.labelMedium.copy(
-                            fontFamily = PlexMono,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
-                        ),
-                        color = ChromaWhite
-                    )
-                }
+                Icon(Icons.Default.Add, contentDescription = "Add expense")
             }
         }
     ) { padding ->
@@ -82,68 +94,130 @@ fun HomeScreen(
                 top = 8.dp,
                 bottom = 96.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            // ── Month summary card ───────────────────────────────────────
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(scheme.card)
+                        .padding(20.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = FormatUtils.formatMonth(FormatUtils.getCurrentMonthKey()),
+                            fontFamily = Geist,
+                            fontSize = 13.sp,
+                            color = scheme.secondaryLabel
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        IosAmount(
+                            text = FormatUtils.formatCurrency(monthSpend),
+                            color = scheme.label,
+                            fontSize = 34.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Today · ${FormatUtils.formatCurrency(todaySpend)}",
+                            fontFamily = Geist,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 15.sp,
+                            color = scheme.secondaryLabel
+                        )
+                    }
+                }
+            }
 
-            // ── Recent activity header ───────────────────────────────────────
+            // ── Recent activity ──────────────────────────────────────────
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        AsciiSectionHeader(text = "RECENT_ACTIVITY.LOG", showRule = false)
-                    }
+                    Text(
+                        text = "Recent",
+                        fontFamily = Geist,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 22.sp,
+                        color = scheme.label,
+                        modifier = Modifier.weight(1f)
+                    )
                     TextButton(
                         onClick = onNavigateToTransactions,
                         contentPadding = PaddingValues(horizontal = 8.dp)
                     ) {
                         Text(
-                            text = "VIEW ALL →",
-                            style = Chroma.type.labelSmall.copy(
-                                fontFamily = PlexMono,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = Chroma.color.onSurface
+                            text = "View all",
+                            fontFamily = Geist,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 15.sp,
+                            color = scheme.accent
                         )
                     }
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(Chroma.color.surface)
-                            .border(1.dp, Ascii.hairlineStrong, RoundedCornerShape(2.dp))
-                            .clickable { onNavigateToSettings() },
-                        contentAlignment = Alignment.Center
+                    IconButton(
+                        onClick = onNavigateToSettings,
+                        modifier = Modifier.size(44.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Settings",
-                            tint = Chroma.color.onSurface,
-                            modifier = Modifier.size(18.dp)
+                            tint = scheme.secondaryLabel
                         )
                     }
                 }
             }
 
-            // ── Transaction feed — top 10 ────────────────────────────────────
             if (recentTxs.isEmpty()) {
                 item {
-                    AsciiEmptyState(
-                        title = "NO TRANSACTIONS LOGGED",
-                        subtitle = "Record an expense in under 5 seconds.",
-                        actionLabel = "+ ADD TRANSACTION",
-                        onAction = { showAddSheet = true }
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(scheme.card)
+                            .padding(vertical = 32.dp, horizontal = 20.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "No transactions yet",
+                                fontFamily = Geist,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 17.sp,
+                                color = scheme.label
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Log an expense in under 5 seconds.",
+                                fontFamily = Geist,
+                                fontSize = 15.sp,
+                                color = scheme.secondaryLabel
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Add expense",
+                                fontFamily = Geist,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 15.sp,
+                                color = scheme.accent,
+                                modifier = Modifier.clickable { showAddSheet = true }
+                            )
+                        }
+                    }
                 }
             } else {
-                items(recentTxs.take(10), key = { it.id }) { tx ->
-                    HomeFeedRow(
-                        transaction = tx,
-                        category = categoriesMap[tx.categoryId],
-                        onClick = { onNavigateToEditTransaction(tx.id) }
-                    )
+                item {
+                    IosGroupedList(header = null) {
+                        recentTxs.take(10).forEach { tx ->
+                            HomeFeedRow(
+                                transaction = tx,
+                                category = categoriesMap[tx.categoryId],
+                                onClick = { onNavigateToEditTransaction(tx.id) }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -159,8 +233,8 @@ fun HomeScreen(
 }
 
 /**
- * Compact one-line feed row for the home shortcut (top 10). Flat hairline box,
- * scope prefix, category · payment mode, amount + date. Tap → edit transaction.
+ * Grouped feed row: category icon, note + category · mode, amount + date.
+ * Tap → edit transaction.
  */
 @Composable
 private fun HomeFeedRow(
@@ -168,167 +242,32 @@ private fun HomeFeedRow(
     category: Category?,
     onClick: () -> Unit
 ) {
+    val scheme = currentScheme()
     val isExpense = transaction.type == TransactionType.EXPENSE
-    val shape = RoundedCornerShape(2.dp)
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(Chroma.color.surface)
-            .border(1.dp, Ascii.hairline, shape)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 8.dp)
+    IosRow(
+        title = if (transaction.note.isNotBlank()) transaction.note else (category?.name ?: "Expense"),
+        subtitle = "${category?.name ?: "Misc"} · ${transaction.paymentMode.name}",
+        icon = FormatUtils.getCategoryIcon(category?.icon ?: "category"),
+        iconTint = if (category != null) Color(category.color) else scheme.accent,
+        scheme = scheme,
+        onClick = onClick,
+        showChevron = false
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = if (transaction.scope == TransactionScope.PERSONAL) "[P]" else "[H]",
-                style = Chroma.type.labelSmall.copy(
-                    fontFamily = PlexMono,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 10.sp
-                ),
-                color = if (transaction.scope == TransactionScope.PERSONAL) ChromaBlue else ChromaOrange
+        Column(horizontalAlignment = Alignment.End) {
+            IosAmount(
+                text = (if (isExpense) "−" else "+") + FormatUtils.formatCurrency(transaction.amount),
+                color = if (isExpense) scheme.destructive else scheme.success,
+                fontSize = 15.sp
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = if (transaction.note.isNotBlank()) transaction.note else (category?.name ?: "Expense"),
-                    style = Chroma.type.bodySmall.copy(fontWeight = FontWeight.Bold),
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "${category?.name ?: "Misc"} · ${transaction.paymentMode.name}",
-                    style = Chroma.type.labelSmall.copy(
-                        fontFamily = PlexMono,
-                        fontSize = 10.sp
-                    ),
-                    color = Chroma.color.onSurfaceVariant,
-                    maxLines = 1
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = (if (isExpense) "- " else "+ ") + FormatUtils.formatCurrency(transaction.amount),
-                    style = Chroma.type.titleSmall.copy(
-                        fontFamily = PlexMono,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = if (isExpense) ChromaRed else ChromaGreen
-                )
-                Text(
-                    text = FormatUtils.formatDate(transaction.date),
-                    style = Chroma.type.labelSmall.copy(
-                        fontFamily = PlexMono,
-                        fontSize = 9.sp
-                    ),
-                    color = Chroma.color.onSurfaceVariant
-                )
-            }
+            Text(
+                text = FormatUtils.formatDate(transaction.date),
+                fontFamily = Geist,
+                fontSize = 11.sp,
+                color = scheme.secondaryLabel,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
-    }
-}
-
-@Composable
-fun TransactionCard(
-    transaction: Transaction,
-    category: Category?,
-    modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null
-) {
-    val isExpense = transaction.type == TransactionType.EXPENSE
-
-    ChromaCard(
-        modifier = modifier.fillMaxWidth(),
-        shadowOffset = 2.dp,
-        onClick = onClick
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Category Icon Box
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(ChromaStone100)
-                    .border(1.dp, ChromaStone400, RoundedCornerShape(4.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = FormatUtils.getCategoryIcon(category?.icon ?: "category"),
-                    contentDescription = null,
-                    tint = ChromaBlack,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            // Details
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = if (transaction.note.isNotBlank()) transaction.note else (category?.name ?: "Expense"),
-                    style = Chroma.type.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                    maxLines = 1
-                )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = category?.name ?: "Misc",
-                        style = Chroma.type.labelSmall.copy(
-                            fontFamily = PlexMono,
-                            fontSize = 10.sp
-                        ),
-                        color = Chroma.color.onSurfaceVariant
-                    )
-                    Text("·", style = Chroma.type.labelSmall, color = Chroma.color.onSurfaceVariant)
-                    Text(
-                        text = transaction.paymentMode.name,
-                        style = Chroma.type.labelSmall.copy(
-                            fontFamily = PlexMono,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                    Text("·", style = Chroma.type.labelSmall, color = Chroma.color.onSurfaceVariant)
-                    Text(
-                        text = transaction.scope.name,
-                        style = Chroma.type.labelSmall.copy(
-                            fontFamily = PlexMono,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (transaction.scope == TransactionScope.PERSONAL) ChromaBlue else ChromaOrange
-                        )
-                    )
-                }
-            }
-
-            // Amount
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = (if (isExpense) "- " else "+ ") + FormatUtils.formatCurrency(transaction.amount),
-                    style = Chroma.type.titleSmall.copy(
-                        fontFamily = PlexMono,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = if (isExpense) ChromaRed else ChromaGreen
-                )
-                Text(
-                    text = FormatUtils.formatDate(transaction.date),
-                    style = Chroma.type.labelSmall.copy(
-                        fontFamily = PlexMono,
-                        fontSize = 9.sp
-                    ),
-                    color = Chroma.color.onSurfaceVariant
-                )
-            }
-        }
+        Spacer(modifier = Modifier.width(2.dp))
     }
 }

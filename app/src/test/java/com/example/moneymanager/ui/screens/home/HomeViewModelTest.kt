@@ -86,8 +86,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun testCategoriesMap_MapsById() = runTest {
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.categoriesMap.collect() }
+    fun testCategoriesMap_MapsById() = runTest {        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.categoriesMap.collect() }
 
         fakeDao.insertCategories(
             listOf(
@@ -100,5 +99,29 @@ class HomeViewModelTest {
         assertEquals("Groceries", viewModel.categoriesMap.value[1L]?.name)
         assertEquals("Dining Out", viewModel.categoriesMap.value[2L]?.name)
         assertNull(viewModel.categoriesMap.value[99L])
+    }
+
+    @Test
+    fun testTodayAndMonthSpend_SumsCurrentDayAndMonth() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.todaySpend.collect()
+        }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.monthSpend.collect()
+        }
+
+        val now = System.currentTimeMillis()
+        val lastMonth = Calendar.getInstance().apply { add(Calendar.MONTH, -1) }.timeInMillis
+        fakeDao.insertTransactions(
+            listOf(
+                tx(1, 200.0, "Tea Today", now),
+                tx(2, 800.0, "Groceries", now, TransactionScope.HOUSEHOLD),
+                tx(3, 5000.0, "Old Rent", lastMonth)
+            )
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1000.0, viewModel.todaySpend.value, 0.001)
+        assertEquals(1000.0, viewModel.monthSpend.value, 0.001)
     }
 }
