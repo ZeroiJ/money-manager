@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.11.0] - 2026-10-11 — iOS Liquid Glass Lite reskin
+
+**Design system (replaces Chroma neo-brutalist + ASCII kit)**
+- New `theme/Ios.kt` tokens with system-auto light/dark schemes; new `ui/ios/` component kit (`IosTabBar`, `IosGroupedList`/`IosRow`, `IosSegmented`, `IosSwitchRow`, `IosProgressBar`, `GlassSheet`, `IosAmount`).
+- Full-screen ambient gradient wash behind every tab: warm orange on light, deep navy on dark. Slow 10–12s drift with static fallback on reduced-motion/low-end, plus a Settings → Display toggle (default ON).
+- Typography: Geist Sans for UI + Paper Mono for figures (both SIL OFL, bundled). New app logo: white ₹ on iOS blue→purple gradient with glass sheen.
+- Proper OS edge-to-edge: tab bar owns the navigation-bar/cutout insets instead of double-padding content.
+
+**Screens**
+- **Home:** glanceable month-total + today card back (from live `todaySpend`/`monthSpend` sums), recents as grouped rows, circular blue FAB.
+- **Add:** 5-step stepper collapsed into a single grouped sheet (amount + keypad → scope → pay mode → category grid → note → commit). Edit form keeps all fields (date picker, receipt) with grouped-card chrome.
+- **Transactions:** iOS search field, segmented scope/mode filters, day sections with totals, swipe-to-delete (confirm dialog kept).
+- **Reports:** large-title cards — outflow/inflow, personal-vs-household bar, donut with legend, rounded trend bars + top-3, calendar heatmap.
+- **Budgets:** grouped progress rows with OVER/LEFT labels, iOS month stepper, PAST MODE gating kept.
+- **Settings:** true iOS Settings groups with system switches (app lock, Indian grouping, ambient background).
+
+**Internal**
+- Deleted `AsciiArt.kt`, `Chroma.kt`, `ChromaDesign.kt`, Inter/Plex Mono fonts (zero references). `Color.kt` raw vals stay for the Glance widget (untouched).
+- No Room migration, no new dependencies, no behavior changes to data/worker/SMS/XLSX logic.
+
 ## [v1.10.0] - 2026-10-01 — SMS auto-import with review queue
 
 **SMS auto-import (Settings → SMS_AUTO_IMPORT)**
