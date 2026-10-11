@@ -1,39 +1,72 @@
 package com.example.moneymanager.ui.screens.settings
 
-import android.widget.Toast
 import android.Manifest
 import android.content.pm.PackageManager
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.moneymanager.theme.*
-import com.example.moneymanager.ui.ascii.Ascii
-import com.example.moneymanager.ui.ascii.AsciiDivider
-import com.example.moneymanager.ui.ascii.AsciiSectionHeader
+import com.example.moneymanager.data.model.PendingImport
+import com.example.moneymanager.data.model.TransactionType
+import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.theme.IosScheme
+import com.example.moneymanager.ui.ios.IosAmount
+import com.example.moneymanager.ui.ios.IosGroupedList
+import com.example.moneymanager.ui.ios.IosRow
+import com.example.moneymanager.ui.ios.IosSwitchRow
+import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.util.FormatUtils
 import com.example.moneymanager.util.XlsxImporter
 import kotlinx.coroutines.launch
@@ -42,6 +75,7 @@ import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
@@ -49,8 +83,10 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val scheme = currentScheme()
     val useIndianGrouping by viewModel.useIndianGrouping.collectAsState()
     val biometricEnabled by viewModel.biometricEnabled.collectAsState()
+    val ambientEnabled by viewModel.ambientEnabled.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val householdMembers by viewModel.householdMembers.collectAsState()
     val xlsxPreview by viewModel.xlsxPreview.collectAsState()
@@ -164,423 +200,320 @@ fun SettingsScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(top = 12.dp)) {
-        // Inline header with flat back box
+    Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                .padding(start = 8.dp, end = 20.dp, top = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(Chroma.color.surface)
-                    .border(1.dp, Ascii.hairline, RoundedCornerShape(2.dp))
-                    .clickable { onNavigateBack() },
-                contentAlignment = Alignment.Center
-            ) {
+            IconButton(onClick = onNavigateBack, modifier = Modifier.size(44.dp)) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = Chroma.color.onSurface,
-                    modifier = Modifier.size(16.dp)
+                    tint = scheme.accent
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = "system // config",
-                style = Chroma.type.titleMedium.copy(
-                    fontFamily = PlexMono,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
-                )
+                text = "Settings",
+                fontFamily = Geist,
+                fontWeight = FontWeight.Bold,
+                fontSize = 28.sp,
+                color = scheme.label
             )
         }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // SECURITY section
-            item { AsciiSectionHeader(text = "SECURITY") }
-
+            // Security
             item {
-                FlatSection {
-                    Text(
-                        text = "AIR-GAPPED OFFLINE ROOM DATABASE",
-                        style = Chroma.type.titleSmall.copy(
-                            fontFamily = PlexMono,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Zero tracking, zero analytics, zero telemetry. All records reside purely on your device in local SQLite.",
-                        style = Chroma.type.bodySmall,
-                        color = Chroma.color.onSurfaceVariant
-                    )
-
-                    AsciiDivider(modifier = Modifier.padding(vertical = 10.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "BIOMETRIC_LOCK",
-                                style = Chroma.type.bodyMedium.copy(
-                                    fontFamily = PlexMono,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-                            Text(
-                                text = "Local device lock only — no account, no cloud",
-                                style = Chroma.type.labelSmall.copy(fontSize = 10.sp),
-                                color = Chroma.color.onSurfaceVariant
-                            )
-                        }
-                        if (biometricEnabled) {
-                            ChromaBadge(
-                                text = "[ LOCKED ]",
-                                backgroundColor = ChromaGreen,
-                                textColor = ChromaWhite,
-                                borderColor = ChromaGreen
-                            )
-                        } else {
-                            ChromaBadge(
-                                text = "[ UNLOCKED ]",
-                                backgroundColor = ChromaStone100,
-                                textColor = ChromaBlack,
-                                borderColor = ChromaBlack
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ChromaButton(
-                        text = if (biometricEnabled) "DISABLE BIOMETRIC" else "ENABLE BIOMETRIC",
-                        onClick = { viewModel.toggleBiometric() },
-                        backgroundColor = if (biometricEnabled) ChromaRed else ChromaBlack,
-                        textColor = ChromaWhite,
-                        shadowOffset = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
+                IosGroupedList(header = "Security", scheme = scheme) {
+                    IosRow(
+                        title = "On-device only",
+                        subtitle = "No tracking, no analytics. Records live in local SQLite.",
+                        icon = null,
+                        iconTint = scheme.success,
+                        scheme = scheme,
+                        showChevron = false
+                    ) {}
+                    HorizontalDivider(color = scheme.separator, thickness = 0.5.dp)
+                    IosSwitchRow(
+                        title = "App lock",
+                        subtitle = if (biometricEnabled) "On — biometric required"
+                        else "Off — local device lock only",
+                        checked = biometricEnabled,
+                        onCheckedChange = { viewModel.toggleBiometric() },
+                        scheme = scheme
                     )
                 }
             }
 
-            // DISPLAY section
-            item { AsciiSectionHeader(text = "DISPLAY") }
-
+            // Display
             item {
-                FlatSection {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "INDIAN_NUMBER_GROUPING",
-                                style = Chroma.type.bodyMedium.copy(
-                                    fontFamily = PlexMono,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-                            Text(
-                                text = if (useIndianGrouping) "e.g. ₹1,50,000 (Lakhs/Crores)" else "e.g. ₹150,000.00 (Standard)",
-                                style = Chroma.type.labelSmall.copy(fontSize = 10.sp),
-                                color = Chroma.color.onSurfaceVariant
-                            )
-                        }
-                        Switch(
-                            checked = useIndianGrouping,
-                            onCheckedChange = { viewModel.setUseIndianGrouping(it) }
-                        )
-                    }
+                IosGroupedList(header = "Display", scheme = scheme) {
+                    IosSwitchRow(
+                        title = "Indian number grouping",
+                        subtitle = if (useIndianGrouping) "e.g. ₹1,50,000"
+                        else "e.g. ₹150,000.00",
+                        checked = useIndianGrouping,
+                        onCheckedChange = { viewModel.setUseIndianGrouping(it) },
+                        scheme = scheme
+                    )
+                    HorizontalDivider(color = scheme.separator, thickness = 0.5.dp)
+                    IosSwitchRow(
+                        title = "Animated background",
+                        subtitle = "Slow gradient wash behind every screen",
+                        checked = ambientEnabled,
+                        onCheckedChange = { viewModel.setAmbientEnabled(it) },
+                        scheme = scheme
+                    )
                 }
             }
 
-            // HOUSEHOLD MEMBERS section
-            item { AsciiSectionHeader(text = "HOUSEHOLD_MEMBERS [ ${householdMembers.size} ]") }
-
+            // Household
             item {
-                FlatSection {
+                IosGroupedList(header = "Household · ${householdMembers.size}", scheme = scheme) {
                     if (householdMembers.isEmpty()) {
                         Text(
                             text = "No members yet.",
-                            style = Chroma.type.bodySmall,
-                            color = Chroma.color.onSurfaceVariant
+                            fontFamily = Geist,
+                            fontSize = 15.sp,
+                            color = scheme.secondaryLabel,
+                            modifier = Modifier.padding(vertical = 10.dp)
                         )
                     } else {
-                        householdMembers.forEach { member ->
-                            FlatRow(
-                                label = member.name,
-                                trailing = {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                            .clip(RoundedCornerShape(2.dp))
-                                            .border(1.dp, ChromaStone400, RoundedCornerShape(2.dp))
-                                            .clickable { viewModel.deleteHouseholdMember(member) },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Delete,
-                                            contentDescription = "Delete",
-                                            tint = ChromaRed,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                    }
+                        householdMembers.forEachIndexed { index, member ->
+                            IosRow(
+                                title = member.name,
+                                subtitle = null,
+                                icon = null,
+                                iconTint = scheme.accent,
+                                scheme = scheme,
+                                showChevron = false
+                            ) {
+                                IconButton(
+                                    onClick = { viewModel.deleteHouseholdMember(member) },
+                                    modifier = Modifier.size(44.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = "Delete ${member.name}",
+                                        tint = scheme.destructive
+                                    )
                                 }
-                            )
-                            AsciiDivider(modifier = Modifier.padding(vertical = 4.dp))
+                            }
+                            if (index < householdMembers.size - 1) {
+                                HorizontalDivider(color = scheme.separator, thickness = 0.5.dp)
+                            }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-                    ChromaButton(
-                        text = "+ ADD HOUSEHOLD MEMBER",
-                        onClick = {
-                            newMemberName = ""
-                            showAddMemberDialog = true
-                        },
-                        backgroundColor = ChromaBlack,
-                        textColor = ChromaWhite,
-                        shadowOffset = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+                SettingsActionButton(
+                    text = "Add member",
+                    primary = false,
+                    scheme = scheme,
+                    onClick = {
+                        newMemberName = ""
+                        showAddMemberDialog = true
+                    }
+                )
             }
 
-            // CATEGORIES section
-            item { AsciiSectionHeader(text = "CATEGORIES [ ${categories.size} ]") }
-
+            // Categories
             item {
-                FlatSection {
+                IosGroupedList(header = "Categories · ${categories.size}", scheme = scheme) {
                     if (categories.isEmpty()) {
                         Text(
                             text = "No categories yet.",
-                            style = Chroma.type.bodySmall,
-                            color = Chroma.color.onSurfaceVariant
+                            fontFamily = Geist,
+                            fontSize = 15.sp,
+                            color = scheme.secondaryLabel,
+                            modifier = Modifier.padding(vertical = 10.dp)
                         )
                     } else {
-                        categories.forEach { cat ->
-                            FlatRow(
-                                label = cat.name,
-                                leadingIcon = {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(10.dp)
-                                            .background(ChromaBlack)
+                        categories.forEachIndexed { index, cat ->
+                            IosRow(
+                                title = cat.name,
+                                subtitle = null,
+                                icon = FormatUtils.getCategoryIcon(cat.icon),
+                                iconTint = Color(cat.color),
+                                scheme = scheme,
+                                showChevron = false
+                            ) {
+                                if (cat.isDefault) {
+                                    Text(
+                                        text = "System",
+                                        fontFamily = Geist,
+                                        fontSize = 13.sp,
+                                        color = scheme.secondaryLabel
                                     )
-                                },
-                                trailing = {
-                                    if (cat.isDefault) {
-                                        Text(
-                                            text = "[ SYSTEM ]",
-                                            style = Chroma.type.labelSmall.copy(
-                                                fontFamily = PlexMono,
-                                                fontSize = 9.sp
-                                            ),
-                                            color = ChromaStone500
+                                } else {
+                                    IconButton(
+                                        onClick = { viewModel.deleteCategory(cat) },
+                                        modifier = Modifier.size(44.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Delete ${cat.name}",
+                                            tint = scheme.destructive
                                         )
-                                    } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(24.dp)
-                                                .clip(RoundedCornerShape(2.dp))
-                                                .border(1.dp, ChromaStone400, RoundedCornerShape(2.dp))
-                                                .clickable { viewModel.deleteCategory(cat) },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                Icons.Default.Delete,
-                                                contentDescription = "Delete",
-                                                tint = ChromaRed,
-                                                modifier = Modifier.size(14.dp)
-                                            )
-                                        }
                                     }
                                 }
-                            )
-                            AsciiDivider(modifier = Modifier.padding(vertical = 4.dp))
+                            }
+                            if (index < categories.size - 1) {
+                                HorizontalDivider(color = scheme.separator, thickness = 0.5.dp)
+                            }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-                    ChromaButton(
-                        text = "+ CREATE CUSTOM CATEGORY",
-                        onClick = {
-                            newCategoryName = ""
-                            showAddCategoryDialog = true
-                        },
-                        backgroundColor = ChromaBlack,
-                        textColor = ChromaWhite,
-                        shadowOffset = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+                SettingsActionButton(
+                    text = "Add category",
+                    primary = false,
+                    scheme = scheme,
+                    onClick = {
+                        newCategoryName = ""
+                        showAddCategoryDialog = true
+                    }
+                )
             }
 
-            // BACKUP & RESTORE section
-            item { AsciiSectionHeader(text = "BACKUP_RESTORE") }
-
+            // Backup
             item {
-                FlatSection {
-                    ChromaButton(
-                        text = "EXPORT FULL BACKUP (JSON)",
-                        onClick = { exportJsonLauncher.launch("money_manager_backup_${System.currentTimeMillis()}.json") },
-                        backgroundColor = ChromaBlack,
-                        textColor = ChromaWhite,
-                        shadowOffset = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ChromaButton(
-                        text = "EXPORT SPREADSHEET (CSV)",
-                        onClick = { exportCsvLauncher.launch("money_manager_export_${System.currentTimeMillis()}.csv") },
-                        backgroundColor = ChromaStone200,
-                        textColor = ChromaBlack,
-                        borderColor = ChromaBlack,
-                        shadowOffset = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ChromaButton(
-                        text = "RESTORE / IMPORT (JSON)",
-                        onClick = { importJsonLauncher.launch(arrayOf("application/json")) },
-                        backgroundColor = ChromaStone100,
-                        textColor = ChromaBlack,
-                        borderColor = ChromaStone400,
-                        shadowOffset = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ChromaButton(
-                        text = "IMPORT EXCEL (.XLSX)",
-                        onClick = { importXlsxLauncher.launch(arrayOf("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel")) },
-                        backgroundColor = ChromaStone200,
-                        textColor = ChromaBlack,
-                        borderColor = ChromaBlack,
-                        shadowOffset = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-
-            // SMS AUTO-IMPORT section
-            item { AsciiSectionHeader(text = "SMS_AUTO_IMPORT [ ${pendingImports.size} ]") }
-
-            item {
-                FlatSection {
-                    Text(
-                        text = "UPI_SMS_CAPTURE",
-                        style = Chroma.type.bodyMedium.copy(
-                            fontFamily = PlexMono,
-                            fontWeight = FontWeight.Bold
+                IosGroupedList(header = "Backup", scheme = scheme) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SettingsActionButton(
+                            text = "Export backup (JSON)",
+                            primary = true,
+                            scheme = scheme,
+                            onClick = {
+                                exportJsonLauncher.launch(
+                                    "money_manager_backup_${System.currentTimeMillis()}.json"
+                                )
+                            }
                         )
-                    )
-                    Text(
-                        text = "Bank SMS + GPay notifications → review queue. All on-device, nothing leaves your phone.",
-                        style = Chroma.type.labelSmall.copy(fontSize = 10.sp),
-                        color = Chroma.color.onSurfaceVariant
-                    )
+                        SettingsActionButton(
+                            text = "Export spreadsheet (CSV)",
+                            primary = false,
+                            scheme = scheme,
+                            onClick = {
+                                exportCsvLauncher.launch(
+                                    "money_manager_export_${System.currentTimeMillis()}.csv"
+                                )
+                            }
+                        )
+                        SettingsActionButton(
+                            text = "Restore backup (JSON)",
+                            primary = false,
+                            scheme = scheme,
+                            onClick = { importJsonLauncher.launch(arrayOf("application/json")) }
+                        )
+                        SettingsActionButton(
+                            text = "Import Excel (.xlsx)",
+                            primary = false,
+                            scheme = scheme,
+                            onClick = {
+                                importXlsxLauncher.launch(
+                                    arrayOf(
+                                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                        "application/vnd.ms-excel"
+                                    )
+                                )
+                            }
+                        )
+                    }
+                }
+            }
 
-                    AsciiDivider(modifier = Modifier.padding(vertical = 10.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+            // SMS auto-import
+            item {
+                IosGroupedList(
+                    header = "SMS auto-import · ${pendingImports.size}",
+                    scheme = scheme
+                ) {
+                    IosRow(
+                        title = "UPI SMS capture",
+                        subtitle = "Bank SMS + GPay → review queue, on-device only.",
+                        icon = null,
+                        iconTint = scheme.accent,
+                        scheme = scheme,
+                        showChevron = false
+                    ) {}
+                    HorizontalDivider(color = scheme.separator, thickness = 0.5.dp)
+                    IosRow(
+                        title = "Notification listener",
+                        subtitle = if (listenerEnabled) "On" else "Off",
+                        icon = null,
+                        iconTint = scheme.accent,
+                        scheme = scheme,
+                        showChevron = false
                     ) {
                         Text(
-                            text = "NOTIFICATION_LISTENER",
-                            style = Chroma.type.bodyMedium.copy(
-                                fontFamily = PlexMono,
-                                fontWeight = FontWeight.Bold
-                            )
+                            text = if (listenerEnabled) "On" else "Off",
+                            fontFamily = Geist,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 15.sp,
+                            color = if (listenerEnabled) scheme.success else scheme.secondaryLabel
                         )
-                        if (listenerEnabled) {
-                            ChromaBadge(
-                                text = "[ ON ]",
-                                backgroundColor = ChromaGreen,
-                                textColor = ChromaWhite,
-                                borderColor = ChromaGreen
-                            )
-                        } else {
-                            ChromaBadge(
-                                text = "[ OFF ]",
-                                backgroundColor = ChromaStone100,
-                                textColor = ChromaBlack,
-                                borderColor = ChromaBlack
-                            )
-                        }
                     }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ChromaButton(
-                        text = if (listenerEnabled) "NOTIFICATION ACCESS GRANTED" else "ENABLE NOTIFICATION ACCESS",
-                        onClick = {
-                            notificationSettingsLauncher.launch(
-                                android.content.Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                            )
-                        },
-                        backgroundColor = if (listenerEnabled) ChromaStone200 else ChromaBlack,
-                        textColor = if (listenerEnabled) ChromaBlack else ChromaWhite,
-                        borderColor = ChromaBlack,
-                        shadowOffset = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ChromaButton(
-                        text = "SCAN SMS INBOX",
-                        onClick = {
-                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) {
-                                scope.launch {
-                                    val n = viewModel.scanSmsInbox(context)
-                                    Toast.makeText(
-                                        context,
-                                        if (n > 0) "$n new payments found" else "No new payments in inbox",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            } else {
-                                smsPermissionLauncher.launch(Manifest.permission.READ_SMS)
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SettingsActionButton(
+                            text = if (listenerEnabled) "Notification access granted"
+                            else "Enable notification access",
+                            primary = !listenerEnabled,
+                            scheme = scheme,
+                            onClick = {
+                                notificationSettingsLauncher.launch(
+                                    android.content.Intent(
+                                        Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS
+                                    )
+                                )
                             }
-                        },
-                        backgroundColor = ChromaOrange,
-                        textColor = ChromaWhite,
-                        shadowOffset = 1.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    if (pendingImports.isNotEmpty()) {
-                        AsciiDivider(modifier = Modifier.padding(vertical = 10.dp))
-                        Text(
-                            text = "// REVIEW QUEUE — approve to log, × to discard",
-                            style = Chroma.type.labelSmall.copy(
-                                fontFamily = PlexMono,
-                                fontSize = 9.sp
-                            ),
-                            color = Chroma.color.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                        SettingsActionButton(
+                            text = "Scan SMS inbox",
+                            primary = true,
+                            scheme = scheme,
+                            onClick = {
+                                if (ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.READ_SMS
+                                    ) == PackageManager.PERMISSION_GRANTED
+                                ) {
+                                    scope.launch {
+                                        val n = viewModel.scanSmsInbox(context)
+                                        Toast.makeText(
+                                            context,
+                                            if (n > 0) "$n new payments found"
+                                            else "No new payments in inbox",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                } else {
+                                    smsPermissionLauncher.launch(Manifest.permission.READ_SMS)
+                                }
+                            }
+                        )
+                    }
+                    if (pendingImports.isNotEmpty()) {
+                        HorizontalDivider(color = scheme.separator, thickness = 0.5.dp)
+                        Text(
+                            text = "Review queue — approve to log, × to discard",
+                            fontFamily = Geist,
+                            fontSize = 13.sp,
+                            color = scheme.secondaryLabel
+                        )
                         pendingImports.forEach { item ->
                             PendingImportRow(
                                 item = item,
+                                scheme = scheme,
                                 onApprove = { viewModel.approvePending(item) },
                                 onDiscard = { viewModel.discardPending(item) }
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
                         }
                     }
                 }
@@ -591,48 +524,48 @@ fun SettingsScreen(
     if (showAddCategoryDialog) {
         AlertDialog(
             onDismissRequest = { showAddCategoryDialog = false },
-            shape = RoundedCornerShape(2.dp),
-            containerColor = Chroma.color.surface,
+            shape = RoundedCornerShape(16.dp),
+            containerColor = scheme.card,
             title = {
                 Text(
-                    text = "CATEGORY // NEW",
-                    style = Chroma.type.titleMedium.copy(
-                        fontFamily = PlexMono,
-                        fontWeight = FontWeight.Bold
-                    )
+                    text = "New category",
+                    fontFamily = Geist,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 17.sp,
+                    color = scheme.label
                 )
             },
             text = {
                 OutlinedTextField(
                     value = newCategoryName,
                     onValueChange = { newCategoryName = it },
-                    label = { Text("Category Name", fontFamily = PlexMono) },
+                    label = { Text("Category name", fontFamily = Geist) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(2.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = ChromaBlack,
-                        unfocusedBorderColor = ChromaStone300
+                        focusedBorderColor = scheme.accent,
+                        unfocusedBorderColor = scheme.separator
                     )
                 )
             },
             confirmButton = {
-                ChromaButton(
-                    text = "SAVE",
+                Button(
                     onClick = {
                         if (newCategoryName.isNotBlank()) {
                             viewModel.addCategory(newCategoryName.trim(), "category", 0xFF2563EB)
                         }
                         showAddCategoryDialog = false
                     },
-                    backgroundColor = ChromaOrange,
-                    textColor = ChromaWhite,
-                    shadowOffset = 1.dp
-                )
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
+                ) {
+                    Text("Save", fontFamily = Geist, fontWeight = FontWeight.SemiBold)
+                }
             },
             dismissButton = {
                 TextButton(onClick = { showAddCategoryDialog = false }) {
-                    Text("CANCEL", fontWeight = FontWeight.Bold, color = Chroma.color.onSurface)
+                    Text("Cancel", fontFamily = Geist, color = scheme.accent)
                 }
             }
         )
@@ -641,48 +574,48 @@ fun SettingsScreen(
     if (showAddMemberDialog) {
         AlertDialog(
             onDismissRequest = { showAddMemberDialog = false },
-            shape = RoundedCornerShape(2.dp),
-            containerColor = Chroma.color.surface,
+            shape = RoundedCornerShape(16.dp),
+            containerColor = scheme.card,
             title = {
                 Text(
-                    text = "HOUSEHOLD_MEMBER // NEW",
-                    style = Chroma.type.titleMedium.copy(
-                        fontFamily = PlexMono,
-                        fontWeight = FontWeight.Bold
-                    )
+                    text = "New member",
+                    fontFamily = Geist,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 17.sp,
+                    color = scheme.label
                 )
             },
             text = {
                 OutlinedTextField(
                     value = newMemberName,
                     onValueChange = { newMemberName = it },
-                    label = { Text("Member Name", fontFamily = PlexMono) },
+                    label = { Text("Member name", fontFamily = Geist) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(2.dp),
+                    shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = ChromaBlack,
-                        unfocusedBorderColor = ChromaStone300
+                        focusedBorderColor = scheme.accent,
+                        unfocusedBorderColor = scheme.separator
                     )
                 )
             },
             confirmButton = {
-                ChromaButton(
-                    text = "SAVE",
+                Button(
                     onClick = {
                         if (newMemberName.isNotBlank()) {
                             viewModel.addHouseholdMember(newMemberName.trim())
                         }
                         showAddMemberDialog = false
                     },
-                    backgroundColor = ChromaOrange,
-                    textColor = ChromaWhite,
-                    shadowOffset = 1.dp
-                )
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
+                ) {
+                    Text("Save", fontFamily = Geist, fontWeight = FontWeight.SemiBold)
+                }
             },
             dismissButton = {
                 TextButton(onClick = { showAddMemberDialog = false }) {
-                    Text("CANCEL", fontWeight = FontWeight.Bold, color = Chroma.color.onSurface)
+                    Text("Cancel", fontFamily = Geist, color = scheme.accent)
                 }
             }
         )
@@ -691,61 +624,59 @@ fun SettingsScreen(
     if (xlsxBusy || xlsxPreview != null || xlsxError != null) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissXlsxPreview() },
-            shape = RoundedCornerShape(2.dp),
-            containerColor = Chroma.color.surface,
+            shape = RoundedCornerShape(16.dp),
+            containerColor = scheme.card,
             title = {
                 Text(
-                    text = "IMPORT // XLSX",
-                    style = Chroma.type.titleMedium.copy(
-                        fontFamily = PlexMono,
-                        fontWeight = FontWeight.Bold
-                    )
+                    text = "Excel import",
+                    fontFamily = Geist,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 17.sp,
+                    color = scheme.label
                 )
             },
             text = {
                 when {
                     xlsxBusy -> Text(
-                        text = "parsing workbook…",
-                        style = Chroma.type.bodyMedium.copy(fontFamily = PlexMono),
-                        color = Chroma.color.onSurfaceVariant
+                        text = "Parsing workbook…",
+                        fontFamily = Geist,
+                        fontSize = 15.sp,
+                        color = scheme.secondaryLabel
                     )
                     xlsxError != null -> Text(
-                        text = "ERR // $xlsxError",
-                        style = Chroma.type.bodyMedium.copy(fontFamily = PlexMono),
-                        color = ChromaRed
+                        text = xlsxError ?: "Unknown error",
+                        fontFamily = Geist,
+                        fontSize = 15.sp,
+                        color = scheme.destructive
                     )
                     else -> {
                         val preview = xlsxPreview
                         if (preview != null) {
                             Column(modifier = Modifier.fillMaxWidth()) {
-                                AsciiDivider(modifier = Modifier.padding(bottom = 8.dp))
                                 Text(
                                     text = "${preview.rows.size} rows ready · ${preview.skippedRows} skipped / ${preview.totalRows} total",
-                                    style = Chroma.type.labelSmall.copy(
-                                        fontFamily = PlexMono,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 10.sp
-                                    ),
-                                    color = Chroma.color.onSurfaceVariant
+                                    fontFamily = Geist,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 13.sp,
+                                    color = scheme.secondaryLabel
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 if (preview.rows.isEmpty()) {
                                     Text(
                                         text = "No valid rows found in sheet.",
-                                        style = Chroma.type.bodyMedium.copy(fontFamily = PlexMono),
-                                        color = Chroma.color.onSurfaceVariant
+                                        fontFamily = Geist,
+                                        fontSize = 15.sp,
+                                        color = scheme.secondaryLabel
                                     )
                                 } else {
                                     LazyColumn(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(320.dp)
-                                            .border(1.dp, Ascii.hairline, RoundedCornerShape(2.dp)),
-                                        contentPadding = PaddingValues(8.dp),
-                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                            .height(320.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         itemsIndexed(preview.rows) { _, row ->
-                                            XlsxPreviewRow(row)
+                                            XlsxPreviewRow(row, scheme)
                                         }
                                     }
                                 }
@@ -757,8 +688,7 @@ fun SettingsScreen(
             confirmButton = {
                 val preview = xlsxPreview
                 if (preview != null && preview.rows.isNotEmpty()) {
-                    ChromaButton(
-                        text = "COMMIT // INSERT",
+                    Button(
                         onClick = {
                             scope.launch {
                                 val inserted = viewModel.commitImport()
@@ -769,15 +699,16 @@ fun SettingsScreen(
                                 ).show()
                             }
                         },
-                        backgroundColor = ChromaOrange,
-                        textColor = ChromaWhite,
-                        shadowOffset = 1.dp
-                    )
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
+                    ) {
+                        Text("Import", fontFamily = Geist, fontWeight = FontWeight.SemiBold)
+                    }
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissXlsxPreview() }) {
-                    Text("CANCEL", fontWeight = FontWeight.Bold, color = Chroma.color.onSurface)
+                    Text("Close", fontFamily = Geist, color = scheme.accent)
                 }
             }
         )
@@ -785,68 +716,79 @@ fun SettingsScreen(
 }
 
 @Composable
+private fun SettingsActionButton(
+    text: String,
+    primary: Boolean,
+    scheme: IosScheme,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (primary) scheme.accent else scheme.secondaryFill,
+            contentColor = if (primary) Color.White else scheme.label
+        ),
+        contentPadding = PaddingValues(vertical = 8.dp)
+    ) {
+        Text(
+            text = text,
+            fontFamily = Geist,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 15.sp
+        )
+    }
+}
+
+@Composable
 private fun PendingImportRow(
-    item: com.example.moneymanager.data.model.PendingImport,
+    item: PendingImport,
+    scheme: IosScheme,
     onApprove: () -> Unit,
     onDiscard: () -> Unit
 ) {
-    val dateLabel = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(java.util.Date(item.date))
+    val dateLabel =
+        SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(java.util.Date(item.date))
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(2.dp))
-            .background(ChromaStone100)
-            .border(0.5.dp, ChromaStone300, RoundedCornerShape(2.dp))
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .clip(RoundedCornerShape(12.dp))
+            .background(scheme.secondaryFill)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = FormatUtils.formatCurrency(item.amount) + if (item.type == com.example.moneymanager.data.model.TransactionType.INCOME) "  [+]" else "",
-                style = Chroma.type.bodyMedium.copy(
-                    fontFamily = PlexMono,
-                    fontWeight = FontWeight.Bold
-                ),
-                color = if (item.type == com.example.moneymanager.data.model.TransactionType.INCOME) ChromaGreen else ChromaBlack
+            IosAmount(
+                text = FormatUtils.formatCurrency(item.amount) +
+                    if (item.type == TransactionType.INCOME) " + " else "",
+                color = if (item.type == TransactionType.INCOME) scheme.success else scheme.label,
+                fontSize = 15.sp
             )
             Text(
                 text = "${item.merchant} · $dateLabel · ${item.sender}",
-                style = Chroma.type.labelSmall.copy(fontSize = 10.sp),
-                color = Chroma.color.onSurfaceVariant,
+                fontFamily = Geist,
+                fontSize = 13.sp,
+                color = scheme.secondaryLabel,
                 maxLines = 1
             )
         }
         Row {
-            Box(
-                modifier = Modifier
-                    .size(28.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(ChromaGreen)
-                    .clickable(onClick = onApprove),
-                contentAlignment = Alignment.Center
-            ) {
+            IconButton(onClick = onApprove, modifier = Modifier.size(44.dp)) {
                 Icon(
                     Icons.Default.Check,
                     contentDescription = "Approve",
-                    tint = ChromaWhite,
-                    modifier = Modifier.size(16.dp)
+                    tint = scheme.success
                 )
             }
-            Spacer(modifier = Modifier.width(6.dp))
-            Box(
-                modifier = Modifier
-                    .size(28.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .border(1.dp, ChromaStone400, RoundedCornerShape(2.dp))
-                    .clickable(onClick = onDiscard),
-                contentAlignment = Alignment.Center
-            ) {
+            IconButton(onClick = onDiscard, modifier = Modifier.size(44.dp)) {
                 Icon(
-                    Icons.Default.Delete,
+                    Icons.Default.Close,
                     contentDescription = "Discard",
-                    tint = ChromaRed,
-                    modifier = Modifier.size(14.dp)
+                    tint = scheme.destructive
                 )
             }
         }
@@ -854,97 +796,48 @@ private fun PendingImportRow(
 }
 
 @Composable
-private fun XlsxPreviewRow(row: XlsxImporter.ParsedTransaction) {
-    val dateLabel = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(java.util.Date(row.date))
+private fun XlsxPreviewRow(row: XlsxImporter.ParsedTransaction, scheme: IosScheme) {
+    val dateLabel =
+        SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(java.util.Date(row.date))
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(2.dp))
-            .background(ChromaStone100)
-            .border(0.5.dp, ChromaStone300, RoundedCornerShape(2.dp))
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .clip(RoundedCornerShape(12.dp))
+            .background(scheme.secondaryFill)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = FormatUtils.formatCurrency(row.amount) + if (row.type == com.example.moneymanager.data.model.TransactionType.INCOME) "  [+]" else "",
-                style = Chroma.type.bodyMedium.copy(
-                    fontFamily = PlexMono,
-                    fontWeight = FontWeight.Bold
-                ),
-                color = if (row.type == com.example.moneymanager.data.model.TransactionType.INCOME) ChromaGreen else ChromaBlack
+            IosAmount(
+                text = FormatUtils.formatCurrency(row.amount) +
+                    if (row.type == TransactionType.INCOME) " + " else "",
+                color = if (row.type == TransactionType.INCOME) scheme.success else scheme.label,
+                fontSize = 15.sp
             )
             Text(
                 text = row.note.ifBlank { "(no note)" },
-                style = Chroma.type.labelSmall.copy(fontSize = 10.sp),
-                color = Chroma.color.onSurfaceVariant,
+                fontFamily = Geist,
+                fontSize = 13.sp,
+                color = scheme.secondaryLabel,
                 maxLines = 1
             )
         }
+        Spacer(modifier = Modifier.width(8.dp))
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 text = if (row.categoryHint.isBlank()) "—" else row.categoryHint,
-                style = Chroma.type.labelSmall.copy(
-                    fontFamily = PlexMono,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 9.sp
-                ),
-                color = ChromaBlack
+                fontFamily = Geist,
+                fontWeight = FontWeight.Medium,
+                fontSize = 13.sp,
+                color = scheme.label
             )
             Text(
                 text = "${dateLabel} · ${row.scope.name.take(4)} · ${row.paymentMode.name}",
-                style = Chroma.type.labelSmall.copy(fontSize = 9.sp),
-                color = Chroma.color.onSurfaceVariant
+                fontFamily = Geist,
+                fontSize = 11.sp,
+                color = scheme.secondaryLabel
             )
         }
-    }
-}
-
-@Composable
-private fun FlatSection(
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(2.dp))
-            .background(Chroma.color.surface)
-            .border(1.dp, Ascii.hairline, RoundedCornerShape(2.dp))
-            .padding(12.dp)
-    ) {
-        content()
-    }
-}
-
-@Composable
-private fun FlatRow(
-    label: String,
-    leadingIcon: (@Composable () -> Unit)? = null,
-    trailing: (@Composable () -> Unit)? = null
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(2.dp))
-            .background(ChromaStone100)
-            .border(0.5.dp, ChromaStone300, RoundedCornerShape(2.dp))
-            .padding(horizontal = 10.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            leadingIcon?.invoke()
-            if (leadingIcon != null) Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = label,
-                style = Chroma.type.bodyMedium.copy(
-                    fontFamily = PlexMono,
-                    fontWeight = FontWeight.Bold
-                )
-            )
-        }
-        trailing?.invoke()
     }
 }

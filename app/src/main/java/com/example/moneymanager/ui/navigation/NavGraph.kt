@@ -11,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +23,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -80,8 +82,8 @@ fun AppNavGraph(
     val currentRoute = navBackStackEntry?.destination?.route
     val context = LocalContext.current
     val dark = isSystemInDarkTheme()
-    // Ambient toggle wires to UserPreferences in Task 10; default ON until then.
-    val ambientMode = resolveAmbientMode(readAnimatorScale(context), true)
+    val ambientEnabled by hiltViewModel<com.example.moneymanager.ui.screens.settings.SettingsViewModel>().ambientEnabled.collectAsState()
+    val ambientMode = resolveAmbientMode(readAnimatorScale(context), ambientEnabled)
 
     Box(modifier = Modifier.fillMaxSize()) {
         AmbientBackground(mode = ambientMode, dark = dark)

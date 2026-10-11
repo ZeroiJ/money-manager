@@ -47,6 +47,12 @@ class SettingsViewModel @Inject constructor(
         userPreferences.setBiometricEnabled(!userPreferences.biometricEnabled.value)
     }
 
+    val ambientEnabled: StateFlow<Boolean> = userPreferences.ambientEnabled
+
+    fun setAmbientEnabled(enabled: Boolean) {
+        userPreferences.setAmbientEnabled(enabled)
+    }
+
     val categories: StateFlow<List<Category>> = moneyDao.getAllCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
