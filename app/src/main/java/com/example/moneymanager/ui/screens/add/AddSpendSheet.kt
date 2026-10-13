@@ -56,6 +56,7 @@ import com.example.moneymanager.ui.ios.GlassSheet
 import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.IosSegmented
 import com.example.moneymanager.ui.ios.currentScheme
+import com.example.moneymanager.ui.ios.pressShrink
 import com.example.moneymanager.util.FormatUtils
 import com.example.moneymanager.util.Haptics
 import kotlinx.coroutines.launch
@@ -184,7 +185,8 @@ fun AddSpendSheet(
                 enabled = canCommit,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
+                    .height(52.dp)
+                    .pressShrink(enabled = canCommit),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = scheme.accent,
@@ -346,7 +348,7 @@ private fun CategoryBlock(
             val isSelected = selectedCatId == cat.id
             Box(
                 modifier = Modifier
-                    .defaultMinSize(minHeight = 64.dp)
+                    .defaultMinSize(minHeight = 76.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(
                         if (isSelected) scheme.accent.copy(alpha = 0.15f)
@@ -368,9 +370,10 @@ private fun CategoryBlock(
                         text = cat.name,
                         fontFamily = Geist,
                         fontSize = 11.sp,
+                        lineHeight = 13.sp,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                         color = if (isSelected) scheme.accent else scheme.label,
-                        maxLines = 1,
+                        maxLines = 2,
                         textAlign = TextAlign.Center
                     )
                 }

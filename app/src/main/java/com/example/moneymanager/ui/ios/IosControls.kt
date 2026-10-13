@@ -1,5 +1,12 @@
 package com.example.moneymanager.ui.ios
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -58,7 +65,7 @@ fun IosSegmented(
                     .clip(RoundedCornerShape(8.dp))
                     .background(if (isSelected) scheme.card else Color.Transparent)
                     .clickable { onSelect(index) }
-                    .padding(vertical = 8.dp),
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -148,22 +155,62 @@ fun IosProgressBar(
     }
 }
 
-/** Amount figure in Paper Mono semibold — the single style for all ₹ numbers. */
+/**
+ * Amount figure in Paper Mono semibold — the single style for all ₹ numbers.
+ * Digits roll on change (Nessie-style, ~0.2s); feed rows may opt out.
+ * Renders bullets when the privacy mask ([LocalHideAmounts]) is on.
+ */
 @Composable
 fun IosAmount(
     text: String,
     color: Color,
-    fontSize: androidx.compose.ui.unit.TextUnit = 17.sp
+    fontSize: androidx.compose.ui.unit.TextUnit = 17.sp,
+    rolling: Boolean = true
 ) {
-    Text(
-        text = text,
-        fontFamily = PaperMono,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = fontSize,
-        color = color,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
-    )
+    if (LocalHideAmounts.current) {
+        Text(
+            text = "••••••",
+            fontFamily = PaperMono,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = fontSize,
+            color = color,
+            maxLines = 1
+        )
+        return
+    }
+    if (!rolling) {
+        Text(
+            text = text,
+            fontFamily = PaperMono,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = fontSize,
+            color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        return
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        text.forEachIndexed { i, ch ->
+            AnimatedContent(
+                targetState = ch,
+                transitionSpec = {
+                    (slideInVertically(tween(200)) { it } + fadeIn(tween(200)))
+                        .togetherWith(slideOutVertically(tween(200)) { -it } + fadeOut(tween(200)))
+                },
+                label = "digit$i"
+            ) { c ->
+                Text(
+                    text = c.toString(),
+                    fontFamily = PaperMono,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = fontSize,
+                    color = color,
+                    maxLines = 1
+                )
+            }
+        }
+    }
 }
 
 /** Rounded 16dp modal sheet with drag handle over a dimmed scrim. */

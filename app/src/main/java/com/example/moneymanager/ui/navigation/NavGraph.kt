@@ -33,6 +33,7 @@ import com.example.moneymanager.theme.*
 import com.example.moneymanager.ui.ios.AmbientBackground
 import com.example.moneymanager.ui.ios.IosTabBar
 import com.example.moneymanager.ui.ios.IosTabItem
+import com.example.moneymanager.ui.ios.LocalHideAmounts
 import com.example.moneymanager.ui.ios.readAnimatorScale
 import com.example.moneymanager.ui.ios.resolveAmbientMode
 import com.example.moneymanager.ui.screens.add.AddTransactionScreen
@@ -82,7 +83,9 @@ fun AppNavGraph(
     val currentRoute = navBackStackEntry?.destination?.route
     val context = LocalContext.current
     val dark = isSystemInDarkTheme()
-    val ambientEnabled by hiltViewModel<com.example.moneymanager.ui.screens.settings.SettingsViewModel>().ambientEnabled.collectAsState()
+    val settingsVm: com.example.moneymanager.ui.screens.settings.SettingsViewModel = hiltViewModel()
+    val ambientEnabled by settingsVm.ambientEnabled.collectAsState()
+    val hideAmounts by settingsVm.hideAmounts.collectAsState()
     val animatorScale = androidx.compose.runtime.remember { readAnimatorScale(context) }
     val ambientMode = resolveAmbientMode(animatorScale, ambientEnabled)
 
@@ -123,7 +126,10 @@ fun AppNavGraph(
                     )
                 }
             }
-        ) { innerPadding ->NavHost(
+        ) { innerPadding ->androidx.compose.runtime.CompositionLocalProvider(
+            LocalHideAmounts provides hideAmounts
+        ) {
+            NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
             modifier = Modifier.padding(innerPadding)
@@ -132,6 +138,8 @@ fun AppNavGraph(
                 HomeScreen(
                     presetCategory = presetCategory,
                     presetPaymentMode = presetPaymentMode,
+                    hideAmounts = hideAmounts,
+                    onToggleHideAmounts = { settingsVm.setHideAmounts(!hideAmounts) },
                     onNavigateToTransactions = { navController.navigate(Screen.Transactions.route) },
                     onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                     onNavigateToEditTransaction = { txId ->
@@ -167,6 +175,7 @@ fun AppNavGraph(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
+        }
         }
     }
 }

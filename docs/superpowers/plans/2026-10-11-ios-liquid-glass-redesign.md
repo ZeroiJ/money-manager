@@ -337,3 +337,15 @@ git commit -m "chore: remove superseded Chroma/ASCII usages after iOS reskin"
 - Steps are single-action with exact commands and expected outputs; no bodies beyond signatures and spec values.
 - Type consistency: `IosScheme` field names and `resolveAmbientMode(animatorScale: Float, userEnabled: Boolean)` signatures are identical everywhere used (Tasks 1/2/4/10).
 - Proportion: plan ≈ spec length; code bodies left to implementers.
+
+## Follow-up (post-plan, device-verified 2026-10-13)
+
+- **AGSL mesh background** (`ui/ios/MeshGradient.kt`): flowing-noise shader + 0.06 film
+  grain on API 33+, old wash below. Verified animating on-device (frames differ),
+  dark + light, no crash. Spike kept.
+- **Nessie premium-motion package** (`ui/ios/Nessie.kt`, `theme/Type.kt` Playfair):
+  rolling `IosAmount`, `pressShrink` CTAs, first-entry/first-limit `ConfettiOverlay`
+  (state machine unit-tested in `NessieLogicTest`), `hide_amounts` pref + eye toggle
+  + `maskedCurrency` leak sweep, serif heroes/empty states, 2-line category cells,
+  44dp+ segmented padding, splash no-flash (`values-night` too). Device-verified:
+  Home/feed/Settings/Reports light+dark, masked mode, font_scale 1.3, add sheet.

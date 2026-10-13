@@ -58,6 +58,7 @@ import com.example.moneymanager.ui.ios.IosGroupedList
 import com.example.moneymanager.ui.ios.IosRow
 import com.example.moneymanager.ui.ios.IosSegmented
 import com.example.moneymanager.ui.ios.currentScheme
+import com.example.moneymanager.ui.ios.maskedCurrency
 import com.example.moneymanager.util.FormatUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -158,7 +159,7 @@ fun TransactionListScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "${filteredTxs.size} records · ${FormatUtils.formatCurrency(totalFilteredSpend)}",
+            text = "${filteredTxs.size} records · ${maskedCurrency(totalFilteredSpend)}",
             fontFamily = Geist,
             fontSize = 13.sp,
             color = scheme.secondaryLabel,

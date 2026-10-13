@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -29,10 +31,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,10 +51,14 @@ import com.example.moneymanager.data.model.Category
 import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionType
 import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.ui.ios.ConfettiOverlay
 import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.IosGroupedList
+import com.example.moneymanager.ui.ios.IosHeroWord
 import com.example.moneymanager.ui.ios.IosRow
 import com.example.moneymanager.ui.ios.currentScheme
+import com.example.moneymanager.ui.ios.firstEntryTransition
+import com.example.moneymanager.ui.ios.pressShrink
 import com.example.moneymanager.ui.screens.add.AddSpendSheet
 import com.example.moneymanager.util.FormatUtils
 
@@ -60,6 +68,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     presetCategory: String? = null,
     presetPaymentMode: String? = null,
+    hideAmounts: Boolean = false,
+    onToggleHideAmounts: () -> Unit = {},
     onNavigateToTransactions: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
     onNavigateToEditTransaction: (Long) -> Unit = {}
@@ -70,7 +80,24 @@ fun HomeScreen(
     val monthSpend by viewModel.monthSpend.collectAsState()
     var showAddSheet by remember { mutableStateOf(presetCategory != null) }
     val scheme = currentScheme()
+    val monthWord = remember {
+        FormatUtils.formatMonth(FormatUtils.getCurrentMonthKey()).substringBefore(" ")
+    }
 
+    // First-entry celebration: empty (after load) -> non-empty, once ever.
+    var showConfetti by remember { mutableStateOf(false) }
+    var celebratedFirstEntry by rememberSaveable { mutableStateOf(false) }
+    var wasEmpty by remember { mutableStateOf<Boolean?>(null) }
+    LaunchedEffect(recentTxs.isEmpty()) {
+        val empty = recentTxs.isEmpty()
+        if (firstEntryTransition(wasEmpty, empty, celebratedFirstEntry)) {
+            celebratedFirstEntry = true
+            showConfetti = true
+        }
+        wasEmpty = empty
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
     Scaffold(
         containerColor = Color.Transparent,
         floatingActionButton = {
@@ -78,7 +105,8 @@ fun HomeScreen(
                 onClick = { showAddSheet = true },
                 shape = CircleShape,
                 containerColor = scheme.accent,
-                contentColor = Color.White
+                contentColor = Color.White,
+                modifier = Modifier.pressShrink()
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add expense")
             }
@@ -106,26 +134,32 @@ fun HomeScreen(
                         .padding(20.dp)
                 ) {
                     Column {
-                        Text(
-                            text = FormatUtils.formatMonth(FormatUtils.getCurrentMonthKey()),
-                            fontFamily = Geist,
-                            fontSize = 13.sp,
-                            color = scheme.secondaryLabel
+                        IosHeroWord(
+                            text = monthWord,
+                            color = scheme.label,
+                            fontSize = 30.sp
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
                         IosAmount(
                             text = FormatUtils.formatCurrency(monthSpend),
                             color = scheme.label,
                             fontSize = 34.sp
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Today · ${FormatUtils.formatCurrency(todaySpend)}",
-                            fontFamily = Geist,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 15.sp,
-                            color = scheme.secondaryLabel
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Today · ",
+                                fontFamily = Geist,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 15.sp,
+                                color = scheme.secondaryLabel
+                            )
+                            IosAmount(
+                                text = FormatUtils.formatCurrency(todaySpend),
+                                color = scheme.secondaryLabel,
+                                fontSize = 15.sp
+                            )
+                        }
                     }
                 }
             }
@@ -158,6 +192,16 @@ fun HomeScreen(
                         )
                     }
                     IconButton(
+                        onClick = onToggleHideAmounts,
+                        modifier = Modifier.size(44.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (hideAmounts) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = if (hideAmounts) "Show amounts" else "Hide amounts",
+                            tint = scheme.secondaryLabel
+                        )
+                    }
+                    IconButton(
                         onClick = onNavigateToSettings,
                         modifier = Modifier.size(44.dp)
                     ) {
@@ -181,12 +225,10 @@ fun HomeScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "No transactions yet",
-                                fontFamily = Geist,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 17.sp,
-                                color = scheme.label
+                            IosHeroWord(
+                                text = "A clean slate",
+                                color = scheme.label,
+                                fontSize = 24.sp
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -223,12 +265,20 @@ fun HomeScreen(
         }
     }
 
+    ConfettiOverlay(
+        show = showConfetti,
+        title = "First entry!",
+        subtitle = "Your money story starts here.",
+        onDone = { showConfetti = false }
+    )
+
     if (showAddSheet) {
         AddSpendSheet(
             presetCategory = presetCategory,
             presetPaymentMode = presetPaymentMode,
             onDismiss = { showAddSheet = false }
         )
+    }
     }
 }
 

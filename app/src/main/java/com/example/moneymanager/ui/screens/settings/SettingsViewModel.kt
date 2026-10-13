@@ -53,6 +53,12 @@ class SettingsViewModel @Inject constructor(
         userPreferences.setAmbientEnabled(enabled)
     }
 
+    val hideAmounts: StateFlow<Boolean> = userPreferences.hideAmounts
+
+    fun setHideAmounts(hidden: Boolean) {
+        userPreferences.setHideAmounts(hidden)
+    }
+
     val categories: StateFlow<List<Category>> = moneyDao.getAllCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.12.0] - 2026-10-13 — Nessie premium-motion package + AGSL mesh background
+
+**Motion & feel (inspired by Cecilia Kim's Nessie build log)**
+- Rolling per-digit amounts (~0.2s slide+fade) on every `IosAmount`; press-shrink
+  feedback on primary CTAs and FAB; one-shot confetti (first entry, first limit)
+  with reduced-motion static fallback; celebration state machine unit-tested.
+- One-tap privacy eye on Home: all ₹ figures (heroes, rows, subtitles, summaries)
+  mask to bullets via `hide_amounts` pref; delete-confirm dialogs stay explicit.
+- Splash matches the app (cream/navy `windowBackground`) — no white flash.
+
+**Look**
+- AGSL flowing mesh gradient + film grain replaces the flat wash on API 33+
+  (old animation below, static on reduced-motion); verified animating on-device.
+- Playfair Display Italic (OFL) hero words: month name, empty states, celebration
+  titles. Amounts stay sans, like the reference.
+- Category grid cells go 2-line (`Chai & Snacks`, `Food Delivery` no longer cut);
+  segmented pills gain breathing room at largest text size (verified at 1.3x).
+
 ## [v1.11.0] - 2026-10-11 — iOS Liquid Glass Lite reskin
 
 **Design system (replaces Chroma neo-brutalist + ASCII kit)**

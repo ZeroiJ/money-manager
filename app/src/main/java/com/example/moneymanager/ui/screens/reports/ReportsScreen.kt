@@ -48,6 +48,7 @@ import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.IosProgressBar
 import com.example.moneymanager.ui.ios.IosSegmented
 import com.example.moneymanager.ui.ios.currentScheme
+import com.example.moneymanager.ui.ios.maskedCurrency
 import com.example.moneymanager.util.FormatUtils
 
 @Composable
@@ -341,7 +342,7 @@ fun ReportsScreen(
                                             color = scheme.label
                                         )
                                         Text(
-                                            text = "Paid ${FormatUtils.formatCurrency(balance.totalPaid)} · Share ${FormatUtils.formatCurrency(balance.fairShare)}",
+                                            text = "Paid ${maskedCurrency(balance.totalPaid)} · Share ${maskedCurrency(balance.fairShare)}",
                                             fontFamily = Geist,
                                             fontSize = 13.sp,
                                             color = scheme.secondaryLabel
@@ -472,7 +473,7 @@ fun ReportsScreen(
                                     .padding(12.dp)
                             ) {
                                 Text(
-                                    text = "Day ${d.dayNumber} · ${FormatUtils.formatCurrency(d.spendAmount)}",
+                                    text = "Day ${d.dayNumber} · ${maskedCurrency(d.spendAmount)}",
                                     fontFamily = Geist,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 15.sp,

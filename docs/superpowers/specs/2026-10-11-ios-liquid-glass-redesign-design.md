@@ -51,6 +51,11 @@ New file `theme/Ios.kt` with light + dark schemes, selected by system setting:
   `res/font/`; Inter + IBM Plex Mono remain only until Task 11 cleanup). Titles 22–34sp
   semibold, body 17sp/22, footnote 13sp. Numbers tabular semibold. Kill 9–10sp mono
   micro-labels except debug-style metadata (then min 11sp and secondary color).
+- Nessie voice (v1.12.0): Playfair Display Italic (OFL, bundled) for hero WORDS only
+  (month name, empty states, celebration titles). Amounts stay in PaperMono —
+  serif words + sans figures, like the reference.
+- Splash: `windowBackground` + `windowSplashScreenBackground` (API 31+) from
+  night-qualified `splash_bg` (cream/navy) so launch never flashes white.
 - Blur rule: frosted blur (10–20px equivalent scrim + `Modifier.blur`) ONLY on bottom tab bar
   and modal sheets. Content cards stay solid so ₹ figures always pass 4.5:1.
 - Motion: sheet slide + fade 150–300ms, spring-ish easing, existing `util/Haptics.kt` kept,
@@ -81,6 +86,11 @@ New file `theme/Ios.kt` with light + dark schemes, selected by system setting:
   `GlassSheet` (16dp, drag handle, blur scrim) replacing `AddSpendSheet` stepper chrome.
 - Donut/flame/heatmap canvases in Reports keep their math, get iOS legends + card chrome.
 - `AmbientBackground`: the single full-screen animated gradient layer (§3b) + static fallback.
+- v1.12.0 Nessie motion kit (`ui/ios/Nessie.kt`, `ui/ios/MeshGradient.kt`): `IosHeroWord`
+  (serif), rolling per-digit `IosAmount` (~0.2s), `pressShrink` press feedback, `ConfettiOverlay`
+  (first entry / first limit, reduced-motion aware), `LocalHideAmounts` privacy mask +
+  `maskedCurrency`, `MeshGradientBackground` (AGSL flowing mesh + film grain on API 33+,
+  old wash below).
 
 ## 5. Screen changes
 

@@ -69,6 +69,7 @@ import com.example.moneymanager.theme.PaperMono
 import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.IosSegmented
 import com.example.moneymanager.ui.ios.currentScheme
+import com.example.moneymanager.ui.ios.pressShrink
 import com.example.moneymanager.util.FormatUtils
 import com.example.moneymanager.util.Haptics
 import com.example.moneymanager.util.ReceiptStorage
@@ -306,7 +307,7 @@ fun AddTransactionScreen(
                     val isSelected = selectedCatId == cat.id
                     Box(
                         modifier = Modifier
-                            .defaultMinSize(minHeight = 64.dp)
+                            .defaultMinSize(minHeight = 76.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(
                                 if (isSelected) scheme.accent.copy(alpha = 0.15f)
@@ -328,9 +329,10 @@ fun AddTransactionScreen(
                                 text = cat.name,
                                 fontFamily = Geist,
                                 fontSize = 11.sp,
+                                lineHeight = 13.sp,
                                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                 color = if (isSelected) scheme.accent else scheme.label,
-                                maxLines = 1,
+                                maxLines = 2,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -574,7 +576,8 @@ fun AddTransactionScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp),
+                .height(52.dp)
+                .pressShrink(),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(containerColor = scheme.accent),
             contentPadding = PaddingValues(vertical = 8.dp)

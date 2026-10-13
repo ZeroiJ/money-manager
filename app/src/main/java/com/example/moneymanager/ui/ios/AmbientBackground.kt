@@ -1,6 +1,7 @@
 package com.example.moneymanager.ui.ios
 
 import android.content.Context
+import android.os.Build
 import android.provider.Settings
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -44,6 +45,9 @@ fun AmbientBackground(
     val colors = (if (dark) Ios.Dark else Ios.Light).gradient
     if (mode == AmbientMode.Static) {
         Box(modifier.fillMaxSize().background(Brush.linearGradient(colors)))
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        // SPIKE: GPU mesh gradient on 33+; old wash stays as the fallback below.
+        MeshGradientBackground(dark = dark, modifier = modifier)
     } else {
         val transition = rememberInfiniteTransition(label = "ambient")
         val drift by transition.animateFloat(

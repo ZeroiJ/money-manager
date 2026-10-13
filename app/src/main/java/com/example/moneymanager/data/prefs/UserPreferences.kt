@@ -43,9 +43,20 @@ class UserPreferences @Inject constructor(
         _ambientEnabled.value = enabled
     }
 
+    private val _hideAmounts = MutableStateFlow(
+        prefs.getBoolean(KEY_HIDE_AMOUNTS, false)
+    )
+    val hideAmounts: StateFlow<Boolean> = _hideAmounts
+
+    fun setHideAmounts(hidden: Boolean) {
+        prefs.edit().putBoolean(KEY_HIDE_AMOUNTS, hidden).apply()
+        _hideAmounts.value = hidden
+    }
+
     companion object {
         private const val KEY_INDIAN_GROUPING = "use_indian_grouping"
         private const val KEY_BIOMETRIC_ENABLED = "biometric_enabled"
         private const val KEY_AMBIENT_ENABLED = "ambient_enabled"
+        private const val KEY_HIDE_AMOUNTS = "hide_amounts"
     }
 }

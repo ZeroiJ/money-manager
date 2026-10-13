@@ -51,10 +51,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.moneymanager.data.model.Category
 import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.ui.ios.ConfettiOverlay
 import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.IosProgressBar
 import com.example.moneymanager.ui.ios.IosSegmented
 import com.example.moneymanager.ui.ios.currentScheme
+import com.example.moneymanager.ui.ios.maskedCurrency
+import com.example.moneymanager.ui.ios.pressShrink
 import com.example.moneymanager.util.FormatUtils
 import com.example.moneymanager.util.HapticOnCrossing
 import com.example.moneymanager.util.Haptics
@@ -74,12 +77,15 @@ fun BudgetsScreen(
     var showAddBudgetDialog by remember { mutableStateOf(false) }
     var selectedCategoryForBudget by remember { mutableStateOf<Category?>(null) }
     var budgetAmountInput by remember { mutableStateOf("") }
+    var showConfetti by remember { mutableStateOf(false) }
+    var celebratedFirstLimit by rememberSaveable { mutableStateOf(false) }
 
     val activeMonthKey = FormatUtils.getCurrentMonthKey()
     var allowPastMonths by rememberSaveable { mutableStateOf(false) }
     val onActiveMonth = currentMonth == activeMonthKey
     val inPast = !onActiveMonth && currentMonth < activeMonthKey
 
+    Box(modifier = Modifier.fillMaxSize()) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
@@ -249,9 +255,9 @@ fun BudgetsScreen(
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = if (isExceeded) {
-                            "Over by ${FormatUtils.formatCurrency(totalSpent - totalBudget)}"
+                            "Over by ${maskedCurrency(totalSpent - totalBudget)}"
                         } else {
-                            "${(progress * 100).toInt()}% used · ${FormatUtils.formatCurrency(totalBudget - totalSpent)} left"
+                            "${(progress * 100).toInt()}% used · ${maskedCurrency(totalBudget - totalSpent)} left"
                         },
                         fontFamily = Geist,
                         fontSize = 13.sp,
@@ -397,7 +403,7 @@ fun BudgetsScreen(
                                         color = scheme.label
                                     )
                                     Text(
-                                        text = "${FormatUtils.formatCurrency(item.spent)} of ${if (item.limit > 0) FormatUtils.formatCurrency(item.limit) else "no limit"}",
+                                        text = "${maskedCurrency(item.spent)} of ${if (item.limit > 0) maskedCurrency(item.limit) else "no limit"}",
                                         fontFamily = Geist,
                                         fontSize = 13.sp,
                                         color = scheme.secondaryLabel
@@ -415,9 +421,9 @@ fun BudgetsScreen(
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = if (isExceeded) {
-                                        "Over by ${FormatUtils.formatCurrency(item.spent - item.limit)}"
+                                        "Over by ${maskedCurrency(item.spent - item.limit)}"
                                     } else {
-                                        "${FormatUtils.formatCurrency(item.remaining)} left"
+                                        "${maskedCurrency(item.remaining)} left"
                                     },
                                     fontFamily = Geist,
                                     fontSize = 13.sp,
@@ -474,14 +480,22 @@ fun BudgetsScreen(
                 }
             },
             confirmButton = {
+                val saveView = LocalView.current
                 Button(
                     onClick = {
                         val amount = budgetAmountInput.toDoubleOrNull() ?: 0.0
+                        val hadNoBudget = totalBudget == 0.0
                         if (amount > 0) {
+                            Haptics.saveConfirmed(saveView)
                             viewModel.setBudget(cat.id, amount)
+                            if (hadNoBudget && !celebratedFirstLimit) {
+                                celebratedFirstLimit = true
+                                showConfetti = true
+                            }
                         }
                         showAddBudgetDialog = false
                     },
+                    modifier = Modifier.pressShrink(),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
                 ) {
@@ -494,5 +508,13 @@ fun BudgetsScreen(
                 }
             }
         )
+    }
+
+    ConfettiOverlay(
+        show = showConfetti,
+        title = "Limit set!",
+        subtitle = "Your first monthly guardrail.",
+        onDone = { showConfetti = false }
+    )
     }
 }

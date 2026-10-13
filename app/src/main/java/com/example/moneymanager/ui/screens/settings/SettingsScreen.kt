@@ -67,6 +67,7 @@ import com.example.moneymanager.ui.ios.IosGroupedList
 import com.example.moneymanager.ui.ios.IosRow
 import com.example.moneymanager.ui.ios.IosSwitchRow
 import com.example.moneymanager.ui.ios.currentScheme
+import com.example.moneymanager.ui.ios.pressShrink
 import com.example.moneymanager.util.FormatUtils
 import com.example.moneymanager.util.XlsxImporter
 import kotlinx.coroutines.launch
@@ -726,7 +727,8 @@ private fun SettingsActionButton(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .height(48.dp)
+            .pressShrink(),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (primary) scheme.accent else scheme.secondaryFill,
