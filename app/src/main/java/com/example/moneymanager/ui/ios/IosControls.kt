@@ -7,7 +7,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,16 +21,18 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,7 +57,7 @@ fun IosSegmented(
 ) {
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
+            .clip(RectangleShape)
             .background(scheme.secondaryFill)
             .padding(2.dp)
             .defaultMinSize(minHeight = 44.dp),
@@ -63,7 +68,7 @@ fun IosSegmented(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RectangleShape)
                     .background(if (isSelected) scheme.card else Color.Transparent)
                     .clickable { onSelect(index) }
                     .padding(horizontal = 12.dp, vertical = 8.dp),
@@ -118,16 +123,29 @@ fun IosSwitchRow(
                 )
             }
         }
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedTrackColor = scheme.success,
-                checkedThumbColor = Color.White,
-                uncheckedTrackColor = scheme.secondaryFill,
-                uncheckedThumbColor = Color.White
+        // Square toggle — strictly boxes, no pill.
+        Box(
+            modifier = Modifier
+                .width(52.dp)
+                .height(30.dp)
+                .border(1.dp, scheme.separator, RectangleShape)
+                .background(if (checked) scheme.accent else scheme.secondaryFill)
+                .clickable { onCheckedChange(!checked) }
+        ) {
+            val offset by animateDpAsState(
+                targetValue = if (checked) 22.dp else 0.dp,
+                animationSpec = tween(160),
+                label = "toggle"
             )
-        )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 3.dp)
+                    .offset(x = offset)
+                    .size(24.dp)
+                    .background(scheme.label)
+            )
+        }
     }
 }
 
@@ -143,14 +161,14 @@ fun IosProgressBar(
         modifier = modifier
             .fillMaxWidth()
             .height(8.dp)
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RectangleShape)
             .background(scheme.secondaryFill)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth(fraction = progress.coerceIn(0f, 1f))
                 .height(8.dp)
-                .clip(RoundedCornerShape(4.dp))
+                .clip(RectangleShape)
                 .background(if (overBudget) scheme.destructive else scheme.success)
         )
     }
@@ -226,7 +244,7 @@ fun GlassSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = Ios.SheetRadius, topEnd = Ios.SheetRadius),
+        shape = RectangleShape,
         containerColor = scheme.card,
         scrimColor = Color.Black.copy(alpha = 0.32f)
     ) {

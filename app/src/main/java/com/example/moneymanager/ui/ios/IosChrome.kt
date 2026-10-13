@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -83,7 +83,7 @@ fun IosTabBar(
                 val isSelected = index == selected
                 Column(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(0.dp))
+                        .clip(RectangleShape)
                         .background(if (isSelected) scheme.accent else Color.Transparent)
                         .clickable { onSelect(index) }
                         .defaultMinSize(minWidth = 72.dp, minHeight = 52.dp)
@@ -135,7 +135,7 @@ fun IosGroupedList(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(Ios.CardRadius))
+                .clip(RectangleShape)
                 .background(scheme.card)
                 .padding(horizontal = 16.dp),
             content = content
@@ -171,7 +171,7 @@ fun IosRow(
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RectangleShape)
                     .background(iconTint.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
@@ -227,12 +227,13 @@ fun IosRow(
 fun LoadErrorCard(
     message: String,
     onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
     scheme: IosScheme = currentScheme()
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(Ios.CardRadius))
+            .clip(RectangleShape)
             .background(scheme.card)
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally

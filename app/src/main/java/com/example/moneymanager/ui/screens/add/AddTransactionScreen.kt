@@ -22,11 +22,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -226,7 +223,7 @@ fun AddTransactionScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RectangleShape)
                 .background(scheme.card)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -254,7 +251,7 @@ fun AddTransactionScreen(
                         Box(
                             modifier = Modifier
                                 .defaultMinSize(minHeight = 44.dp)
-                                .clip(RoundedCornerShape(10.dp))
+                                .clip(RectangleShape)
                                 .background(
                                     if (isPaidBy) scheme.accent.copy(alpha = 0.15f)
                                     else scheme.secondaryFill
@@ -280,7 +277,7 @@ fun AddTransactionScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RectangleShape)
                 .background(scheme.card)
                 .padding(16.dp)
         ) {
@@ -293,54 +290,55 @@ fun AddTransactionScreen(
             )
         }
 
-        // Category grid card
+        // Category picker — static 4-column block, no scroll of its own.
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RectangleShape)
                 .background(scheme.card)
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
-                modifier = Modifier.height(210.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(categories, key = { it.id }) { cat ->
-                    val isSelected = selectedCatId == cat.id
-                    Box(
-                        modifier = Modifier
-                            .defaultMinSize(minHeight = 76.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(
-                                if (isSelected) scheme.accent.copy(alpha = 0.15f)
-                                else scheme.secondaryFill
-                            )
-                            .clickable { viewModel.selectedCategoryId.value = cat.id }
-                            .padding(vertical = 8.dp, horizontal = 4.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                imageVector = FormatUtils.getCategoryIcon(cat.icon),
-                                contentDescription = cat.name,
-                                tint = if (isSelected) scheme.accent else scheme.label,
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = cat.name,
-                                fontFamily = SpaceGrotesk,
-                                fontSize = 11.sp,
-                                lineHeight = 13.sp,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                color = if (isSelected) scheme.accent else scheme.label,
-                                maxLines = 2,
-                                textAlign = TextAlign.Center
-                            )
+            categories.chunked(4).forEach { rowCats ->
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    rowCats.forEach { cat ->
+                        val isSelected = selectedCatId == cat.id
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .defaultMinSize(minHeight = 76.dp)
+                                .clip(RectangleShape)
+                                .background(
+                                    if (isSelected) scheme.accent.copy(alpha = 0.15f)
+                                    else scheme.secondaryFill
+                                )
+                                .clickable { viewModel.selectedCategoryId.value = cat.id }
+                                .padding(vertical = 8.dp, horizontal = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = FormatUtils.getCategoryIcon(cat.icon),
+                                    contentDescription = cat.name,
+                                    tint = if (isSelected) scheme.accent else scheme.label,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = cat.name,
+                                    fontFamily = SpaceGrotesk,
+                                    fontSize = 11.sp,
+                                    lineHeight = 13.sp,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (isSelected) scheme.accent else scheme.label,
+                                    maxLines = 2,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
+                    // Pad the final row so cells stay equal-width.
+                    repeat(4 - rowCats.size) { Spacer(modifier = Modifier.weight(1f)) }
                 }
             }
         }
@@ -351,7 +349,7 @@ fun AddTransactionScreen(
             label = { Text("Note (optional)", fontFamily = SpaceGrotesk) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
+            shape = RectangleShape,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = scheme.accent,
                 unfocusedBorderColor = scheme.separator
@@ -369,7 +367,7 @@ fun AddTransactionScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RectangleShape)
                 .background(scheme.card)
                 .clickable { showDatePicker = true }
                 .padding(16.dp),
@@ -427,7 +425,7 @@ fun AddTransactionScreen(
                         modifier = Modifier
                             .weight(1f)
                             .defaultMinSize(minHeight = 44.dp)
-                            .clip(RoundedCornerShape(10.dp))
+                            .clip(RectangleShape)
                             .background(scheme.secondaryFill)
                             .clickable { action() }
                             .padding(vertical = 8.dp),
@@ -480,7 +478,7 @@ fun AddTransactionScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RectangleShape)
                 .background(scheme.card)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -517,7 +515,7 @@ fun AddTransactionScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(160.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RectangleShape)
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -532,7 +530,7 @@ fun AddTransactionScreen(
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RectangleShape,
                         colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
                     ) {
                         Text("Attach", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
@@ -542,7 +540,7 @@ fun AddTransactionScreen(
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RectangleShape,
                         colors = ButtonDefaults.buttonColors(containerColor = scheme.destructive)
                     ) {
                         Text("Remove", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
@@ -558,7 +556,7 @@ fun AddTransactionScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RectangleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
                 ) {
                     Text("Attach receipt", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
@@ -622,7 +620,7 @@ fun IosKeypad(onKeyClick: (String) -> Unit) {
                         modifier = Modifier
                             .weight(1f)
                             .height(52.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RectangleShape)
                             .background(
                                 when {
                                     isEquals -> scheme.accent

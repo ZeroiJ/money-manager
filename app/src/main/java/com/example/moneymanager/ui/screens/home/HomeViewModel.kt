@@ -73,49 +73,6 @@ class HomeViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
-    /** PRD §4.1: total allocated budget for the current month (0 if none set). */
-    val monthBudget: StateFlow<Double> = moneyDao.getBudgetsForMonth(currentMonthKey())
-        .map { list -> list.sumOf { it.amountLimit } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
-
-    /**
-     * PRD §4.1 overrun module: categories where month spend exceeds their
-     * budget cap. Empty list renders no banner (quiet when healthy).
-     */
-    val overruns: StateFlow<List<Overrun>> = combine(
-        moneyDao.getBudgetsForMonth(currentMonthKey()),
-        transactionsSource,
-        allCategories
-    ) { budgets, txs, cats ->
-        if (budgets.isEmpty()) return@combine emptyList()
-        val (start, end) = monthRange(System.currentTimeMillis())
-        val spendByCat = txs.asSequence()
-            .filter { it.type == com.example.moneymanager.data.model.TransactionType.EXPENSE && it.date in start..end }
-            .groupBy { it.categoryId }
-            .mapValues { (_, list) -> list.sumOf { it.amount } }
-        val nameById = cats.associateBy({ it.id }, { it.name })
-        budgets.mapNotNull { b ->
-            val spent = spendByCat[b.categoryId] ?: 0.0
-            if (b.amountLimit > 0 && spent > b.amountLimit) {
-                Overrun(
-                    categoryId = b.categoryId,
-                    name = nameById[b.categoryId] ?: "Category",
-                    overspent = spent - b.amountLimit
-                )
-            } else null
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    private fun currentMonthKey(): String {
-        val cal = Calendar.getInstance()
-        return String.format(
-            java.util.Locale.US, "%04d-%02d",
-            cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1
-        )
-    }
-
-    data class Overrun(val categoryId: Long, val name: String, val overspent: Double)
-
     companion object {
         fun dayRange(now: Long): Pair<Long, Long> {
             val start = Calendar.getInstance().apply {

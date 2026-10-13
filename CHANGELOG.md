@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.16.0] - 2026-10-13 — Strictly boxes
+
+**Hardening the Kinetic Ledger into an all-square system + IA slim-down**
+- Strictly boxes: every rounded corner removed app-wide — segmented
+  controls, dialogs, text fields, chips, keypad, sheets, receipt buttons,
+  progress bars now all `RectangleShape`; pill switch replaced with a
+  square sliding toggle (ochre track when on).
+- Budget tab removed: 3-tab layout `01 HOME / 02 EXPENSE / 03 REPORTS`;
+  budget screen/viewmodel deleted (budget data still exported in backups).
+- Home: budget gauge bar, overrun banner and allocations card removed;
+  hero is now month spend only; recent-ledger drawer runs edge-to-edge as
+  one continuous dark-slab block — single tone, no icons, hairline row
+  separators.
+- Expense: category picker no longer has its own scroll — static
+  4-column block that grows with the category list.
+
 ## [v1.15.0] - 2026-10-13 — Kinetic Ledger redesign
 
 **Full visual + IA rebuild per the Kinetic Ledger PRD (brutalist/utilitarian

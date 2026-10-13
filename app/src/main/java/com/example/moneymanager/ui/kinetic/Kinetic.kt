@@ -195,12 +195,16 @@ fun Slab(
 
 /** Hairline divider — Kinetic replacement for card outlines. */
 @Composable
-fun Hairline(modifier: Modifier = Modifier, scheme: IosScheme = currentScheme()) {
+fun Hairline(
+    modifier: Modifier = Modifier,
+    color: androidx.compose.ui.graphics.Color? = null,
+    scheme: IosScheme = currentScheme()
+) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(1.dp)
-            .background(scheme.separator)
+            .background(color ?: scheme.separator)
     )
 }
 

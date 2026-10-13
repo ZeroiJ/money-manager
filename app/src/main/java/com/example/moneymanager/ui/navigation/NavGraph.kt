@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
@@ -38,7 +37,6 @@ import com.example.moneymanager.ui.ios.LocalHideAmounts
 import com.example.moneymanager.ui.ios.readAnimatorScale
 import com.example.moneymanager.ui.ios.resolveAmbientMode
 import com.example.moneymanager.ui.screens.add.AddTransactionScreen
-import com.example.moneymanager.ui.screens.budgets.BudgetsScreen
 import com.example.moneymanager.ui.screens.home.HomeScreen
 import com.example.moneymanager.ui.screens.reports.ReportsScreen
 import com.example.moneymanager.ui.screens.settings.SettingsScreen
@@ -47,7 +45,6 @@ import com.example.moneymanager.ui.screens.transactions.TransactionListScreen
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Home : Screen("home", "HOME", Icons.Default.Home)
     object Transactions : Screen("transactions", "FEED", Icons.AutoMirrored.Filled.List)
-    object Budgets : Screen("budgets", "BUDGET", Icons.Default.AccountBalanceWallet)
     object Expense : Screen("expense", "EXPENSE", Icons.Default.Add)
     object Reports : Screen("reports", "REPORTS", Icons.Default.PieChart)
     object Settings : Screen("settings", "SETTINGS", Icons.Default.Settings)
@@ -56,10 +53,9 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     }
 }
 
-// PRD §3: persistent 4-tab layout — 01 HOME / 02 BUDGET / 03 EXPENSE / 04 REPORTS.
+// Persistent 3-tab layout — 01 HOME / 02 EXPENSE / 03 REPORTS (budget tab removed).
 val bottomNavItems = listOf(
     Screen.Home,
-    Screen.Budgets,
     Screen.Expense,
     Screen.Reports
 )
@@ -162,11 +158,6 @@ fun AppNavGraph(
                     onToggleHideAmounts = { settingsVm.setHideAmounts(!hideAmounts) },
                     onNavigateToTransactions = { navController.navigate(Screen.Transactions.route) },
                     onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
-                    onNavigateToBudgets = { navController.navigate(Screen.Budgets.route) {
-                        popUpTo(Screen.Home.route) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    } },
                     onNavigateToEditTransaction = { txId ->
                         navController.navigate(Screen.EditTransaction.createRoute(txId))
                     }
@@ -179,11 +170,8 @@ fun AppNavGraph(
                     }
                 )
             }
-            composable(Screen.Budgets.route) {
-                BudgetsScreen()
-            }
             composable(Screen.Expense.route) {
-                // PRD §3 tab 03: fast capture lives in the tab bar itself.
+                // Tab 02: fast capture lives in the tab bar itself.
                 AddTransactionScreen(
                     presetCategory = presetCategory,
                     presetPaymentMode = presetPaymentMode,

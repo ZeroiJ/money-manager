@@ -19,7 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -162,7 +162,7 @@ fun ReportsScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RectangleShape)
                             .background(scheme.card)
                             .padding(16.dp)
                     ) {
@@ -187,7 +187,7 @@ fun ReportsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(10.dp)
-                                .clip(RoundedCornerShape(5.dp))
+                                .clip(RectangleShape)
                                 .background(scheme.secondaryFill)
                         ) {
                             if (personalSpend > 0) {
@@ -207,7 +207,7 @@ fun ReportsScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
+                                .clip(RectangleShape)
                                 .background(scheme.card)
                                 .padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
@@ -265,7 +265,7 @@ fun ReportsScreen(
                                         Box(
                                             modifier = Modifier
                                                 .size(10.dp)
-                                                .clip(RoundedCornerShape(5.dp))
+                                                .clip(RectangleShape)
                                                 .background(palette[index % palette.size])
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
@@ -318,7 +318,7 @@ fun ReportsScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
+                                .clip(RectangleShape)
                                 .background(scheme.card)
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -379,7 +379,7 @@ fun ReportsScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RectangleShape)
                             .background(scheme.card)
                             .padding(16.dp)
                     ) {
@@ -400,7 +400,7 @@ fun ReportsScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RectangleShape)
                             .background(scheme.card)
                             .padding(16.dp)
                     ) {
@@ -450,7 +450,7 @@ fun ReportsScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(36.dp)
-                                        .clip(RoundedCornerShape(10.dp))
+                                        .clip(RectangleShape)
                                         .background(cellColor)
                                         .clickable { selectedHeatmapDay = day },
                                     contentAlignment = Alignment.Center
@@ -472,7 +472,7 @@ fun ReportsScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RectangleShape)
                                     .background(scheme.secondaryFill)
                                     .padding(12.dp)
                             ) {
@@ -503,7 +503,7 @@ private fun ScopeRow(label: String, amount: Double, color: Color, scheme: IosSch
             Box(
                 modifier = Modifier
                     .size(10.dp)
-                    .clip(RoundedCornerShape(5.dp))
+                    .clip(RectangleShape)
                     .background(color)
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -608,7 +608,7 @@ private fun IosTrendBars(days: List<DailySpendPoint>, scheme: IosScheme) {
                 modifier = Modifier
                     .weight(1f)
                     .height((8 + ratio * 112).dp)
-                    .clip(RoundedCornerShape(3.dp))
+                    .clip(RectangleShape)
                     .background(
                         if (ratio >= 0.98f) Color(0xFFFF9500) else scheme.accent
                     )

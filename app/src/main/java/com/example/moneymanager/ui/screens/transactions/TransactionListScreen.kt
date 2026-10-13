@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -126,7 +126,7 @@ fun TransactionListScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(12.dp),
+            shape = RectangleShape,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = scheme.accent,
                 unfocusedBorderColor = Color.Transparent,
@@ -189,7 +189,7 @@ fun TransactionListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RectangleShape)
                     .background(scheme.card)
                     .padding(vertical = 32.dp, horizontal = 20.dp),
                 contentAlignment = Alignment.Center
@@ -273,7 +273,7 @@ fun TransactionListScreen(
         val tx = transactionToDelete!!
         AlertDialog(
             onDismissRequest = { transactionToDelete = null },
-            shape = RoundedCornerShape(16.dp),
+            shape = RectangleShape,
             containerColor = scheme.card,
             title = {
                 Text(
@@ -298,7 +298,7 @@ fun TransactionListScreen(
                         viewModel.deleteTransaction(tx)
                         transactionToDelete = null
                     },
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RectangleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.destructive)
                 ) {
                     Text("Delete", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)

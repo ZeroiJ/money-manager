@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -640,7 +640,7 @@ fun SettingsScreen(
     if (showAddCategoryDialog) {
         AlertDialog(
             onDismissRequest = { showAddCategoryDialog = false },
-            shape = RoundedCornerShape(16.dp),
+            shape = RectangleShape,
             containerColor = scheme.card,
             title = {
                 Text(
@@ -658,7 +658,7 @@ fun SettingsScreen(
                     label = { Text("Category name", fontFamily = SpaceGrotesk) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RectangleShape,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = scheme.accent,
                         unfocusedBorderColor = scheme.separator
@@ -673,7 +673,7 @@ fun SettingsScreen(
                         }
                         showAddCategoryDialog = false
                     },
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RectangleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
                 ) {
                     Text("Save", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
@@ -690,7 +690,7 @@ fun SettingsScreen(
     if (showAddMemberDialog) {
         AlertDialog(
             onDismissRequest = { showAddMemberDialog = false },
-            shape = RoundedCornerShape(16.dp),
+            shape = RectangleShape,
             containerColor = scheme.card,
             title = {
                 Text(
@@ -708,7 +708,7 @@ fun SettingsScreen(
                     label = { Text("Member name", fontFamily = SpaceGrotesk) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RectangleShape,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = scheme.accent,
                         unfocusedBorderColor = scheme.separator
@@ -723,7 +723,7 @@ fun SettingsScreen(
                         }
                         showAddMemberDialog = false
                     },
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RectangleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
                 ) {
                     Text("Save", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
@@ -740,7 +740,7 @@ fun SettingsScreen(
     if (xlsxBusy || xlsxPreview != null || xlsxError != null) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissXlsxPreview() },
-            shape = RoundedCornerShape(16.dp),
+            shape = RectangleShape,
             containerColor = scheme.card,
             title = {
                 Text(
@@ -815,7 +815,7 @@ fun SettingsScreen(
                                 ).show()
                             }
                         },
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RectangleShape,
                         colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
                     ) {
                         Text("Import", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
@@ -844,7 +844,7 @@ private fun SettingsActionButton(
             .fillMaxWidth()
             .height(48.dp)
             .pressShrink(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RectangleShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = if (primary) scheme.accent else scheme.secondaryFill,
             contentColor = if (primary) Color.White else scheme.label
@@ -872,7 +872,7 @@ private fun PendingImportRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RectangleShape)
             .background(scheme.secondaryFill)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -919,7 +919,7 @@ private fun XlsxPreviewRow(row: XlsxImporter.ParsedTransaction, scheme: IosSchem
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RectangleShape)
             .background(scheme.secondaryFill)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
