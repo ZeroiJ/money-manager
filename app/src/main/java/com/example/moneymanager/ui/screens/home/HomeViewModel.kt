@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.moneymanager.data.dao.MoneyDao
 import com.example.moneymanager.data.model.Category
 import com.example.moneymanager.data.model.Transaction
+import com.example.moneymanager.util.ErrorBus
+import com.example.moneymanager.util.ErrorKind
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import java.util.Calendar
@@ -22,23 +24,52 @@ class HomeViewModel @Inject constructor(
         list.associateBy { it.id }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
-    val recentTransactions: StateFlow<List<Transaction>> = moneyDao.getAllTransactions()
+    // Feed health: a failed DB read surfaces as loadError (card + retry)
+    // instead of a forever-empty feed. Retry re-subscribes to the DAO.
+    private val refreshTick = MutableStateFlow(0)
+    private val _loadError = MutableStateFlow<String?>(null)
+    val loadError: StateFlow<String?> = _loadError.asStateFlow()
+
+    fun retryLoad() {
+        _loadError.value = null
+        refreshTick.value++
+    }
+
+    private val transactionsSource: Flow<List<Transaction>> =
+        refreshTick.flatMapLatest {
+            moneyDao.getAllTransactions()
+                .catch { e ->
+                    ErrorBus.report(ErrorKind.DB_READ, "Home feed", "Couldn't load transactions", e)
+                    _loadError.value = e.message ?: "Couldn't load transactions"
+                    emit(emptyList())
+                }
+        }
+
+    val recentTransactions: StateFlow<List<Transaction>> = transactionsSource
         .map { list -> list.take(10) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Additive glanceable totals for the iOS Home card. Sourced from the UNCAPPED
     // feed so backdated writes and edits beyond the top-10 still retrigger them.
-    val todaySpend: StateFlow<Double> = moneyDao.getAllTransactions()
+    val todaySpend: StateFlow<Double> = transactionsSource
         .mapLatest {
             val (start, end) = dayRange(System.currentTimeMillis())
-            moneyDao.getTodaySpend(start, end) ?: 0.0
+            try {
+                moneyDao.getTodaySpend(start, end) ?: 0.0
+            } catch (_: Exception) {
+                0.0
+            }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
-    val monthSpend: StateFlow<Double> = moneyDao.getAllTransactions()
+    val monthSpend: StateFlow<Double> = transactionsSource
         .mapLatest {
             val (start, end) = monthRange(System.currentTimeMillis())
-            moneyDao.getMonthSpend(start, end) ?: 0.0
+            try {
+                moneyDao.getMonthSpend(start, end) ?: 0.0
+            } catch (_: Exception) {
+                0.0
+            }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 

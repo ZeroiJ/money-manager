@@ -218,3 +218,48 @@ fun IosRow(
         }
     }
 }
+
+/**
+ * Feed failure card: tells what failed and why, with a retry action.
+ * Shown INSTEAD of the list (which may be stale/empty) — never silently blank.
+ */
+@Composable
+fun LoadErrorCard(
+    message: String,
+    onRetry: () -> Unit,
+    scheme: IosScheme = currentScheme()
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Ios.CardRadius))
+            .background(scheme.card)
+            .padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Couldn't load",
+            fontFamily = Geist,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 17.sp,
+            color = scheme.destructive
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = message,
+            fontFamily = Geist,
+            fontSize = 14.sp,
+            color = scheme.secondaryLabel
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        androidx.compose.material3.TextButton(onClick = onRetry) {
+            Text(
+                text = "Try again",
+                fontFamily = Geist,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 15.sp,
+                color = scheme.accent
+            )
+        }
+    }
+}

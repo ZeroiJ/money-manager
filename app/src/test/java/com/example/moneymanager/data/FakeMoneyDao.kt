@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.map
 
 class FakeMoneyDao : MoneyDao {
     val transactions = MutableStateFlow<List<Transaction>>(emptyList())
+
+    /** When true, reads throw — lets tests simulate a broken database. */
+    var failReads = false
     val categories = MutableStateFlow<List<Category>>(emptyList())
     val budgets = MutableStateFlow<List<Budget>>(emptyList())
     val recurringRules = MutableStateFlow<List<RecurringRule>>(emptyList())
@@ -54,7 +57,12 @@ class FakeMoneyDao : MoneyDao {
         return if (expenses.isEmpty()) null else expenses.sumOf { it.amount }
     }
 
-    override fun getAllTransactions(): Flow<List<Transaction>> = transactions
+    override fun getAllTransactions(): Flow<List<Transaction>> =
+        if (failReads) {
+            kotlinx.coroutines.flow.flow { throw RuntimeException("simulated DB failure") }
+        } else {
+            transactions
+        }
 
     override suspend fun getAllTransactionsList(): List<Transaction> = transactions.value
 

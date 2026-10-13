@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.util.Calendar
@@ -142,5 +143,27 @@ class HomeViewModelTest {
         fakeDao.insertTransaction(tx(11, 100.0, "Tx 11", now))
         testScheduler.advanceUntilIdle()
         assertEquals(1100.0, viewModel.todaySpend.value, 0.001)
+    }
+
+    @Test
+    fun testLoadError_surfacedAndRetryable() = runTest {
+        fakeDao.failReads = true
+        val failingVm = HomeViewModel(fakeDao)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            failingVm.recentTransactions.collect()
+        }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            failingVm.loadError.collect()
+        }
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals("simulated DB failure", failingVm.loadError.value)
+        assertTrue(failingVm.recentTransactions.value.isEmpty())
+
+        fakeDao.failReads = false
+        failingVm.retryLoad()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertNull(failingVm.loadError.value)
     }
 }

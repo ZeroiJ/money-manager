@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.13.0] - 2026-10-13 — Peace-of-mind error states
+
+**Error visibility (all local, zero telemetry)**
+- New `AppError` + `ErrorBus`: every failure now records what happened, where,
+  and why (exception cause included). One global snackbar per error with a
+  Details action into Settings → Diagnostics.
+- Previously-silent write paths now report: save/edit transaction, delete,
+  budgets, categories, members, recurring rules, SMS review queue, recurring
+  auto-log worker. Export/import failure Toasts migrated to the bus.
+- Home + Transactions feeds distinguish empty vs failed: a "Couldn't load" card
+  with Try again (retry re-subscribes to the database) instead of a blank list.
+- New Settings → Diagnostics section (on-device only): app version, Room/SQLite
+  version, per-table row counts, recent-error history with timestamps, copyable
+  report, clear-log. No data ever leaves the phone.
+
 ## [v1.12.0] - 2026-10-13 — Nessie premium-motion package + AGSL mesh background
 
 **Motion & feel (inspired by Cecilia Kim's Nessie build log)**

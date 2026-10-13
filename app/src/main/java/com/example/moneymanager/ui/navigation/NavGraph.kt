@@ -30,6 +30,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.example.moneymanager.theme.*
+import com.example.moneymanager.util.ErrorBus
 import com.example.moneymanager.ui.ios.AmbientBackground
 import com.example.moneymanager.ui.ios.IosTabBar
 import com.example.moneymanager.ui.ios.IosTabItem
@@ -93,8 +94,24 @@ fun AppNavGraph(
         AmbientBackground(mode = ambientMode, dark = dark)
         // Default insets: content gets top + horizontal safe-drawing padding.
         // The bottom inset is owned by IosTabBar (not double-padded here).
+        val snackbarHostState = androidx.compose.runtime.remember { SnackbarHostState() }
+        // One global listener: every ErrorBus report becomes a snackbar with a
+        // Details action into Settings → Diagnostics. Local-only, no telemetry.
+        androidx.compose.runtime.LaunchedEffect(Unit) {
+            ErrorBus.events.collect { err ->
+                val action = snackbarHostState.showSnackbar(
+                    message = err.summary(),
+                    actionLabel = "Details",
+                    duration = SnackbarDuration.Long
+                )
+                if (action == SnackbarResult.ActionPerformed) {
+                    navController.navigate(Screen.Settings.route)
+                }
+            }
+        }
         Scaffold(
             containerColor = Color.Transparent,
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             bottomBar = {
                 val shouldShowBottomBar = androidx.compose.runtime.remember(currentRoute) {
                     bottomNavItems.any { it.route == currentRoute }

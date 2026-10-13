@@ -3,6 +3,8 @@ package com.example.moneymanager.worker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import android.content.Context
+import com.example.moneymanager.util.ErrorBus
+import com.example.moneymanager.util.ErrorKind
 import com.example.moneymanager.util.LiveUpdateHelper
 
 class RecurringExpenseWorker(
@@ -37,6 +39,10 @@ class RecurringExpenseWorker(
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
+            ErrorBus.report(
+                ErrorKind.RECURRING, "Recurring bills",
+                "Couldn't auto-log due bills", e
+            )
             Result.retry()
         }
     }

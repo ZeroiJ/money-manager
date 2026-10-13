@@ -10,6 +10,8 @@ import com.example.moneymanager.data.model.PaymentMode
 import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
+import com.example.moneymanager.util.ErrorBus
+import com.example.moneymanager.util.ErrorKind
 import com.example.moneymanager.util.ReceiptStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -220,12 +222,19 @@ class AddTransactionViewModel @Inject constructor(
                 paidBy = if (transactionScope.value == TransactionScope.HOUSEHOLD) selectedPaidBy.value else null,
                 receiptUri = receiptUri.value
             )
-            if (existingId != null && existingId > 0) {
-                moneyDao.updateTransaction(transaction)
-            } else {
-                moneyDao.insertTransaction(transaction)
+            try {
+                if (existingId != null && existingId > 0) {
+                    moneyDao.updateTransaction(transaction)
+                } else {
+                    moneyDao.insertTransaction(transaction)
+                }
+                onSuccess()
+            } catch (e: Exception) {
+                ErrorBus.report(
+                    ErrorKind.DB_WRITE, "Add expense",
+                    "Couldn't save the transaction", e
+                )
             }
-            onSuccess()
         }
     }
 }

@@ -9,6 +9,8 @@ import com.example.moneymanager.data.model.PaymentMode
 import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
+import com.example.moneymanager.util.ErrorBus
+import com.example.moneymanager.util.ErrorKind
 import com.example.moneymanager.util.FormatUtils
 import com.example.moneymanager.util.ReceiptStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +41,17 @@ class TransactionsViewModel @Inject constructor(
     val typeFilter = MutableStateFlow<TransactionType?>(null)
     val dateFilter = MutableStateFlow(DateFilter.ALL)
 
+    // Feed health: a failed DB read surfaces as loadError (card + retry on the
+    // screen) instead of a forever-empty feed. Retry re-subscribes to the DAO.
+    private val refreshTick = MutableStateFlow(0)
+    private val _loadError = MutableStateFlow<String?>(null)
+    val loadError: StateFlow<String?> = _loadError.asStateFlow()
+
+    fun retryLoad() {
+        _loadError.value = null
+        refreshTick.value++
+    }
+
     val categories: StateFlow<List<Category>> = moneyDao.getAllCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -46,8 +59,14 @@ class TransactionsViewModel @Inject constructor(
         list.associateBy { it.id }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
-    private val allTransactions = moneyDao.getAllTransactions()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    private val allTransactions = refreshTick.flatMapLatest {
+        moneyDao.getAllTransactions()
+            .catch { e ->
+                ErrorBus.report(ErrorKind.DB_READ, "Transactions", "Couldn't load transactions", e)
+                _loadError.value = e.message ?: "Couldn't load transactions"
+                emit(emptyList())
+            }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     @Suppress("UNCHECKED_CAST")
     val filteredTransactions: StateFlow<List<Transaction>> = combine(
@@ -132,8 +151,15 @@ class TransactionsViewModel @Inject constructor(
 
     fun deleteTransaction(transaction: Transaction) {
         viewModelScope.launch {
-            transaction.receiptUri?.let { ReceiptStorage.deleteReceipt(appContext, it) }
-            moneyDao.deleteTransaction(transaction)
+            try {
+                transaction.receiptUri?.let { ReceiptStorage.deleteReceipt(appContext, it) }
+                moneyDao.deleteTransaction(transaction)
+            } catch (e: Exception) {
+                ErrorBus.report(
+                    ErrorKind.DB_WRITE, "Transactions",
+                    "Couldn't delete the transaction", e
+                )
+            }
         }
     }
 }

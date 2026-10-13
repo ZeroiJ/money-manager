@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.moneymanager.data.db.AppDatabase
 import com.example.moneymanager.data.model.PendingImport
 import com.example.moneymanager.data.model.TransactionType
 import com.example.moneymanager.theme.Geist
@@ -68,6 +69,8 @@ import com.example.moneymanager.ui.ios.IosRow
 import com.example.moneymanager.ui.ios.IosSwitchRow
 import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.ui.ios.pressShrink
+import com.example.moneymanager.util.ErrorBus
+import com.example.moneymanager.util.ErrorKind
 import com.example.moneymanager.util.FormatUtils
 import com.example.moneymanager.util.XlsxImporter
 import kotlinx.coroutines.launch
@@ -111,7 +114,7 @@ fun SettingsScreen(
                     }
                     Toast.makeText(context, "JSON Export Complete", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Export Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    ErrorBus.report(ErrorKind.EXPORT_FAILED, "Settings → Export", "Couldn't write the JSON backup", e)
                 }
             }
         }
@@ -129,7 +132,7 @@ fun SettingsScreen(
                     }
                     Toast.makeText(context, "CSV Export Complete", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Export Failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    ErrorBus.report(ErrorKind.EXPORT_FAILED, "Settings → Export", "Couldn't write the CSV backup", e)
                 }
             }
         }
@@ -152,13 +155,13 @@ fun SettingsScreen(
                         }
                     }
                     val success = viewModel.importJsonBackup(stringBuilder.toString())
-                    Toast.makeText(
-                        context,
-                        if (success) "Backup Restored Successfully" else "Invalid JSON format",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    if (success) {
+                        Toast.makeText(context, "Backup Restored Successfully", Toast.LENGTH_LONG).show()
+                    } else {
+                        ErrorBus.report(ErrorKind.IMPORT_FAILED, "Settings → Import", "Invalid backup file", null)
+                    }
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Import error: ${e.message}", Toast.LENGTH_LONG).show()
+                    ErrorBus.report(ErrorKind.IMPORT_FAILED, "Settings → Import", "Couldn't read the backup file", e)
                 }
             }
         }
@@ -515,6 +518,119 @@ fun SettingsScreen(
                                 onApprove = { viewModel.approvePending(item) },
                                 onDiscard = { viewModel.discardPending(item) }
                             )
+                        }
+                    }
+                }
+            }
+
+            // Diagnostics — local-only health + error history. Nothing here
+            // ever leaves the device; there is no telemetry in this app.
+            item {
+                val recentErrors by ErrorBus.recent.collectAsState()
+                var counts by remember { mutableStateOf<List<Pair<String, Int>>>(emptyList()) }
+                LaunchedEffect(Unit) {
+                    counts = try {
+                        viewModel.dbCounts()
+                    } catch (_: Exception) {
+                        emptyList()
+                    }
+                }
+                val appVersion = remember {
+                    try {
+                        @Suppress("DEPRECATION")
+                        context.packageManager
+                            .getPackageInfo(context.packageName, 0)
+                            ?.versionName ?: "?"
+                    } catch (_: Exception) {
+                        "?"
+                    }
+                }
+                val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
+                IosGroupedList(header = "Diagnostics · on this phone only", scheme = scheme) {
+                    IosRow(
+                        title = "App",
+                        subtitle = "v$appVersion · Room database v${AppDatabase.DB_VERSION} (SQLite)",
+                        icon = null,
+                        iconTint = scheme.accent,
+                        scheme = scheme,
+                        showChevron = false
+                    ) {}
+                    if (counts.isNotEmpty()) {
+                        HorizontalDivider(color = scheme.separator, thickness = 0.5.dp)
+                        IosRow(
+                            title = "Stored records",
+                            subtitle = counts.joinToString(" · ") { (name, n) -> "$name $n" },
+                            icon = null,
+                            iconTint = scheme.accent,
+                            scheme = scheme,
+                            showChevron = false
+                        ) {}
+                    }
+                    HorizontalDivider(color = scheme.separator, thickness = 0.5.dp)
+                    Text(
+                        text = if (recentErrors.isEmpty()) "No errors recorded — everything is healthy."
+                        else "Recent errors (${recentErrors.size})",
+                        fontFamily = Geist,
+                        fontSize = 13.sp,
+                        color = scheme.secondaryLabel,
+                        modifier = Modifier.padding(vertical = 6.dp)
+                    )
+                    recentErrors.asReversed().forEach { err ->
+                        val time = remember(err.at) {
+                            java.text.SimpleDateFormat("d MMM HH:mm", java.util.Locale.getDefault())
+                                .format(java.util.Date(err.at))
+                        }
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "${err.kind.label} · ${err.where} · $time",
+                                fontFamily = Geist,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 14.sp,
+                                color = scheme.label
+                            )
+                            Text(
+                                text = err.message + (err.cause?.let { " ($it)" } ?: ""),
+                                fontFamily = Geist,
+                                fontSize = 13.sp,
+                                color = scheme.secondaryLabel
+                            )
+                        }
+                    }
+                    if (recentErrors.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                SettingsActionButton(
+                                    text = "Copy report",
+                                    primary = false,
+                                    scheme = scheme,
+                                    onClick = {
+                                        val report = buildString {
+                                            appendLine("Money Manager v$appVersion · Room v${AppDatabase.DB_VERSION}")
+                                            appendLine(counts.joinToString(", ") { (name, n) -> "$name: $n" })
+                                            recentErrors.forEach { err ->
+                                                appendLine("[${err.kind.label}] ${err.where}: ${err.message} ${err.cause ?: ""}")
+                                            }
+                                        }
+                                        clipboard.setText(androidx.compose.ui.text.AnnotatedString(report))
+                                        Toast.makeText(context, "Report copied", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            }
+                            Box(modifier = Modifier.weight(1f)) {
+                                SettingsActionButton(
+                                    text = "Clear log",
+                                    primary = false,
+                                    scheme = scheme,
+                                    onClick = { ErrorBus.clear() }
+                                )
+                            }
                         }
                     }
                 }

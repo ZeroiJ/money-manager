@@ -16,6 +16,8 @@ import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
 import com.example.moneymanager.data.prefs.UserPreferences
 import com.example.moneymanager.util.BackupUtils
+import com.example.moneymanager.util.ErrorBus
+import com.example.moneymanager.util.ErrorKind
 import com.example.moneymanager.util.SmsInboxReader
 import com.example.moneymanager.util.XlsxImporter
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -70,19 +72,27 @@ class SettingsViewModel @Inject constructor(
 
     fun addCategory(name: String, icon: String, color: Long) {
         viewModelScope.launch {
-            val category = Category(
-                name = name.trim(),
-                icon = icon,
-                color = color,
-                isDefault = false
-            )
-            moneyDao.insertCategory(category)
+            try {
+                val category = Category(
+                    name = name.trim(),
+                    icon = icon,
+                    color = color,
+                    isDefault = false
+                )
+                moneyDao.insertCategory(category)
+            } catch (e: Exception) {
+                ErrorBus.report(ErrorKind.DB_WRITE, "Settings → Categories", "Couldn't add the category", e)
+            }
         }
     }
 
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
-            moneyDao.deleteCategory(category)
+            try {
+                moneyDao.deleteCategory(category)
+            } catch (e: Exception) {
+                ErrorBus.report(ErrorKind.DB_WRITE, "Settings → Categories", "Couldn't delete the category", e)
+            }
         }
     }
 
@@ -97,37 +107,53 @@ class SettingsViewModel @Inject constructor(
         nextDueDate: Long
     ) {
         viewModelScope.launch {
-            val rule = RecurringRule(
-                amount = amount,
-                type = type,
-                categoryId = categoryId,
-                note = note.trim(),
-                paymentMode = paymentMode,
-                scope = scope,
-                frequency = frequency,
-                nextDueDate = nextDueDate
-            )
-            moneyDao.insertRecurringRule(rule)
+            try {
+                val rule = RecurringRule(
+                    amount = amount,
+                    type = type,
+                    categoryId = categoryId,
+                    note = note.trim(),
+                    paymentMode = paymentMode,
+                    scope = scope,
+                    frequency = frequency,
+                    nextDueDate = nextDueDate
+                )
+                moneyDao.insertRecurringRule(rule)
+            } catch (e: Exception) {
+                ErrorBus.report(ErrorKind.DB_WRITE, "Settings → Recurring", "Couldn't save the rule", e)
+            }
         }
     }
 
     fun deleteRecurringRule(rule: RecurringRule) {
         viewModelScope.launch {
-            moneyDao.deleteRecurringRule(rule)
+            try {
+                moneyDao.deleteRecurringRule(rule)
+            } catch (e: Exception) {
+                ErrorBus.report(ErrorKind.DB_WRITE, "Settings → Recurring", "Couldn't delete the rule", e)
+            }
         }
     }
 
     fun addHouseholdMember(name: String) {
         viewModelScope.launch {
-            if (name.isNotBlank()) {
-                moneyDao.insertHouseholdMember(HouseholdMember(name = name.trim()))
+            try {
+                if (name.isNotBlank()) {
+                    moneyDao.insertHouseholdMember(HouseholdMember(name = name.trim()))
+                }
+            } catch (e: Exception) {
+                ErrorBus.report(ErrorKind.DB_WRITE, "Settings → Household", "Couldn't add the member", e)
             }
         }
     }
 
     fun deleteHouseholdMember(member: HouseholdMember) {
         viewModelScope.launch {
-            moneyDao.deleteHouseholdMember(member)
+            try {
+                moneyDao.deleteHouseholdMember(member)
+            } catch (e: Exception) {
+                ErrorBus.report(ErrorKind.DB_WRITE, "Settings → Household", "Couldn't delete the member", e)
+            }
         }
     }
 
@@ -252,6 +278,17 @@ class SettingsViewModel @Inject constructor(
     val pendingImports: StateFlow<List<PendingImport>> = moneyDao.getPendingImports()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    /** One-shot row counts per table for Settings → Diagnostics. */
+    suspend fun dbCounts(): List<Pair<String, Int>> = withContext(Dispatchers.IO) {
+        listOf(
+            "Transactions" to moneyDao.getAllTransactionsList().size,
+            "Categories" to moneyDao.getAllCategoriesList().size,
+            "Budgets" to moneyDao.getAllBudgetsList().size,
+            "Recurring rules" to moneyDao.getAllRecurringRulesList().size,
+            "Household members" to moneyDao.getAllHouseholdMembersList().size
+        )
+    }
+
     suspend fun scanSmsInbox(context: Context): Int {
         val candidates = withContext(Dispatchers.IO) {
             SmsInboxReader.readRecent(context)
@@ -274,24 +311,32 @@ class SettingsViewModel @Inject constructor(
 
     fun approvePending(item: PendingImport) {
         viewModelScope.launch {
-            moneyDao.insertTransaction(
-                Transaction(
-                    amount = item.amount,
-                    type = item.type,
-                    categoryId = 0L,
-                    note = "${item.merchant} via UPI",
-                    date = item.date,
-                    paymentMode = item.paymentMode,
-                    scope = item.scope
+            try {
+                moneyDao.insertTransaction(
+                    Transaction(
+                        amount = item.amount,
+                        type = item.type,
+                        categoryId = 0L,
+                        note = "${item.merchant} via UPI",
+                        date = item.date,
+                        paymentMode = item.paymentMode,
+                        scope = item.scope
+                    )
                 )
-            )
-            moneyDao.deletePendingImport(item)
+                moneyDao.deletePendingImport(item)
+            } catch (e: Exception) {
+                ErrorBus.report(ErrorKind.DB_WRITE, "SMS review queue", "Couldn't log the payment", e)
+            }
         }
     }
 
     fun discardPending(item: PendingImport) {
         viewModelScope.launch {
-            moneyDao.deletePendingImport(item)
+            try {
+                moneyDao.deletePendingImport(item)
+            } catch (e: Exception) {
+                ErrorBus.report(ErrorKind.DB_WRITE, "SMS review queue", "Couldn't discard the payment", e)
+            }
         }
     }
 }

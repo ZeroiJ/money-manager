@@ -349,3 +349,17 @@ git commit -m "chore: remove superseded Chroma/ASCII usages after iOS reskin"
   + `maskedCurrency` leak sweep, serif heroes/empty states, 2-line category cells,
   44dp+ segmented padding, splash no-flash (`values-night` too). Device-verified:
   Home/feed/Settings/Reports light+dark, masked mode, font_scale 1.3, add sheet.
+
+## Follow-up 2 (2026-10-13): error states
+
+- `util/AppError.kt` + `util/ErrorBus.kt` (plain object: SharedFlow events +
+  20-entry recent ring, `clear()` for tests). Local-only, no telemetry.
+- Silent writes now report: save/edit/delete transaction, budgets, categories,
+  members, rules, review queue, recurring worker. Export/import failure Toasts
+  migrated to the bus (success Toasts kept).
+- Home + Transactions: `loadError` + `retryLoad()` (catch + flatMapLatest tick
+  resubscribe); `LoadErrorCard` replaces the feed on failure. Tested via
+  `FakeMoneyDao.failReads` + stepped virtual time.
+- Global snackbar host in NavGraph (Details → Settings). Settings → Diagnostics:
+  app version, Room v3/SQLite, per-table counts via `dbCounts()`, error history,
+  copyable report, clear log. 46/46 unit tests green.

@@ -56,6 +56,7 @@ import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.IosGroupedList
 import com.example.moneymanager.ui.ios.IosHeroWord
 import com.example.moneymanager.ui.ios.IosRow
+import com.example.moneymanager.ui.ios.LoadErrorCard
 import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.ui.ios.firstEntryTransition
 import com.example.moneymanager.ui.ios.pressShrink
@@ -75,6 +76,7 @@ fun HomeScreen(
     onNavigateToEditTransaction: (Long) -> Unit = {}
 ) {
     val recentTxs by viewModel.recentTransactions.collectAsState()
+    val loadError by viewModel.loadError.collectAsState()
     val categoriesMap by viewModel.categoriesMap.collectAsState()
     val todaySpend by viewModel.todaySpend.collectAsState()
     val monthSpend by viewModel.monthSpend.collectAsState()
@@ -214,7 +216,14 @@ fun HomeScreen(
                 }
             }
 
-            if (recentTxs.isEmpty()) {
+            if (loadError != null) {
+                item {
+                    LoadErrorCard(
+                        message = loadError ?: "Couldn't load transactions",
+                        onRetry = { viewModel.retryLoad() }
+                    )
+                }
+            } else if (recentTxs.isEmpty()) {
                 item {
                     Box(
                         modifier = Modifier

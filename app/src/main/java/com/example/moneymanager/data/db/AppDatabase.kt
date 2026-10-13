@@ -23,6 +23,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun moneyDao(): MoneyDao
 
     companion object {
+        /** Mirror of the @Database version above — shown in Settings → Diagnostics. */
+        const val DB_VERSION = 3
+
         // v1 -> v2: add optional receiptUri column to transactions
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {

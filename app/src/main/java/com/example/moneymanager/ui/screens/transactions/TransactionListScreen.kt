@@ -57,6 +57,7 @@ import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.IosGroupedList
 import com.example.moneymanager.ui.ios.IosRow
 import com.example.moneymanager.ui.ios.IosSegmented
+import com.example.moneymanager.ui.ios.LoadErrorCard
 import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.ui.ios.maskedCurrency
 import com.example.moneymanager.util.FormatUtils
@@ -74,6 +75,7 @@ fun TransactionListScreen(
     val categoriesMap by viewModel.categoriesMap.collectAsState()
     val totalFilteredSpend by viewModel.totalFilteredSpend.collectAsState()
     val filteredTxs by viewModel.filteredTransactions.collectAsState()
+    val loadError by viewModel.loadError.collectAsState()
     val scheme = currentScheme()
 
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
@@ -168,7 +170,18 @@ fun TransactionListScreen(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        if (filteredTxs.isEmpty()) {
+        if (loadError != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                LoadErrorCard(
+                    message = loadError ?: "Couldn't load transactions",
+                    onRetry = { viewModel.retryLoad() }
+                )
+            }
+        } else if (filteredTxs.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

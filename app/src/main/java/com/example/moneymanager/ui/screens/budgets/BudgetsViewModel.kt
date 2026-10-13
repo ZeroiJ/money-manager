@@ -7,6 +7,8 @@ import com.example.moneymanager.data.model.Budget
 import com.example.moneymanager.data.model.Category
 import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionType
+import com.example.moneymanager.util.ErrorBus
+import com.example.moneymanager.util.ErrorKind
 import com.example.moneymanager.util.FormatUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -87,16 +89,30 @@ class BudgetsViewModel @Inject constructor(
 
     fun setBudget(categoryId: Long, amount: Double) {
         viewModelScope.launch {
-            val month = selectedMonth.value
-            val existing = moneyDao.getBudgetForCategoryAndMonth(categoryId, month)
-            val budget = existing?.copy(amountLimit = amount) ?: Budget(categoryId = categoryId, month = month, amountLimit = amount)
-            moneyDao.insertBudget(budget)
+            try {
+                val month = selectedMonth.value
+                val existing = moneyDao.getBudgetForCategoryAndMonth(categoryId, month)
+                val budget = existing?.copy(amountLimit = amount) ?: Budget(categoryId = categoryId, month = month, amountLimit = amount)
+                moneyDao.insertBudget(budget)
+            } catch (e: Exception) {
+                ErrorBus.report(
+                    ErrorKind.DB_WRITE, "Budgets",
+                    "Couldn't save the limit", e
+                )
+            }
         }
     }
 
     fun deleteBudget(budget: Budget) {
         viewModelScope.launch {
-            moneyDao.deleteBudget(budget)
+            try {
+                moneyDao.deleteBudget(budget)
+            } catch (e: Exception) {
+                ErrorBus.report(
+                    ErrorKind.DB_WRITE, "Budgets",
+                    "Couldn't delete the limit", e
+                )
+            }
         }
     }
 }
