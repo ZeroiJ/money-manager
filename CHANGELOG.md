@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.14.0] - 2026-10-13 — Quiet ledger de-slop
+
+**Anti-slop pass (Origin/Slash/Public/Valon consensus)**
+- Animated wash frozen into a static near-monochrome texture + grain (zero
+  battery); the Display toggle now means paper texture on/off.
+- Category icons monochrome (donut/heatmap keep their data palettes); blue is
+  now strictly for actions (FAB, buttons, links, selected states).
+- Solid tab bar (translucency without blur read as smudge); 40sp serif hero
+  with tight leading; more section air.
+
 ## [v1.13.0] - 2026-10-13 — Peace-of-mind error states
 
 **Error visibility (all local, zero telemetry)**

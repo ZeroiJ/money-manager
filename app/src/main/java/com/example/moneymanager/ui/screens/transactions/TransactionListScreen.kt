@@ -245,9 +245,7 @@ fun TransactionListScreen(
                                     DeletableRow(
                                         tx = tx,
                                         categoryName = category?.name ?: "Misc",
-                                        categoryColor = category?.let {
-                                            Color(it.color)
-                                        } ?: scheme.accent,
+                                        categoryColor = scheme.label,
                                         categoryIcon = FormatUtils.getCategoryIcon(
                                             category?.icon.orEmpty()
                                         ),

@@ -72,7 +72,7 @@ vec4 main(vec2 fragCoord) {
     vec3 col = mix(uColor0, uColor1, smoothstep(0.15, 0.75, m1));
     col = mix(col, uColor2, smoothstep(0.25, 0.85, m2));
     float glow = smoothstep(0.55, 0.95, fbm(uv * 1.5 + warp + t * 0.015));
-    col = mix(col, uColor3, glow * 0.55);
+    col = mix(col, uColor3, glow * 0.4);
     float g = hash(fragCoord + fract(t) * 100.0) - 0.5;
     col += g * 0.06;
     return vec4(col, 1.0);
@@ -85,7 +85,8 @@ private fun rgb(c: Color): Triple<Float, Float, Float> =
 @Composable
 fun MeshGradientBackground(
     dark: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    animate: Boolean = false
 ) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
         // Pre-33 fallback: static wash (caller normally routes here only on 33+).
@@ -97,27 +98,34 @@ fun MeshGradientBackground(
         val density = LocalDensity.current
         val wPx = with(density) { maxWidth.toPx() }
         val hPx = with(density) { maxHeight.toPx() }
-        val transition = rememberInfiniteTransition(label = "mesh")
-        val t by transition.animateFloat(
-            initialValue = 0f,
-            targetValue = 24f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 24000, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "meshTime"
-        )
-        // Muted quads: vivid accents are mixed at most ~0.55 so dark mode
-        // never gets a neon band (see v1.11.0 device feedback).
+        // Quiet ledger: the still is the design (texture, not motion). The loop
+        // stays available but off — ambient texture costs zero battery.
+        val t = if (animate) {
+            val transition = rememberInfiniteTransition(label = "mesh")
+            val drifted by transition.animateFloat(
+                initialValue = 0f,
+                targetValue = 24f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 24000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "meshTime"
+            )
+            drifted
+        } else {
+            7.3f
+        }
+        // Muted near-monochrome quads: texture reads as paper grain's big
+        // brother, never as a neon band (see v1.11.0 device feedback).
         val quad = if (dark) {
             listOf(
-                Color(0xFF050914), Color(0xFF101C4E),
-                Color(0xFF2743B8), Color(0xFF4D7CFE)
+                Color(0xFF050914), Color(0xFF0D1738),
+                Color(0xFF1B2A6B), Color(0xFF35509E)
             )
         } else {
             listOf(
-                Color(0xFFFFF6EA), Color(0xFFFFDFB5),
-                Color(0xFFE8933C), Color(0xFFFF6B35)
+                Color(0xFFFFF6EA), Color(0xFFF5E7CF),
+                Color(0xFFE3C491), Color(0xFFD0934F)
             )
         }
         val brush = remember(t, dark, wPx, hPx) {

@@ -64,6 +64,7 @@ fun IosHeroWord(
     text: String,
     color: Color,
     fontSize: TextUnit = 30.sp,
+    lineHeight: TextUnit = TextUnit.Unspecified,
     modifier: Modifier = Modifier
 ) {
     Text(
@@ -71,6 +72,7 @@ fun IosHeroWord(
         fontFamily = PlayfairItalic,
         fontWeight = FontWeight.SemiBold,
         fontSize = fontSize,
+        lineHeight = lineHeight,
         color = color,
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,

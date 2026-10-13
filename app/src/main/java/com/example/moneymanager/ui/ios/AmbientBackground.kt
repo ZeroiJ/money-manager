@@ -46,7 +46,9 @@ fun AmbientBackground(
     if (mode == AmbientMode.Static) {
         Box(modifier.fillMaxSize().background(Brush.linearGradient(colors)))
     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        // SPIKE: GPU mesh gradient on 33+; old wash stays as the fallback below.
+        // Quiet ledger: a frozen mesh still (texture, not motion) + grain.
+        // The loop is off — ambient texture costs zero battery. The toggle
+        // now means texture on/off; Static is the flat canvas.
         MeshGradientBackground(dark = dark, modifier = modifier)
     } else {
         val transition = rememberInfiniteTransition(label = "ambient")

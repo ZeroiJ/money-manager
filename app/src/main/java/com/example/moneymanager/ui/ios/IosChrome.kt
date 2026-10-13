@@ -58,7 +58,9 @@ fun IosTabBar(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(scheme.card.copy(alpha = 0.85f))
+            // Solid: translucency over a flat canvas is pointless, and frost
+            // without blur reads as a smudge. Quiet ledger = solid + hairline.
+            .background(scheme.card)
             // Own the bottom + horizontal insets: sits clear of the gesture
             // bar and cutouts. (Content must NOT also pad bottom — see NavGraph.)
             .windowInsetsPadding(

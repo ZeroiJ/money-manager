@@ -268,8 +268,8 @@ fun SettingsScreen(
                     )
                     HorizontalDivider(color = scheme.separator, thickness = 0.5.dp)
                     IosSwitchRow(
-                        title = "Animated background",
-                        subtitle = "Slow gradient wash behind every screen",
+                        title = "Paper texture",
+                        subtitle = "Subtle grain behind every screen",
                         checked = ambientEnabled,
                         onCheckedChange = { viewModel.setAmbientEnabled(it) },
                         scheme = scheme
@@ -344,7 +344,7 @@ fun SettingsScreen(
                                 title = cat.name,
                                 subtitle = null,
                                 icon = FormatUtils.getCategoryIcon(cat.icon),
-                                iconTint = Color(cat.color),
+                                iconTint = scheme.label,
                                 scheme = scheme,
                                 showChevron = false
                             ) {

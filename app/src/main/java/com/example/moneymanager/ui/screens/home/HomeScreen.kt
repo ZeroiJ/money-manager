@@ -124,7 +124,7 @@ fun HomeScreen(
                 top = 8.dp,
                 bottom = 96.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // ── Month summary card ───────────────────────────────────────
             item {
@@ -133,13 +133,14 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
                         .background(scheme.card)
-                        .padding(20.dp)
+                        .padding(24.dp)
                 ) {
                     Column {
                         IosHeroWord(
                             text = monthWord,
                             color = scheme.label,
-                            fontSize = 30.sp
+                            fontSize = 40.sp,
+                            lineHeight = 44.sp
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         IosAmount(
@@ -307,7 +308,7 @@ private fun HomeFeedRow(
         title = if (transaction.note.isNotBlank()) transaction.note else (category?.name ?: "Expense"),
         subtitle = "${category?.name ?: "Misc"} · ${transaction.paymentMode.name}",
         icon = FormatUtils.getCategoryIcon(category?.icon ?: "category"),
-        iconTint = if (category != null) Color(category.color) else scheme.accent,
+        iconTint = scheme.label,
         scheme = scheme,
         onClick = onClick,
         showChevron = false

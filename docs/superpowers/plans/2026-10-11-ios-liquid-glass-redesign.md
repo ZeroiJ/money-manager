@@ -363,3 +363,12 @@ git commit -m "chore: remove superseded Chroma/ASCII usages after iOS reskin"
 - Global snackbar host in NavGraph (Details → Settings). Settings → Diagnostics:
   app version, Room v3/SQLite, per-table counts via `dbCounts()`, error history,
   copyable report, clear log. 46/46 unit tests green.
+
+## Follow-up 3 (2026-10-13): quiet ledger de-slop
+
+Slop diagnosis (web consensus: Origin/Slash/Mercury/Public/Valon + local
+skill DB cross-check, whose top answer reproduced the generic look and was
+overruled): decorative animated gradients, blue accent everywhere, glow.
+Fix: frozen mesh still + grain (zero battery, toggle now means texture),
+monochrome category icons (donut/heatmap keep data palette), solid tab bar,
+blue strictly for actions, 40sp serif hero, more air. Device-verified dark.

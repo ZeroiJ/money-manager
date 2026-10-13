@@ -382,14 +382,14 @@ fun BudgetsScreen(
                                         .size(34.dp)
                                         .clip(RoundedCornerShape(10.dp))
                                         .background(
-                                            Color(item.category.color).copy(alpha = 0.15f)
+                                            scheme.label.copy(alpha = 0.15f)
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = FormatUtils.getCategoryIcon(item.category.icon),
                                         contentDescription = null,
-                                        tint = Color(item.category.color),
+                                        tint = scheme.label,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
