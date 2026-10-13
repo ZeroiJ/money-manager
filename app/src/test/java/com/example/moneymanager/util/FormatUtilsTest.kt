@@ -17,6 +17,16 @@ class FormatUtilsTest {
     }
 
     @Test
+    fun testFormatLedger_singleDecimalAlways() {
+        // PRD §5 format rule: technical single decimal, Indian grouping.
+        assertEquals("₹500.0", FormatUtils.formatLedger(500.0))
+        assertEquals("₹1,951.0", FormatUtils.formatLedger(1951.0))
+        assertEquals("₹1,50,000.5", FormatUtils.formatLedger(150000.50))
+        assertEquals("-₹1,864.0", FormatUtils.formatLedger(-1864.0))
+        assertEquals("₹0.0", FormatUtils.formatLedger(0.0))
+    }
+
+    @Test
     fun testFormatDate_TodayAndYesterday() {
         val now = System.currentTimeMillis()
         assertEquals("Today", FormatUtils.formatDate(now))

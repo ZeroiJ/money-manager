@@ -61,7 +61,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.moneymanager.data.db.AppDatabase
 import com.example.moneymanager.data.model.PendingImport
 import com.example.moneymanager.data.model.TransactionType
-import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.theme.SpaceGrotesk
 import com.example.moneymanager.theme.IosScheme
 import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.IosGroupedList
@@ -220,15 +220,14 @@ fun SettingsScreen(
             }
             Text(
                 text = "Settings",
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
                 color = scheme.label
             )
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+        LazyColumn(            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
@@ -283,7 +282,7 @@ fun SettingsScreen(
                     if (householdMembers.isEmpty()) {
                         Text(
                             text = "No members yet.",
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontSize = 15.sp,
                             color = scheme.secondaryLabel,
                             modifier = Modifier.padding(vertical = 10.dp)
@@ -333,7 +332,7 @@ fun SettingsScreen(
                     if (categories.isEmpty()) {
                         Text(
                             text = "No categories yet.",
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontSize = 15.sp,
                             color = scheme.secondaryLabel,
                             modifier = Modifier.padding(vertical = 10.dp)
@@ -351,7 +350,7 @@ fun SettingsScreen(
                                 if (cat.isDefault) {
                                     Text(
                                         text = "System",
-                                        fontFamily = Geist,
+                                        fontFamily = SpaceGrotesk,
                                         fontSize = 13.sp,
                                         color = scheme.secondaryLabel
                                     )
@@ -458,7 +457,7 @@ fun SettingsScreen(
                     ) {
                         Text(
                             text = if (listenerEnabled) "On" else "Off",
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontWeight = FontWeight.Medium,
                             fontSize = 15.sp,
                             color = if (listenerEnabled) scheme.success else scheme.secondaryLabel
@@ -507,7 +506,7 @@ fun SettingsScreen(
                         HorizontalDivider(color = scheme.separator, thickness = 0.5.dp)
                         Text(
                             text = "Review queue — approve to log, × to discard",
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontSize = 13.sp,
                             color = scheme.secondaryLabel
                         )
@@ -570,7 +569,7 @@ fun SettingsScreen(
                     Text(
                         text = if (recentErrors.isEmpty()) "No errors recorded — everything is healthy."
                         else "Recent errors (${recentErrors.size})",
-                        fontFamily = Geist,
+                        fontFamily = SpaceGrotesk,
                         fontSize = 13.sp,
                         color = scheme.secondaryLabel,
                         modifier = Modifier.padding(vertical = 6.dp)
@@ -587,14 +586,14 @@ fun SettingsScreen(
                         ) {
                             Text(
                                 text = "${err.kind.label} · ${err.where} · $time",
-                                fontFamily = Geist,
+                                fontFamily = SpaceGrotesk,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 14.sp,
                                 color = scheme.label
                             )
                             Text(
                                 text = err.message + (err.cause?.let { " ($it)" } ?: ""),
-                                fontFamily = Geist,
+                                fontFamily = SpaceGrotesk,
                                 fontSize = 13.sp,
                                 color = scheme.secondaryLabel
                             )
@@ -646,7 +645,7 @@ fun SettingsScreen(
             title = {
                 Text(
                     text = "New category",
-                    fontFamily = Geist,
+                    fontFamily = SpaceGrotesk,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 17.sp,
                     color = scheme.label
@@ -656,7 +655,7 @@ fun SettingsScreen(
                 OutlinedTextField(
                     value = newCategoryName,
                     onValueChange = { newCategoryName = it },
-                    label = { Text("Category name", fontFamily = Geist) },
+                    label = { Text("Category name", fontFamily = SpaceGrotesk) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -677,12 +676,12 @@ fun SettingsScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
                 ) {
-                    Text("Save", fontFamily = Geist, fontWeight = FontWeight.SemiBold)
+                    Text("Save", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddCategoryDialog = false }) {
-                    Text("Cancel", fontFamily = Geist, color = scheme.accent)
+                    Text("Cancel", fontFamily = SpaceGrotesk, color = scheme.accent)
                 }
             }
         )
@@ -696,7 +695,7 @@ fun SettingsScreen(
             title = {
                 Text(
                     text = "New member",
-                    fontFamily = Geist,
+                    fontFamily = SpaceGrotesk,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 17.sp,
                     color = scheme.label
@@ -706,7 +705,7 @@ fun SettingsScreen(
                 OutlinedTextField(
                     value = newMemberName,
                     onValueChange = { newMemberName = it },
-                    label = { Text("Member name", fontFamily = Geist) },
+                    label = { Text("Member name", fontFamily = SpaceGrotesk) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -727,12 +726,12 @@ fun SettingsScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
                 ) {
-                    Text("Save", fontFamily = Geist, fontWeight = FontWeight.SemiBold)
+                    Text("Save", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddMemberDialog = false }) {
-                    Text("Cancel", fontFamily = Geist, color = scheme.accent)
+                    Text("Cancel", fontFamily = SpaceGrotesk, color = scheme.accent)
                 }
             }
         )
@@ -746,7 +745,7 @@ fun SettingsScreen(
             title = {
                 Text(
                     text = "Excel import",
-                    fontFamily = Geist,
+                    fontFamily = SpaceGrotesk,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 17.sp,
                     color = scheme.label
@@ -756,13 +755,13 @@ fun SettingsScreen(
                 when {
                     xlsxBusy -> Text(
                         text = "Parsing workbook…",
-                        fontFamily = Geist,
+                        fontFamily = SpaceGrotesk,
                         fontSize = 15.sp,
                         color = scheme.secondaryLabel
                     )
                     xlsxError != null -> Text(
                         text = xlsxError ?: "Unknown error",
-                        fontFamily = Geist,
+                        fontFamily = SpaceGrotesk,
                         fontSize = 15.sp,
                         color = scheme.destructive
                     )
@@ -772,7 +771,7 @@ fun SettingsScreen(
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Text(
                                     text = "${preview.rows.size} rows ready · ${preview.skippedRows} skipped / ${preview.totalRows} total",
-                                    fontFamily = Geist,
+                                    fontFamily = SpaceGrotesk,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 13.sp,
                                     color = scheme.secondaryLabel
@@ -781,7 +780,7 @@ fun SettingsScreen(
                                 if (preview.rows.isEmpty()) {
                                     Text(
                                         text = "No valid rows found in sheet.",
-                                        fontFamily = Geist,
+                                        fontFamily = SpaceGrotesk,
                                         fontSize = 15.sp,
                                         color = scheme.secondaryLabel
                                     )
@@ -819,13 +818,13 @@ fun SettingsScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
                     ) {
-                        Text("Import", fontFamily = Geist, fontWeight = FontWeight.SemiBold)
+                        Text("Import", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
                     }
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissXlsxPreview() }) {
-                    Text("Close", fontFamily = Geist, color = scheme.accent)
+                    Text("Close", fontFamily = SpaceGrotesk, color = scheme.accent)
                 }
             }
         )
@@ -854,7 +853,7 @@ private fun SettingsActionButton(
     ) {
         Text(
             text = text,
-            fontFamily = Geist,
+            fontFamily = SpaceGrotesk,
             fontWeight = FontWeight.SemiBold,
             fontSize = 15.sp
         )
@@ -888,7 +887,7 @@ private fun PendingImportRow(
             )
             Text(
                 text = "${item.merchant} · $dateLabel · ${item.sender}",
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontSize = 13.sp,
                 color = scheme.secondaryLabel,
                 maxLines = 1
@@ -935,7 +934,7 @@ private fun XlsxPreviewRow(row: XlsxImporter.ParsedTransaction, scheme: IosSchem
             )
             Text(
                 text = row.note.ifBlank { "(no note)" },
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontSize = 13.sp,
                 color = scheme.secondaryLabel,
                 maxLines = 1
@@ -945,14 +944,14 @@ private fun XlsxPreviewRow(row: XlsxImporter.ParsedTransaction, scheme: IosSchem
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 text = if (row.categoryHint.isBlank()) "—" else row.categoryHint,
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.Medium,
                 fontSize = 13.sp,
                 color = scheme.label
             )
             Text(
                 text = "${dateLabel} · ${row.scope.name.take(4)} · ${row.paymentMode.name}",
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontSize = 11.sp,
                 color = scheme.secondaryLabel
             )

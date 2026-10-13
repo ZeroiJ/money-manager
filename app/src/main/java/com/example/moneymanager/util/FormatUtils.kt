@@ -58,6 +58,21 @@ object FormatUtils {
     }
 
     /**
+     * Kinetic Ledger format rule (PRD §5): technical single decimal —
+     * ₹1,951.0 always shows one decimal so figures share a tabular scale.
+     */
+    fun formatLedger(amount: Double, useIndianGrouping: Boolean = true): String {
+        val rounded = Math.abs(amount)
+        val one = Math.round(rounded * 10.0) / 10.0
+        val whole = one.toLong()
+        val tenth = ((one - whole) * 10).toInt()
+        val sign = if (amount < 0) "-" else ""
+        val wholeStr = if (useIndianGrouping) formatIndianWholeNumber(whole)
+        else String.format(Locale.US, "%d", whole)
+        return "$sign₹$wholeStr.$tenth"
+    }
+
+    /**
      * Formats a Unix timestamp into friendly date: "Today", "Yesterday", or "16 Aug 2026"
      */
     fun formatDate(timestamp: Long): String {

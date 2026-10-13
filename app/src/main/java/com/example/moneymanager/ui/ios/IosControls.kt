@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,7 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.theme.SpaceGrotesk
 import com.example.moneymanager.theme.Ios
 import com.example.moneymanager.theme.IosScheme
 import com.example.moneymanager.theme.PaperMono
@@ -70,7 +71,7 @@ fun IosSegmented(
             ) {
                 Text(
                     text = option,
-                    fontFamily = Geist,
+                    fontFamily = SpaceGrotesk,
                     fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                     fontSize = 13.sp,
                     color = if (isSelected) scheme.label else scheme.secondaryLabel,
@@ -101,7 +102,7 @@ fun IosSwitchRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.Medium,
                 fontSize = 17.sp,
                 color = scheme.label,
@@ -111,7 +112,7 @@ fun IosSwitchRow(
             if (subtitle != null) {
                 Text(
                     text = subtitle,
-                    fontFamily = Geist,
+                    fontFamily = SpaceGrotesk,
                     fontSize = 13.sp,
                     color = scheme.secondaryLabel
                 )
@@ -230,7 +231,11 @@ fun GlassSheet(
         scrimColor = Color.Black.copy(alpha = 0.32f)
     ) {
         Column(
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            modifier = Modifier
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                // HIG virtual-keyboards › Mobile: keep the commit action
+                // visible while the keyboard is up.
+                .imePadding(),
             content = content
         )
     }

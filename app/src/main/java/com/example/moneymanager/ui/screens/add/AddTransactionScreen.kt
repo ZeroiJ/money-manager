@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -64,12 +65,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.moneymanager.data.model.PaymentMode
 import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
-import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.theme.SpaceGrotesk
 import com.example.moneymanager.theme.PaperMono
 import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.IosSegmented
 import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.ui.ios.pressShrink
+import com.example.moneymanager.ui.kinetic.KineticButton
+import com.example.moneymanager.ui.kinetic.KineticInk
+import com.example.moneymanager.ui.kinetic.MonoLabel
 import com.example.moneymanager.util.FormatUtils
 import com.example.moneymanager.util.Haptics
 import com.example.moneymanager.util.ReceiptStorage
@@ -84,6 +88,7 @@ fun AddTransactionScreen(
     transactionId: Long? = null,
     presetCategory: String? = null,
     presetPaymentMode: String? = null,
+    showBack: Boolean = true,
     viewModel: AddTransactionViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {}
 ) {
@@ -130,6 +135,7 @@ fun AddTransactionScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
+            .imePadding()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -137,19 +143,21 @@ fun AddTransactionScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
-                onClick = onNavigateBack,
-                modifier = Modifier.size(44.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = scheme.accent
-                )
+            if (showBack) {
+                IconButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = scheme.accent
+                    )
+                }
             }
             Text(
                 text = if (isEditMode) "Edit transaction" else "New transaction",
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 20.sp,
                 color = scheme.label
@@ -166,28 +174,25 @@ fun AddTransactionScreen(
             scheme = scheme
         )
 
-        // Amount card
+        // Amount hero (PRD §4.3): ochre tile, large active figure.
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(scheme.card)
-                .padding(16.dp),
+                .background(scheme.accent)
+                .padding(vertical = 20.dp, horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Amount",
-                fontFamily = Geist,
-                fontSize = 13.sp,
-                color = scheme.secondaryLabel
+            MonoLabel(
+                text = "Entry amount",
+                color = KineticInk.copy(alpha = 0.7f)
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             IosAmount(
-                text = "₹ ${if (amount.isEmpty()) "0" else amount}",
-                color = if (txType == TransactionType.EXPENSE) scheme.destructive else scheme.success,
-                fontSize = 34.sp
+                text = "₹ ${if (amount.isEmpty()) "0" else amount}_",
+                color = KineticInk,
+                fontSize = 40.sp
             )
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -197,8 +202,7 @@ fun AddTransactionScreen(
                     Box(
                         modifier = Modifier
                             .defaultMinSize(minHeight = 44.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(scheme.secondaryFill)
+                            .background(KineticInk)
                             .clickable {
                                 Haptics.keyPress(chipView)
                                 viewModel.onNumpadClick(incStr)
@@ -211,7 +215,7 @@ fun AddTransactionScreen(
                             fontFamily = PaperMono,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp,
-                            color = scheme.label
+                            color = scheme.accent
                         )
                     }
                 }
@@ -237,7 +241,7 @@ fun AddTransactionScreen(
             if (scope == TransactionScope.HOUSEHOLD && householdMembers.isNotEmpty()) {
                 Text(
                     text = "Paid by",
-                    fontFamily = Geist,
+                    fontFamily = SpaceGrotesk,
                     fontSize = 13.sp,
                     color = scheme.secondaryLabel
                 )
@@ -261,7 +265,7 @@ fun AddTransactionScreen(
                         ) {
                             Text(
                                 text = member.name,
-                                fontFamily = Geist,
+                                fontFamily = SpaceGrotesk,
                                 fontWeight = if (isPaidBy) FontWeight.SemiBold else FontWeight.Normal,
                                 fontSize = 14.sp,
                                 color = if (isPaidBy) scheme.accent else scheme.label
@@ -327,7 +331,7 @@ fun AddTransactionScreen(
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = cat.name,
-                                fontFamily = Geist,
+                                fontFamily = SpaceGrotesk,
                                 fontSize = 11.sp,
                                 lineHeight = 13.sp,
                                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
@@ -344,7 +348,7 @@ fun AddTransactionScreen(
         OutlinedTextField(
             value = note,
             onValueChange = { viewModel.noteInput.value = it },
-            label = { Text("Note (optional)", fontFamily = Geist) },
+            label = { Text("Note (optional)", fontFamily = SpaceGrotesk) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -378,14 +382,14 @@ fun AddTransactionScreen(
             ) {
                 Text(
                     text = "Date",
-                    fontFamily = Geist,
+                    fontFamily = SpaceGrotesk,
                     fontSize = 13.sp,
                     color = scheme.secondaryLabel
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = dateLabel,
-                        fontFamily = Geist,
+                        fontFamily = SpaceGrotesk,
                         fontWeight = FontWeight.Medium,
                         fontSize = 15.sp,
                         color = scheme.label
@@ -431,7 +435,7 @@ fun AddTransactionScreen(
                     ) {
                         Text(
                             text = label,
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontSize = 12.sp,
                             color = scheme.label,
                             maxLines = 1
@@ -456,7 +460,7 @@ fun AddTransactionScreen(
                     }) {
                         Text(
                             "Set date",
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontWeight = FontWeight.SemiBold,
                             color = scheme.accent
                         )
@@ -464,7 +468,7 @@ fun AddTransactionScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) {
-                        Text("Cancel", fontFamily = Geist, color = scheme.secondaryLabel)
+                        Text("Cancel", fontFamily = SpaceGrotesk, color = scheme.secondaryLabel)
                     }
                 }
             ) {
@@ -483,7 +487,7 @@ fun AddTransactionScreen(
         ) {
             Text(
                 text = "Receipt",
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontSize = 13.sp,
                 color = scheme.secondaryLabel
             )
@@ -531,7 +535,7 @@ fun AddTransactionScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
                     ) {
-                        Text("Attach", fontFamily = Geist, fontWeight = FontWeight.SemiBold)
+                        Text("Attach", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
                     }
                     Button(
                         onClick = { viewModel.removeReceipt() },
@@ -541,7 +545,7 @@ fun AddTransactionScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = scheme.destructive)
                     ) {
-                        Text("Remove", fontFamily = Geist, fontWeight = FontWeight.SemiBold)
+                        Text("Remove", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
                     }
                 }
             } else {
@@ -557,7 +561,7 @@ fun AddTransactionScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
                 ) {
-                    Text("Attach receipt", fontFamily = Geist, fontWeight = FontWeight.SemiBold)
+                    Text("Attach receipt", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -567,29 +571,23 @@ fun AddTransactionScreen(
         )
 
         val saveButtonView = LocalView.current
-        Button(
+        KineticButton(
+            label = if (isEditMode) "SAVE CHANGES" else "CONFIRM & LOG EXPENSE",
             onClick = {
                 Haptics.saveConfirmed(saveButtonView)
                 viewModel.saveTransaction {
                     onNavigateBack()
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp)
-                .pressShrink(),
-            shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = scheme.accent),
-            contentPadding = PaddingValues(vertical = 8.dp)
-        ) {
-            Text(
-                text = if (isEditMode) "Save changes" else "Log expense",
-                fontFamily = Geist,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 17.sp,
-                color = Color.White
-            )
-        }
+            modifier = Modifier.pressShrink(),
+            scheme = scheme
+        )
+
+        MonoLabel(
+            text = "Secure enclave active // local ledger only",
+            color = scheme.secondaryLabel,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
     }

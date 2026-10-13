@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.15.0] - 2026-10-13 — Kinetic Ledger redesign
+
+**Full visual + IA rebuild per the Kinetic Ledger PRD (brutalist/utilitarian
+fintech)**
+- Tokens: sage canvas / paper panels / dark-olive slabs, ochre accent,
+  terracotta alerts, deep-maroon overrun cards; Obsidian dark variant.
+- Type: Space Grotesk (UI) replaces Geist; Playfair serif heroes retired;
+  PaperMono tabular figures with always-on single decimal (`₹1,951.0`,
+  greyed decimal part).
+- Texture: vertical tick barcode meters for budget/capacity gauges; square
+  corners + hairlines everywhere (no rounded cards).
+- IA: 4-tab layout `01 HOME / 02 BUDGET / 03 EXPENSE / 04 REPORTS` replaces
+  3 tabs + FAB; the add flow now lives in tab 03 (quick-add sheet removed).
+- Home: `LEDGER // 01` header, available-budget hero + barcode gauge,
+  terracotta overrun banner, ochre allocations card, slab ledger rows with
+  FILTER cycling + SHOW MORE, footer diagnostics line.
+- Budget: capital hero + % utilized density meter, USED/RESERVE, stacked
+  category slabs with dual-tone bars, maroon overrun tiles, buffer chip.
+- Expense: ochre amount hero with blinking cursor, ink quick-chips, ink
+  `CONFIRM & LOG EXPENSE ↗` commit button, secure-enclave footer tag.
+- Reports: WEEK/MONTH/QTR/YEAR/ALL temporal filter, accumulated outflow
+  hero with inflow pill, earthy donut palette (candy colors removed).
+- Fixes: VIBRATE permission declared, splash attrs moved to `values-v31`
+  (lint now clean).
+
 ## [v1.14.0] - 2026-10-13 — Quiet ledger de-slop
 
 **Anti-slop pass (Origin/Slash/Public/Valon consensus)**

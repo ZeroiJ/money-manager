@@ -42,13 +42,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.theme.SpaceGrotesk
 import com.example.moneymanager.theme.IosScheme
 import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.IosProgressBar
 import com.example.moneymanager.ui.ios.IosSegmented
 import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.ui.ios.maskedCurrency
+import com.example.moneymanager.ui.kinetic.KineticHeader
+import com.example.moneymanager.ui.kinetic.Hairline
+import com.example.moneymanager.ui.kinetic.LedgerAmount
+import com.example.moneymanager.ui.kinetic.LedgerPill
+import com.example.moneymanager.ui.kinetic.MonoLabel
 import com.example.moneymanager.util.FormatUtils
 
 @Composable
@@ -76,69 +81,68 @@ fun ReportsScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Text(
-                text = "Reports",
-                fontFamily = Geist,
-                fontWeight = FontWeight.Bold,
-                fontSize = 28.sp,
-                color = scheme.label,
-                modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+            KineticHeader(
+                lead = "Audit",
+                headline = "Reports",
+                headlineSize = 28.sp
             )
         }
 
         item {
             IosSegmented(
-                options = listOf("This month", "Last month", "All time"),
+                options = listOf("WEEK", "MONTH", "QTR", "YEAR", "ALL"),
                 selected = periods.indexOf(selectedPeriod).coerceAtLeast(0),
                 onSelect = { viewModel.selectedPeriod.value = periods[it] },
                 scheme = scheme
             )
         }
 
+        // ── Accumulated outflow metric (PRD §4.4) ───────────────────────
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(scheme.card)
+                    .padding(16.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(scheme.card)
-                        .padding(14.dp)
-                ) {
-                    Text(
-                        text = "Outflow",
-                        fontFamily = Geist,
-                        fontSize = 13.sp,
-                        color = scheme.secondaryLabel
+                MonoLabel(text = "Accumulated outflow", color = scheme.secondaryLabel)
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    LedgerAmount(
+                        text = FormatUtils.formatLedger(totalExpense),
+                        fontSize = 40.sp,
+                        color = scheme.label,
+                        dimmedColor = scheme.secondaryLabel
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    IosAmount(
-                        text = FormatUtils.formatCurrency(totalExpense),
-                        color = scheme.destructive,
-                        fontSize = 20.sp
+                    Spacer(modifier = Modifier.width(10.dp))
+                    LedgerPill(
+                        text = "IN ${FormatUtils.formatLedger(totalIncome)}",
+                        container = scheme.accent,
+                        content = scheme.label
                     )
                 }
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(scheme.card)
-                        .padding(14.dp)
-                ) {
-                    Text(
-                        text = "Inflow",
-                        fontFamily = Geist,
-                        fontSize = 13.sp,
-                        color = scheme.secondaryLabel
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    IosAmount(
-                        text = FormatUtils.formatCurrency(totalIncome),
-                        color = scheme.success,
-                        fontSize = 20.sp
-                    )
+                Spacer(modifier = Modifier.height(10.dp))
+                Hairline()
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        MonoLabel(text = "Personal", color = scheme.secondaryLabel)
+                        LedgerAmount(
+                            text = FormatUtils.formatLedger(personalSpend),
+                            fontSize = 17.sp,
+                            color = scheme.label,
+                            dimmedColor = scheme.secondaryLabel
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                        MonoLabel(text = "Household", color = scheme.secondaryLabel)
+                        LedgerAmount(
+                            text = FormatUtils.formatLedger(householdSpend),
+                            fontSize = 17.sp,
+                            color = scheme.label,
+                            dimmedColor = scheme.secondaryLabel
+                        )
+                    }
                 }
             }
         }
@@ -210,7 +214,7 @@ fun ReportsScreen(
                         ) {
                             Text(
                                 text = "Spending by category",
-                                fontFamily = Geist,
+                                fontFamily = SpaceGrotesk,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 17.sp,
                                 color = scheme.label,
@@ -230,12 +234,12 @@ fun ReportsScreen(
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
                                         text = "SPENT",
-                                        fontFamily = Geist,
+                                        fontFamily = SpaceGrotesk,
                                         fontSize = 11.sp,
                                         color = scheme.secondaryLabel
                                     )
                                     IosAmount(
-                                        text = FormatUtils.formatCurrency(totalExpense),
+                                        text = FormatUtils.formatLedger(totalExpense),
                                         color = scheme.label,
                                         fontSize = 17.sp
                                     )
@@ -268,21 +272,21 @@ fun ReportsScreen(
                                         Text(
                                             text = catReport.category.name,
                                             modifier = Modifier.weight(1f),
-                                            fontFamily = Geist,
+                                            fontFamily = SpaceGrotesk,
                                             fontWeight = FontWeight.Medium,
                                             fontSize = 15.sp,
                                             color = scheme.label,
                                             maxLines = 1
                                         )
                                         IosAmount(
-                                            text = FormatUtils.formatCurrency(catReport.amount),
+                                            text = FormatUtils.formatLedger(catReport.amount),
                                             color = scheme.label,
                                             fontSize = 15.sp
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
                                             text = "${(catReport.percentage * 100).toInt()}%",
-                                            fontFamily = Geist,
+                                            fontFamily = SpaceGrotesk,
                                             fontSize = 13.sp,
                                             color = scheme.secondaryLabel
                                         )
@@ -297,7 +301,7 @@ fun ReportsScreen(
                                         Text(
                                             text = if (showAll) "Show top 5"
                                             else "Show all (${categoryReports.size})",
-                                            fontFamily = Geist,
+                                            fontFamily = SpaceGrotesk,
                                             fontWeight = FontWeight.Medium,
                                             fontSize = 15.sp,
                                             color = scheme.accent
@@ -321,7 +325,7 @@ fun ReportsScreen(
                         ) {
                             Text(
                                 text = "Settle up",
-                                fontFamily = Geist,
+                                fontFamily = SpaceGrotesk,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 17.sp,
                                 color = scheme.label
@@ -336,14 +340,14 @@ fun ReportsScreen(
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
                                             text = balance.memberName,
-                                            fontFamily = Geist,
+                                            fontFamily = SpaceGrotesk,
                                             fontWeight = FontWeight.Medium,
                                             fontSize = 15.sp,
                                             color = scheme.label
                                         )
                                         Text(
                                             text = "Paid ${maskedCurrency(balance.totalPaid)} · Share ${maskedCurrency(balance.fairShare)}",
-                                            fontFamily = Geist,
+                                            fontFamily = SpaceGrotesk,
                                             fontSize = 13.sp,
                                             color = scheme.secondaryLabel
                                         )
@@ -351,7 +355,7 @@ fun ReportsScreen(
                                     Column(horizontalAlignment = Alignment.End) {
                                         IosAmount(
                                             text = (if (isOwed) "+" else "−") +
-                                                FormatUtils.formatCurrency(
+                                                FormatUtils.formatLedger(
                                                     if (isOwed) balance.netBalance else -balance.netBalance
                                                 ),
                                             color = if (isOwed) scheme.success else scheme.destructive,
@@ -359,7 +363,7 @@ fun ReportsScreen(
                                         )
                                         Text(
                                             text = if (isOwed) "Gets back" else "Owes",
-                                            fontFamily = Geist,
+                                            fontFamily = SpaceGrotesk,
                                             fontSize = 11.sp,
                                             color = if (isOwed) scheme.success else scheme.destructive
                                         )
@@ -381,7 +385,7 @@ fun ReportsScreen(
                     ) {
                         Text(
                             text = "Daily spend",
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 17.sp,
                             color = scheme.label
@@ -402,7 +406,7 @@ fun ReportsScreen(
                     ) {
                         Text(
                             text = "Spend calendar",
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 17.sp,
                             color = scheme.label
@@ -416,7 +420,7 @@ fun ReportsScreen(
                             listOf("M", "T", "W", "T", "F", "S", "S").forEach { dayLabel ->
                                 Text(
                                     text = dayLabel,
-                                    fontFamily = Geist,
+                                    fontFamily = SpaceGrotesk,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 11.sp,
                                     color = scheme.secondaryLabel,
@@ -453,7 +457,7 @@ fun ReportsScreen(
                                 ) {
                                     Text(
                                         text = "${day.dayNumber}",
-                                        fontFamily = Geist,
+                                        fontFamily = SpaceGrotesk,
                                         fontWeight = if (day.intensityLevel > 0) FontWeight.SemiBold else FontWeight.Normal,
                                         fontSize = 12.sp,
                                         color = if (onStrong) Color.White else scheme.label
@@ -474,7 +478,7 @@ fun ReportsScreen(
                             ) {
                                 Text(
                                     text = "Day ${d.dayNumber} · ${maskedCurrency(d.spendAmount)}",
-                                    fontFamily = Geist,
+                                    fontFamily = SpaceGrotesk,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 15.sp,
                                     color = scheme.label
@@ -505,28 +509,31 @@ private fun ScopeRow(label: String, amount: Double, color: Color, scheme: IosSch
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = label,
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.Medium,
                 fontSize = 15.sp,
                 color = scheme.label
             )
         }
-        IosAmount(
-            text = FormatUtils.formatCurrency(amount),
+        LedgerAmount(
+            text = FormatUtils.formatLedger(amount),
+            fontSize = 15.sp,
             color = scheme.label,
-            fontSize = 15.sp
+            dimmedColor = scheme.secondaryLabel
         )
     }
 }
 
+// Data palette (Lens: charts keep their own palette, but Kinetic's is earthy —
+// ochre/terracotta/olive family, no candy purples or sky blues).
 private fun donutPalette(scheme: IosScheme): List<Color> = listOf(
-    scheme.accent,
-    scheme.success,
-    Color(0xFFFF9500),
-    Color(0xFFAF52DE),
-    Color(0xFF5AC8FA),
-    Color(0xFFFFCC00),
-    scheme.destructive,
+    scheme.accent,          // ochre
+    Color(0xFF3F7D4E),      // ledger green
+    scheme.destructive,     // terracotta
+    Color(0xFF7A8471),      // sage slate
+    Color(0xFFB98B4A),      // brass
+    scheme.maroon,          // deep maroon
+    Color(0xFF5C6B54),      // olive
     scheme.secondaryLabel
 )
 
@@ -579,7 +586,7 @@ private fun IosTrendBars(days: List<DailySpendPoint>, scheme: IosScheme) {
     if (days.isEmpty() || days.all { it.amount <= 0 }) {
         Text(
             text = "No expenses in the selected period.",
-            fontFamily = Geist,
+            fontFamily = SpaceGrotesk,
             fontSize = 15.sp,
             color = scheme.secondaryLabel,
             modifier = Modifier.padding(vertical = 16.dp)
@@ -614,7 +621,7 @@ private fun IosTrendBars(days: List<DailySpendPoint>, scheme: IosScheme) {
     val top = days.sortedByDescending { it.amount }.take(3)
     Text(
         text = "Highest days",
-        fontFamily = Geist,
+        fontFamily = SpaceGrotesk,
         fontSize = 13.sp,
         color = scheme.secondaryLabel
     )
@@ -628,13 +635,13 @@ private fun IosTrendBars(days: List<DailySpendPoint>, scheme: IosScheme) {
         ) {
             Text(
                 text = "Day ${day.dayNumber}",
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontSize = 13.sp,
                 color = scheme.secondaryLabel,
                 modifier = Modifier.width(56.dp)
             )
             IosAmount(
-                text = FormatUtils.formatCurrency(day.amount),
+                text = FormatUtils.formatLedger(day.amount),
                 color = scheme.label,
                 fontSize = 13.sp
             )

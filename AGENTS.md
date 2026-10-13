@@ -54,6 +54,8 @@ accounts, no backend, no login.
   Splitwise, etc.) — use only as layout/pattern inspiration.
 
 ## Design references
+- Apple Design skill (`~/.agents/skills/apple-design`, HIG-grounded) — repo
+  memory in `docs/apple-design-memory.md`; edge-to-edge + craft rules live there
 - Material 3 (m3.material.io) — component/pattern source of truth for Compose
 - Figma MCP (mcp.figma.com) — if a reference Figma file exists, pull design
   context/screenshots from it instead of guessing

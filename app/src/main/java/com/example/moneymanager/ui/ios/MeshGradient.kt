@@ -117,15 +117,17 @@ fun MeshGradientBackground(
         }
         // Muted near-monochrome quads: texture reads as paper grain's big
         // brother, never as a neon band (see v1.11.0 device feedback).
+        // Kinetic Ledger quads: sage-on-sage / obsidian-on-obsidian — texture
+        // reads as paper tooth, never as a decorative gradient (PRD has none).
         val quad = if (dark) {
             listOf(
-                Color(0xFF050914), Color(0xFF0D1738),
-                Color(0xFF1B2A6B), Color(0xFF35509E)
+                Color(0xFF0A0F0D), Color(0xFF101613),
+                Color(0xFF161C19), Color(0xFF1E2622)
             )
         } else {
             listOf(
-                Color(0xFFFFF6EA), Color(0xFFF5E7CF),
-                Color(0xFFE3C491), Color(0xFFD0934F)
+                Color(0xFFB5BFAE), Color(0xFFC1CBB9),
+                Color(0xFFAAB4A3), Color(0xFF9FA99A)
             )
         }
         val brush = remember(t, dark, wPx, hPx) {

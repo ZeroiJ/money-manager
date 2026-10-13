@@ -15,21 +15,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,27 +37,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.moneymanager.data.model.Category
 import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionType
-import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.theme.SpaceGrotesk
 import com.example.moneymanager.ui.ios.ConfettiOverlay
 import com.example.moneymanager.ui.ios.IosAmount
-import com.example.moneymanager.ui.ios.IosGroupedList
-import com.example.moneymanager.ui.ios.IosHeroWord
-import com.example.moneymanager.ui.ios.IosRow
 import com.example.moneymanager.ui.ios.LoadErrorCard
 import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.ui.ios.firstEntryTransition
 import com.example.moneymanager.ui.ios.pressShrink
-import com.example.moneymanager.ui.screens.add.AddSpendSheet
+import com.example.moneymanager.ui.kinetic.BarcodeMeter
+import com.example.moneymanager.ui.kinetic.Hairline
+import com.example.moneymanager.ui.kinetic.KineticInk
+import com.example.moneymanager.ui.kinetic.KineticHeader
+import com.example.moneymanager.ui.kinetic.LedgerAmount
+import com.example.moneymanager.ui.kinetic.LedgerPill
+import com.example.moneymanager.ui.kinetic.MetricRow
+import com.example.moneymanager.ui.kinetic.MonoLabel
 import com.example.moneymanager.util.FormatUtils
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Tab 01 — Home Dashboard (PRD §4.1): LEDGER // 01 header, available-budget
+ * gauge with barcode meter, terracotta overrun banner, ochre quick-assign,
+ * recent ledger slab rows, footer diagnostics.
+ */
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
@@ -73,6 +77,7 @@ fun HomeScreen(
     onToggleHideAmounts: () -> Unit = {},
     onNavigateToTransactions: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToBudgets: () -> Unit = {},
     onNavigateToEditTransaction: (Long) -> Unit = {}
 ) {
     val recentTxs by viewModel.recentTransactions.collectAsState()
@@ -80,11 +85,24 @@ fun HomeScreen(
     val categoriesMap by viewModel.categoriesMap.collectAsState()
     val todaySpend by viewModel.todaySpend.collectAsState()
     val monthSpend by viewModel.monthSpend.collectAsState()
-    var showAddSheet by remember { mutableStateOf(presetCategory != null) }
+    val monthBudget by viewModel.monthBudget.collectAsState()
+    val overruns by viewModel.overruns.collectAsState()
     val scheme = currentScheme()
-    val monthWord = remember {
+    val monthName = remember {
         FormatUtils.formatMonth(FormatUtils.getCurrentMonthKey()).substringBefore(" ")
     }
+
+    // FILTER cycles the visible ledger: ALL → EXPENSE → INCOME (PRD §4.1).
+    var filterIndex by rememberSaveable { mutableStateOf(0) }
+    val filterLabels = listOf("FILTER: ALL", "FILTER: OUT", "FILTER: IN")
+    val filteredTxs = remember(recentTxs, filterIndex) {
+        when (filterIndex) {
+            1 -> recentTxs.filter { it.type == TransactionType.EXPENSE }
+            2 -> recentTxs.filter { it.type == TransactionType.INCOME }
+            else -> recentTxs
+        }
+    }
+    var showAll by rememberSaveable { mutableStateOf(false) }
 
     // First-entry celebration: empty (after load) -> non-empty, once ever.
     var showConfetti by remember { mutableStateOf(false) }
@@ -99,179 +117,299 @@ fun HomeScreen(
         wasEmpty = empty
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-    Scaffold(
-        containerColor = Color.Transparent,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showAddSheet = true },
-                shape = CircleShape,
-                containerColor = scheme.accent,
-                contentColor = Color.White,
-                modifier = Modifier.pressShrink()
+    val hasBudget = monthBudget > 0
+    val left = (monthBudget - monthSpend).coerceAtLeast(0.0)
+    val usedFraction = if (hasBudget) (monthSpend / monthBudget).toFloat() else 0f
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        // ── Header: monogram + LEDGER // 01 + utilities ─────────────────
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add expense")
-            }
-        }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = 8.dp,
-                bottom = 96.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            // ── Month summary card ───────────────────────────────────────
-            item {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(scheme.card)
-                        .padding(24.dp)
-                ) {
-                    Column {
-                        IosHeroWord(
-                            text = monthWord,
-                            color = scheme.label,
-                            fontSize = 40.sp,
-                            lineHeight = 44.sp
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        IosAmount(
-                            text = FormatUtils.formatCurrency(monthSpend),
-                            color = scheme.label,
-                            fontSize = 34.sp
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "Today · ",
-                                fontFamily = Geist,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 15.sp,
-                                color = scheme.secondaryLabel
-                            )
-                            IosAmount(
-                                text = FormatUtils.formatCurrency(todaySpend),
-                                color = scheme.secondaryLabel,
-                                fontSize = 15.sp
-                            )
-                        }
-                    }
-                }
-            }
-
-            // ── Recent activity ──────────────────────────────────────────
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(scheme.slab),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Recent",
-                        fontFamily = Geist,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 22.sp,
-                        color = scheme.label,
-                        modifier = Modifier.weight(1f)
+                        text = "MM",
+                        fontFamily = SpaceGrotesk,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = scheme.accent
                     )
-                    TextButton(
-                        onClick = onNavigateToTransactions,
-                        contentPadding = PaddingValues(horizontal = 8.dp)
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                MonoLabel(
+                    text = "LEDGER // 01",
+                    color = scheme.secondaryLabel,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = onToggleHideAmounts, modifier = Modifier.size(44.dp)) {
+                    Icon(
+                        imageVector = if (hideAmounts) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = if (hideAmounts) "Show amounts" else "Hide amounts",
+                        tint = scheme.label
+                    )
+                }
+                IconButton(onClick = onNavigateToSettings, modifier = Modifier.size(44.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.GridOn,
+                        contentDescription = "Settings",
+                        tint = scheme.label
+                    )
+                }
+            }
+        }
+
+        // ── Available budget gauge (PRD §4.1) ───────────────────────────
+        item {
+            Column {
+                KineticHeader(
+                    lead = if (hasBudget) "Available $monthName" else "$monthName spend",
+                    headline = if (hasBudget) "Budget" else "Ledger",
+                    headlineSize = 30.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    LedgerAmount(
+                        text = FormatUtils.formatLedger(if (hasBudget) left else monthSpend),
+                        fontSize = 46.sp,
+                        color = scheme.label,
+                        dimmedColor = scheme.secondaryLabel
+                    )
+                    if (hasBudget) {
+                        Spacer(modifier = Modifier.width(10.dp))
+                        val pctLeft = ((left / monthBudget) * 100).toInt()
+                        LedgerPill(
+                            text = "$pctLeft% LEFT",
+                            container = scheme.accent,
+                            content = scheme.label
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                MetricRow(label = "Budget", value = FormatUtils.formatLedger(monthBudget))
+                Spacer(modifier = Modifier.height(6.dp))
+                BarcodeMeter(
+                    fraction = if (hasBudget) 1f else 0f,
+                    color = scheme.label,
+                    inactiveColor = scheme.separator,
+                    total = 30,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(46.dp)
+                        .padding(top = 4.dp)
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                MetricRow(label = "Left", value = FormatUtils.formatLedger(if (hasBudget) left else monthSpend))
+                BarcodeMeter(
+                    fraction = if (hasBudget) usedFraction.coerceIn(0f, 1f) else 0f,
+                    color = scheme.label,
+                    inactiveColor = scheme.separator,
+                    total = 30,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(46.dp)
+                        .padding(top = 4.dp)
+                )
+            }
+        }
+
+        // ── Exception & overrun module (PRD §4.1) ───────────────────────
+        if (overruns.isNotEmpty()) {
+            val first = overruns.first()
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(scheme.destructive)
+                        .clickable { onNavigateToBudgets() }
+                        .padding(horizontal = 16.dp, vertical = 18.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "!",
+                                fontFamily = SpaceGrotesk,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = scheme.paper
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            MonoLabel(text = "Budget overrun", color = scheme.paper)
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        LedgerAmount(
+                            text = FormatUtils.formatLedger(first.overspent),
+                            fontSize = 30.sp,
+                            color = scheme.paper,
+                            dimmedColor = scheme.paper.copy(alpha = 0.6f)
+                        )
+                        MonoLabel(
+                            text = first.name + (if (overruns.size > 1) " +${overruns.size - 1} more" else ""),
+                            color = scheme.paper.copy(alpha = 0.85f)
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(scheme.paper.copy(alpha = 0.25f)),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "View all",
-                            fontFamily = Geist,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 15.sp,
-                            color = scheme.accent
-                        )
-                    }
-                    IconButton(
-                        onClick = onToggleHideAmounts,
-                        modifier = Modifier.size(44.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (hideAmounts) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = if (hideAmounts) "Show amounts" else "Hide amounts",
-                            tint = scheme.secondaryLabel
-                        )
-                    }
-                    IconButton(
-                        onClick = onNavigateToSettings,
-                        modifier = Modifier.size(44.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = scheme.secondaryLabel
+                            text = "↗",
+                            fontFamily = SpaceGrotesk,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = scheme.paper
                         )
                     }
                 }
             }
+        }
 
-            if (loadError != null) {
-                item {
-                    LoadErrorCard(
-                        message = loadError ?: "Couldn't load transactions",
-                        onRetry = { viewModel.retryLoad() }
+        // ── Ochre quick-assign card (PRD §4.1) ──────────────────────────
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(scheme.accent)
+                    .clickable { onNavigateToBudgets() }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    MonoLabel(text = "Allocations", color = KineticInk.copy(alpha = 0.7f))
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = if (hasBudget) "Tune $monthName budgets" else "Set your first budget",
+                        fontFamily = SpaceGrotesk,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = scheme.label
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    MonoLabel(
+                        text = if (hasBudget) FormatUtils.formatCurrency(monthBudget) + " / MONTH" else "NO CAP YET",
+                        color = scheme.label.copy(alpha = 0.7f)
                     )
                 }
-            } else if (recentTxs.isEmpty()) {
+                Text(
+                    text = "+",
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 40.sp,
+                    color = KineticInk
+                )
+            }
+        }
+
+        // ── Recent transactions drawer (PRD §4.1) ───────────────────────
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                MonoLabel(
+                    text = "Recent ledger",
+                    color = scheme.secondaryLabel,
+                    modifier = Modifier.weight(1f)
+                )
+                LedgerPill(
+                    text = filterLabels[filterIndex],
+                    container = scheme.secondaryFill,
+                    content = scheme.label,
+                    modifier = Modifier
+                        .pressShrink()
+                        .clickable { filterIndex = (filterIndex + 1) % filterLabels.size }
+                )
+            }
+        }
+
+        if (loadError != null) {
+            item {
+                LoadErrorCard(
+                    message = loadError ?: "Couldn't load transactions",
+                    onRetry = { viewModel.retryLoad() }
+                )
+            }
+        } else if (filteredTxs.isEmpty()) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(scheme.card)
+                        .padding(vertical = 32.dp, horizontal = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "A clean slate",
+                        fontFamily = SpaceGrotesk,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp,
+                        color = scheme.label
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Log an expense from tab 03 in under 5 seconds.",
+                        fontFamily = SpaceGrotesk,
+                        fontSize = 15.sp,
+                        color = scheme.secondaryLabel
+                    )
+                }
+            }
+        } else {
+            val visible = if (showAll) filteredTxs.take(20) else filteredTxs.take(6)
+            item {
+                Column {
+                    visible.forEachIndexed { i, tx ->
+                        LedgerRow(
+                            transaction = tx,
+                            category = categoriesMap[tx.categoryId],
+                            alt = i % 2 == 1,
+                            onClick = { onNavigateToEditTransaction(tx.id) }
+                        )
+                    }
+                }
+            }
+            if (filteredTxs.size > 6) {
                 item {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(scheme.card)
-                            .padding(vertical = 32.dp, horizontal = 20.dp),
+                            .background(scheme.slab)
+                            .clickable { showAll = !showAll }
+                            .padding(vertical = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            IosHeroWord(
-                                text = "A clean slate",
-                                color = scheme.label,
-                                fontSize = 24.sp
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Log an expense in under 5 seconds.",
-                                fontFamily = Geist,
-                                fontSize = 15.sp,
-                                color = scheme.secondaryLabel
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Add expense",
-                                fontFamily = Geist,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 15.sp,
-                                color = scheme.accent,
-                                modifier = Modifier.clickable { showAddSheet = true }
-                            )
-                        }
-                    }
-                }
-            } else {
-                item {
-                    IosGroupedList(header = null) {
-                        recentTxs.take(10).forEach { tx ->
-                            HomeFeedRow(
-                                transaction = tx,
-                                category = categoriesMap[tx.categoryId],
-                                onClick = { onNavigateToEditTransaction(tx.id) }
-                            )
-                        }
+                        MonoLabel(
+                            text = if (showAll) "SHOW LESS ∧" else "SHOW MORE ∨",
+                            color = scheme.onSlab
+                        )
                     }
                 }
             }
+        }
+
+        // ── Footer diagnostics (PRD §4.1) ───────────────────────────────
+        item {
+            Hairline()
+            MonoLabel(
+                text = "Synced with ledger node 01 // local only",
+                color = scheme.secondaryLabel,
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
     }
 
@@ -281,53 +419,77 @@ fun HomeScreen(
         subtitle = "Your money story starts here.",
         onDone = { showConfetti = false }
     )
-
-    if (showAddSheet) {
-        AddSpendSheet(
-            presetCategory = presetCategory,
-            presetPaymentMode = presetPaymentMode,
-            onDismiss = { showAddSheet = false }
-        )
-    }
-    }
 }
 
 /**
- * Grouped feed row: category icon, note + category · mode, amount + date.
- * Tap → edit transaction.
+ * Ledger slab row (PRD §4.1): icon tile, merchant/note, category label,
+ * timestamp, tabular amount. Dark slab, alternating tone, square corners.
  */
 @Composable
-private fun HomeFeedRow(
+private fun LedgerRow(
     transaction: Transaction,
     category: Category?,
+    alt: Boolean,
     onClick: () -> Unit
 ) {
     val scheme = currentScheme()
     val isExpense = transaction.type == TransactionType.EXPENSE
-    IosRow(
-        title = if (transaction.note.isNotBlank()) transaction.note else (category?.name ?: "Expense"),
-        subtitle = "${category?.name ?: "Misc"} · ${transaction.paymentMode.name}",
-        icon = FormatUtils.getCategoryIcon(category?.icon ?: "category"),
-        iconTint = scheme.label,
-        scheme = scheme,
-        onClick = onClick,
-        showChevron = false
+    val timeText = remember(transaction.date) {
+        val now = java.util.Calendar.getInstance()
+        val then = java.util.Calendar.getInstance().apply { timeInMillis = transaction.date }
+        if (now.get(java.util.Calendar.DAY_OF_YEAR) == then.get(java.util.Calendar.DAY_OF_YEAR) &&
+            now.get(java.util.Calendar.YEAR) == then.get(java.util.Calendar.YEAR)
+        ) {
+            SimpleDateFormat("hh:mm a", Locale.US).format(Date(transaction.date))
+        } else {
+            FormatUtils.formatDate(transaction.date)
+        }
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(if (alt) scheme.slabAlt else scheme.slab)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .background(scheme.onSlab.copy(alpha = 0.10f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = FormatUtils.getCategoryIcon(category?.icon ?: "category"),
+                contentDescription = null,
+                tint = scheme.onSlab,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = if (transaction.note.isNotBlank()) transaction.note else (category?.name ?: "Expense"),
+                fontFamily = SpaceGrotesk,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp,
+                color = scheme.onSlab,
+                maxLines = 1
+            )
+            MonoLabel(
+                text = "${category?.name ?: "Misc"} · $timeText",
+                color = scheme.onSlabSecondary,
+                fontSize = 10.sp
+            )
+        }
+        Spacer(modifier = Modifier.width(8.dp))
         Column(horizontalAlignment = Alignment.End) {
             IosAmount(
                 text = (if (isExpense) "−" else "+") + FormatUtils.formatCurrency(transaction.amount),
-                color = if (isExpense) scheme.destructive else scheme.success,
-                fontSize = 15.sp
-            )
-            Text(
-                text = FormatUtils.formatDate(transaction.date),
-                fontFamily = Geist,
-                fontSize = 11.sp,
-                color = scheme.secondaryLabel,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                color = scheme.onSlab,
+                fontSize = 15.sp,
+                rolling = false
             )
         }
-        Spacer(modifier = Modifier.width(2.dp))
     }
 }

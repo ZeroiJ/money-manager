@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.moneymanager.data.model.Category
-import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.theme.SpaceGrotesk
 import com.example.moneymanager.ui.ios.ConfettiOverlay
 import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.IosProgressBar
@@ -58,6 +58,11 @@ import com.example.moneymanager.ui.ios.IosSegmented
 import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.ui.ios.maskedCurrency
 import com.example.moneymanager.ui.ios.pressShrink
+import com.example.moneymanager.ui.kinetic.BarcodeMeter
+import com.example.moneymanager.ui.kinetic.KineticHeader
+import com.example.moneymanager.ui.kinetic.LedgerAmount
+import com.example.moneymanager.ui.kinetic.LedgerPill
+import com.example.moneymanager.ui.kinetic.MonoLabel
 import com.example.moneymanager.util.FormatUtils
 import com.example.moneymanager.util.HapticOnCrossing
 import com.example.moneymanager.util.Haptics
@@ -92,13 +97,10 @@ fun BudgetsScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Text(
-                text = "Budgets",
-                fontFamily = Geist,
-                fontWeight = FontWeight.Bold,
-                fontSize = 28.sp,
-                color = scheme.label,
-                modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+            KineticHeader(
+                lead = "Monthly",
+                headline = "Budgets",
+                headlineSize = 28.sp
             )
         }
 
@@ -106,7 +108,6 @@ fun BudgetsScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
                     .background(scheme.card)
                     .padding(16.dp),
             ) {
@@ -133,7 +134,7 @@ fun BudgetsScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = FormatUtils.formatMonth(currentMonth),
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 17.sp,
                             color = scheme.label
@@ -144,7 +145,7 @@ fun BudgetsScreen(
                                 inPast -> "Past"
                                 else -> "Future"
                             },
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontSize = 13.sp,
                             color = when {
                                 onActiveMonth -> scheme.success
@@ -184,7 +185,7 @@ fun BudgetsScreen(
                     ) {
                         Text(
                             "Back to current month",
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontWeight = FontWeight.Medium,
                             fontSize = 15.sp,
                             color = scheme.accent
@@ -194,52 +195,96 @@ fun BudgetsScreen(
             }
         }
 
+        // ── Capital overview hero (PRD §4.2) ────────────────────────────
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
                     .background(scheme.card)
                     .padding(16.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text(
-                            text = "Spent",
-                            fontFamily = Geist,
-                            fontSize = 13.sp,
-                            color = scheme.secondaryLabel
-                        )
-                        IosAmount(
-                            text = FormatUtils.formatCurrency(totalSpent),
+                    MonoLabel(
+                        text = FormatUtils.formatMonth(currentMonth) + " allocations",
+                        color = scheme.secondaryLabel,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (categories.isNotEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .pressShrink()
+                                .background(scheme.accent)
+                                .clickable {
+                                    selectedCategoryForBudget = categories.firstOrNull()
+                                    budgetAmountInput = ""
+                                    showAddBudgetDialog = true
+                                }
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "+ ADD",
+                                fontFamily = SpaceGrotesk,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp,
+                                color = scheme.label
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                LedgerAmount(
+                    text = FormatUtils.formatLedger(totalBudget),
+                    fontSize = 38.sp,
+                    color = scheme.label,
+                    dimmedColor = scheme.secondaryLabel
+                )
+                MonoLabel(text = "INR / month", color = scheme.secondaryLabel)
+                Spacer(modifier = Modifier.height(12.dp))
+                val utilization = if (totalBudget > 0) (totalSpent / totalBudget).toFloat().coerceIn(0f, 1f) else 0f
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    MonoLabel(
+                        text = if (totalBudget > 0) "${(utilization * 100).toString().take(4)}% utilized" else "no caps set",
+                        color = scheme.label,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                BarcodeMeter(
+                    fraction = utilization,
+                    color = scheme.label,
+                    inactiveColor = scheme.separator,
+                    total = 34,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(34.dp)
+                        .padding(top = 6.dp)
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        MonoLabel(text = "Used", color = scheme.secondaryLabel)
+                        LedgerAmount(
+                            text = FormatUtils.formatLedger(totalSpent),
+                            fontSize = 18.sp,
                             color = scheme.label,
-                            fontSize = 24.sp
+                            dimmedColor = scheme.secondaryLabel
                         )
                     }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "Limit",
-                            fontFamily = Geist,
-                            fontSize = 13.sp,
-                            color = scheme.secondaryLabel
-                        )
-                        Text(
-                            text = if (totalBudget > 0) FormatUtils.formatCurrency(totalBudget) else "No limit",
-                            fontFamily = Geist,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 20.sp,
-                            color = if (totalBudget > 0) scheme.label else scheme.secondaryLabel
+                    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                        MonoLabel(text = "Reserve", color = scheme.secondaryLabel)
+                        LedgerAmount(
+                            text = FormatUtils.formatLedger((totalBudget - totalSpent).coerceAtLeast(0.0)),
+                            fontSize = 18.sp,
+                            color = scheme.label,
+                            dimmedColor = scheme.secondaryLabel
                         )
                     }
                 }
-
                 if (totalBudget > 0) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    val progress = (totalSpent / totalBudget).toFloat().coerceIn(0f, 1f)
+                    Spacer(modifier = Modifier.height(8.dp))
                     val isExceeded = totalSpent > totalBudget
                     HapticOnCrossing(
                         key = null,
@@ -247,23 +292,30 @@ fun BudgetsScreen(
                         crossed = isExceeded,
                         effect = Haptics::budgetLimitCrossed
                     )
-                    IosProgressBar(
-                        progress = progress,
-                        overBudget = isExceeded,
-                        scheme = scheme
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = if (isExceeded) {
                             "Over by ${maskedCurrency(totalSpent - totalBudget)}"
                         } else {
-                            "${(progress * 100).toInt()}% used · ${maskedCurrency(totalBudget - totalSpent)} left"
+                            "${(utilization * 100).toInt()}% used · ${maskedCurrency(totalBudget - totalSpent)} left"
                         },
-                        fontFamily = Geist,
+                        fontFamily = SpaceGrotesk,
                         fontSize = 13.sp,
                         color = if (isExceeded) scheme.destructive else scheme.secondaryLabel
                     )
                 }
+            }
+        }
+
+        // ── Buffer summary chip (PRD §4.2) ──────────────────────────────
+        if (totalBudget > 0) {
+            item {
+                val activeCount = budgetProgressList.count { it.limit > 0 }
+                LedgerPill(
+                    text = "$activeCount active · ${maskedCurrency((totalBudget - totalSpent).coerceAtLeast(0.0))} buffer left",
+                    container = if (totalSpent > totalBudget) scheme.destructive else scheme.slab,
+                    content = if (totalSpent > totalBudget) scheme.paper else scheme.onSlab,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
             }
         }
 
@@ -275,7 +327,7 @@ fun BudgetsScreen(
             ) {
                 Text(
                     text = "Limits",
-                    fontFamily = Geist,
+                    fontFamily = SpaceGrotesk,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 20.sp,
                     color = scheme.label,
@@ -291,7 +343,7 @@ fun BudgetsScreen(
                     }) {
                         Text(
                             text = "Set limit",
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontWeight = FontWeight.Medium,
                             fontSize = 15.sp,
                             color = scheme.accent
@@ -314,7 +366,7 @@ fun BudgetsScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "No budgets set",
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 17.sp,
                             color = scheme.label
@@ -322,14 +374,14 @@ fun BudgetsScreen(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "Set monthly limits to stay on track.",
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontSize = 15.sp,
                             color = scheme.secondaryLabel
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Set a limit",
-                            fontFamily = Geist,
+                            fontFamily = SpaceGrotesk,
                             fontWeight = FontWeight.Medium,
                             fontSize = 15.sp,
                             color = scheme.accent,
@@ -344,13 +396,7 @@ fun BudgetsScreen(
             }
         } else {
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(scheme.card)
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     budgetProgressList.forEachIndexed { index, item ->
                         val progress = item.progress.coerceIn(0f, 1f)
                         val isExceeded = item.isOverBudget
@@ -362,77 +408,108 @@ fun BudgetsScreen(
                             effect = Haptics::budgetLimitCrossed
                         )
 
+                        // PRD §4.2: stack tiles — overrun = deep maroon slab,
+                        // healthy = dark slab, alternating tone.
+                        val bg = when {
+                            isExceeded -> scheme.maroon
+                            index % 2 == 1 -> scheme.slabAlt
+                            else -> scheme.slab
+                        }
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .background(bg)
                                 .clickable {
                                     selectedCategoryForBudget = item.category
                                     budgetAmountInput =
                                         if (item.limit > 0) item.limit.toInt().toString() else ""
                                     showAddBudgetDialog = true
                                 }
-                                .padding(vertical = 10.dp)
+                                .padding(16.dp)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(34.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(
-                                            scheme.label.copy(alpha = 0.15f)
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = FormatUtils.getCategoryIcon(item.category.icon),
-                                        contentDescription = null,
-                                        tint = scheme.label,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(10.dp))
+                                Icon(
+                                    imageVector = FormatUtils.getCategoryIcon(item.category.icon),
+                                    contentDescription = null,
+                                    tint = if (isExceeded) scheme.destructive else scheme.onSlab,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = item.category.name,
-                                        fontFamily = Geist,
-                                        fontWeight = FontWeight.Medium,
+                                        fontFamily = SpaceGrotesk,
+                                        fontWeight = FontWeight.SemiBold,
                                         fontSize = 16.sp,
-                                        color = scheme.label
+                                        color = if (isExceeded) scheme.destructive else scheme.onSlab
                                     )
-                                    Text(
-                                        text = "${maskedCurrency(item.spent)} of ${if (item.limit > 0) maskedCurrency(item.limit) else "no limit"}",
-                                        fontFamily = Geist,
-                                        fontSize = 13.sp,
-                                        color = scheme.secondaryLabel
+                                    MonoLabel(
+                                        text = if (item.limit > 0)
+                                            "${maskedCurrency(item.spent)} of ${maskedCurrency(item.limit)}"
+                                        else "${maskedCurrency(item.spent)} · no cap",
+                                        color = if (isExceeded) scheme.destructive else scheme.onSlabSecondary,
+                                        fontSize = 10.sp
                                     )
+                                }
+                                if (item.limit > 0) {
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        LedgerAmount(
+                                            text = "${(progress * 100).toString().take(4)}%",
+                                            fontSize = 16.sp,
+                                            color = if (isExceeded) scheme.destructive else scheme.onSlab,
+                                            dimmedColor = if (isExceeded) scheme.destructive.copy(alpha = 0.6f)
+                                            else scheme.onSlabSecondary
+                                        )
+                                        if (isExceeded) {
+                                            MonoLabel(
+                                                text = "Spent",
+                                                color = scheme.destructive,
+                                                fontSize = 9.sp
+                                            )
+                                        }
+                                    }
                                 }
                             }
 
                             if (item.limit > 0) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                IosProgressBar(
-                                    progress = progress,
-                                    overBudget = isExceeded,
-                                    scheme = scheme
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
+                                Spacer(modifier = Modifier.height(10.dp))
+                                // Dual-tone linear bar (PRD §4.2).
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(6.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(6.dp)
+                                            .background(scheme.onSlab.copy(alpha = 0.15f))
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth(progress)
+                                                .height(6.dp)
+                                                .background(
+                                                    if (isExceeded) scheme.destructive
+                                                    else scheme.accent
+                                                )
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                MonoLabel(
                                     text = if (isExceeded) {
-                                        "Over by ${maskedCurrency(item.spent - item.limit)}"
+                                        "Exceeded threshold by ${maskedCurrency(item.spent - item.limit)}"
                                     } else {
                                         "${maskedCurrency(item.remaining)} left"
                                     },
-                                    fontFamily = Geist,
-                                    fontSize = 13.sp,
-                                    color = if (isExceeded) scheme.destructive else scheme.secondaryLabel
+                                    color = if (isExceeded) scheme.destructive else scheme.onSlabSecondary,
+                                    fontSize = 10.sp
                                 )
                             }
-                        }
-                        if (index < budgetProgressList.size - 1) {
-                            HorizontalDivider(color = scheme.separator, thickness = 0.5.dp)
                         }
                     }
                 }
@@ -449,7 +526,7 @@ fun BudgetsScreen(
             title = {
                 Text(
                     text = "Limit · ${cat.name}",
-                    fontFamily = Geist,
+                    fontFamily = SpaceGrotesk,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 17.sp,
                     color = scheme.label
@@ -459,7 +536,7 @@ fun BudgetsScreen(
                 Column {
                     Text(
                         text = "Monthly limit for ${FormatUtils.formatMonth(currentMonth)}",
-                        fontFamily = Geist,
+                        fontFamily = SpaceGrotesk,
                         fontSize = 15.sp,
                         color = scheme.label
                     )
@@ -467,7 +544,7 @@ fun BudgetsScreen(
                     OutlinedTextField(
                         value = budgetAmountInput,
                         onValueChange = { budgetAmountInput = it.filter { ch -> ch.isDigit() } },
-                        label = { Text("Limit amount (₹)", fontFamily = Geist) },
+                        label = { Text("Limit amount (₹)", fontFamily = SpaceGrotesk) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -499,12 +576,12 @@ fun BudgetsScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
                 ) {
-                    Text("Save", fontFamily = Geist, fontWeight = FontWeight.SemiBold)
+                    Text("Save", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddBudgetDialog = false }) {
-                    Text("Cancel", fontFamily = Geist, color = scheme.accent)
+                    Text("Cancel", fontFamily = SpaceGrotesk, color = scheme.accent)
                 }
             }
         )

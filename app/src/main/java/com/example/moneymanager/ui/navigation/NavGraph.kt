@@ -47,7 +47,8 @@ import com.example.moneymanager.ui.screens.transactions.TransactionListScreen
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Home : Screen("home", "HOME", Icons.Default.Home)
     object Transactions : Screen("transactions", "FEED", Icons.AutoMirrored.Filled.List)
-    object Budgets : Screen("budgets", "BUDGETS", Icons.Default.AccountBalanceWallet)
+    object Budgets : Screen("budgets", "BUDGET", Icons.Default.AccountBalanceWallet)
+    object Expense : Screen("expense", "EXPENSE", Icons.Default.Add)
     object Reports : Screen("reports", "REPORTS", Icons.Default.PieChart)
     object Settings : Screen("settings", "SETTINGS", Icons.Default.Settings)
     object EditTransaction : Screen("edit_transaction/{transactionId}", "EDIT", Icons.Default.Edit) {
@@ -55,9 +56,11 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     }
 }
 
+// PRD §3: persistent 4-tab layout — 01 HOME / 02 BUDGET / 03 EXPENSE / 04 REPORTS.
 val bottomNavItems = listOf(
     Screen.Home,
     Screen.Budgets,
+    Screen.Expense,
     Screen.Reports
 )
 
@@ -118,10 +121,11 @@ fun AppNavGraph(
                 }
                 if (shouldShowBottomBar) {
                     val tabItems = androidx.compose.runtime.remember {
-                        bottomNavItems.map {
+                        bottomNavItems.mapIndexed { index, item ->
                             IosTabItem(
-                                title = it.title.lowercase().replaceFirstChar(Char::titlecase),
-                                icon = it.icon
+                                // PRD §3: numbered technical tab labels.
+                                title = "0${index + 1} ${item.title}",
+                                icon = item.icon
                             )
                         }
                     }
@@ -148,17 +152,21 @@ fun AppNavGraph(
         ) {
             NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            // Widget/SMS preset routes straight into tab 03 (fast capture).
+            startDestination = if (presetCategory != null) Screen.Expense.route else Screen.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
-                    presetCategory = presetCategory,
-                    presetPaymentMode = presetPaymentMode,
                     hideAmounts = hideAmounts,
                     onToggleHideAmounts = { settingsVm.setHideAmounts(!hideAmounts) },
                     onNavigateToTransactions = { navController.navigate(Screen.Transactions.route) },
                     onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
+                    onNavigateToBudgets = { navController.navigate(Screen.Budgets.route) {
+                        popUpTo(Screen.Home.route) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    } },
                     onNavigateToEditTransaction = { txId ->
                         navController.navigate(Screen.EditTransaction.createRoute(txId))
                     }
@@ -173,6 +181,21 @@ fun AppNavGraph(
             }
             composable(Screen.Budgets.route) {
                 BudgetsScreen()
+            }
+            composable(Screen.Expense.route) {
+                // PRD §3 tab 03: fast capture lives in the tab bar itself.
+                AddTransactionScreen(
+                    presetCategory = presetCategory,
+                    presetPaymentMode = presetPaymentMode,
+                    showBack = false,
+                    onNavigateBack = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
             }
             composable(Screen.Reports.route) {
                 ReportsScreen()

@@ -1,6 +1,7 @@
 package com.example.moneymanager.ui.screens.transactions
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,7 +54,7 @@ import com.example.moneymanager.data.model.PaymentMode
 import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.data.model.TransactionScope
 import com.example.moneymanager.data.model.TransactionType
-import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.theme.SpaceGrotesk
 import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.IosGroupedList
 import com.example.moneymanager.ui.ios.IosRow
@@ -60,6 +62,9 @@ import com.example.moneymanager.ui.ios.IosSegmented
 import com.example.moneymanager.ui.ios.LoadErrorCard
 import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.ui.ios.maskedCurrency
+import com.example.moneymanager.ui.kinetic.KineticHeader
+import com.example.moneymanager.ui.kinetic.LedgerAmount
+import com.example.moneymanager.ui.kinetic.MonoLabel
 import com.example.moneymanager.util.FormatUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,19 +90,17 @@ fun TransactionListScreen(
             .fillMaxSize()
             .padding(top = 8.dp)
     ) {
-        Text(
-            text = "Transactions",
-            fontFamily = Geist,
-            fontWeight = FontWeight.Bold,
-            fontSize = 28.sp,
-            color = scheme.label,
+        KineticHeader(
+            lead = "All recent",
+            headline = "Transactions",
+            headlineSize = 28.sp,
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 10.dp)
         )
 
         OutlinedTextField(
             value = query,
             onValueChange = { viewModel.searchQuery.value = it },
-            placeholder = { Text("Search", fontFamily = Geist) },
+            placeholder = { Text("Search", fontFamily = SpaceGrotesk) },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
@@ -162,7 +165,7 @@ fun TransactionListScreen(
 
         Text(
             text = "${filteredTxs.size} records · ${maskedCurrency(totalFilteredSpend)}",
-            fontFamily = Geist,
+            fontFamily = SpaceGrotesk,
             fontSize = 13.sp,
             color = scheme.secondaryLabel,
             modifier = Modifier.padding(horizontal = 20.dp)
@@ -194,7 +197,7 @@ fun TransactionListScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "No matching records",
-                        fontFamily = Geist,
+                        fontFamily = SpaceGrotesk,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 17.sp,
                         color = scheme.label
@@ -202,7 +205,7 @@ fun TransactionListScreen(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Try clearing the search or filters.",
-                        fontFamily = Geist,
+                        fontFamily = SpaceGrotesk,
                         fontSize = 15.sp,
                         color = scheme.secondaryLabel
                     )
@@ -226,7 +229,7 @@ fun TransactionListScreen(
                             ) {
                                 Text(
                                     text = dayGroup.dateLabel,
-                                    fontFamily = Geist,
+                                    fontFamily = SpaceGrotesk,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 13.sp,
                                     color = scheme.secondaryLabel
@@ -239,22 +242,24 @@ fun TransactionListScreen(
                                     )
                                 }
                             }
-                            IosGroupedList(header = null, scheme = scheme) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(scheme.slab)
+                            ) {
                                 dayGroup.transactions.forEachIndexed { index, tx ->
                                     val category = categoriesMap[tx.categoryId]
                                     DeletableRow(
                                         tx = tx,
                                         categoryName = category?.name ?: "Misc",
-                                        categoryColor = scheme.label,
+                                        categoryColor = scheme.onSlab,
                                         categoryIcon = FormatUtils.getCategoryIcon(
                                             category?.icon.orEmpty()
                                         ),
+                                        rowAlt = index % 2 == 1,
                                         onClick = { onNavigateToEditTransaction(tx.id) },
                                         onSwipeToDelete = { transactionToDelete = tx }
                                     )
-                                    if (index < dayGroup.transactions.size - 1) {
-                                        HorizontalDivider(color = scheme.separator, thickness = 0.5.dp)
-                                    }
                                 }
                             }
                         }
@@ -273,7 +278,7 @@ fun TransactionListScreen(
             title = {
                 Text(
                     text = "Delete transaction",
-                    fontFamily = Geist,
+                    fontFamily = SpaceGrotesk,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 17.sp,
                     color = scheme.label
@@ -282,7 +287,7 @@ fun TransactionListScreen(
             text = {
                 Text(
                     text = "Delete record for ${FormatUtils.formatCurrency(tx.amount)}?",
-                    fontFamily = Geist,
+                    fontFamily = SpaceGrotesk,
                     fontSize = 15.sp,
                     color = scheme.label
                 )
@@ -296,12 +301,12 @@ fun TransactionListScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = scheme.destructive)
                 ) {
-                    Text("Delete", fontFamily = Geist, fontWeight = FontWeight.SemiBold)
+                    Text("Delete", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { transactionToDelete = null }) {
-                    Text("Cancel", fontFamily = Geist, color = scheme.accent)
+                    Text("Cancel", fontFamily = SpaceGrotesk, color = scheme.accent)
                 }
             }
         )
@@ -315,6 +320,7 @@ private fun DeletableRow(
     categoryName: String,
     categoryColor: Color,
     categoryIcon: ImageVector,
+    rowAlt: Boolean,
     onClick: () -> Unit,
     onSwipeToDelete: () -> Unit
 ) {
@@ -349,22 +355,51 @@ private fun DeletableRow(
             }
         }
     ) {
-        Box(modifier = Modifier.background(scheme.card)) {
-            IosRow(
-                title = tx.note.ifBlank { categoryName },
-                subtitle = "$categoryName · ${tx.paymentMode.name}",
-                icon = categoryIcon,
-                iconTint = categoryColor,
-                scheme = scheme,
-                onClick = onClick,
-                showChevron = false
+        // PRD §4.1 row anatomy: icon tile · merchant · category · amount.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(if (rowAlt) scheme.slabAlt else scheme.slab)
+                .clickable(onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .background(scheme.onSlab.copy(alpha = 0.10f)),
+                contentAlignment = Alignment.Center
             ) {
-                IosAmount(
-                    text = (if (expense) "−" else "+") + FormatUtils.formatCurrency(tx.amount),
-                    color = if (expense) scheme.destructive else scheme.success,
-                    fontSize = 15.sp
+                Icon(
+                    imageVector = categoryIcon,
+                    contentDescription = null,
+                    tint = categoryColor,
+                    modifier = Modifier.size(20.dp)
                 )
             }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = tx.note.ifBlank { categoryName },
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp,
+                    color = scheme.onSlab,
+                    maxLines = 1
+                )
+                MonoLabel(
+                    text = "$categoryName · ${tx.paymentMode.name}",
+                    color = scheme.onSlabSecondary,
+                    fontSize = 10.sp
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            LedgerAmount(
+                text = (if (expense) "−" else "+") + FormatUtils.formatLedger(tx.amount),
+                fontSize = 15.sp,
+                color = scheme.onSlab,
+                dimmedColor = scheme.onSlabSecondary
+            )
         }
     }
 }

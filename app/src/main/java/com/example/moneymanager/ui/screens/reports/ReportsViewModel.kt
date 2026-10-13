@@ -15,7 +15,8 @@ import kotlinx.coroutines.flow.*
 import java.util.Calendar
 import javax.inject.Inject
 
-enum class ReportPeriod { THIS_MONTH, LAST_MONTH, ALL_TIME }
+// PRD §4.4 temporal filter: WEEK / MONTH / QUARTER / YEAR (+ ALL as escape hatch).
+enum class ReportPeriod { WEEK, MONTH, QUARTER, YEAR, ALL_TIME }
 
 data class CategorySpendReport(
     val category: Category,
@@ -55,7 +56,7 @@ class ReportsViewModel @Inject constructor(
     private val moneyDao: MoneyDao
 ) : ViewModel() {
 
-    val selectedPeriod = MutableStateFlow(ReportPeriod.THIS_MONTH)
+    val selectedPeriod = MutableStateFlow(ReportPeriod.MONTH)
 
     val allCategories: StateFlow<List<Category>> = moneyDao.getAllCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -67,14 +68,19 @@ class ReportsViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val filteredTransactions: StateFlow<List<Transaction>> = combine(allTransactions, selectedPeriod) { txs, period ->
+        val now = System.currentTimeMillis()
         val currentMonthRange = FormatUtils.getMonthTimestampRange(FormatUtils.getCurrentMonthKey())
-        val cal = Calendar.getInstance().apply { add(Calendar.MONTH, -1) }
-        val lastMonthKey = String.format(java.util.Locale.US, "%04d-%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1)
-        val lastMonthRange = FormatUtils.getMonthTimestampRange(lastMonthKey)
+
+        fun since(days: Int): Long {
+            val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -days) }
+            return cal.timeInMillis
+        }
 
         when (period) {
-            ReportPeriod.THIS_MONTH -> txs.filter { it.date in currentMonthRange.first..currentMonthRange.second }
-            ReportPeriod.LAST_MONTH -> txs.filter { it.date in lastMonthRange.first..lastMonthRange.second }
+            ReportPeriod.WEEK -> txs.filter { it.date >= since(7) }
+            ReportPeriod.MONTH -> txs.filter { it.date in currentMonthRange.first..currentMonthRange.second }
+            ReportPeriod.QUARTER -> txs.filter { it.date >= since(90) }
+            ReportPeriod.YEAR -> txs.filter { it.date >= since(365) }
             ReportPeriod.ALL_TIME -> txs
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -156,9 +162,7 @@ class ReportsViewModel @Inject constructor(
         selectedPeriod
     ) { txs, period ->
         val cal = Calendar.getInstance()
-        if (period == ReportPeriod.LAST_MONTH) {
-            cal.add(Calendar.MONTH, -1)
-        }
+        // Heatmap always renders the current month grid; period only scopes data.
         val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
         val year = cal.get(Calendar.YEAR)
         val month = cal.get(Calendar.MONTH)

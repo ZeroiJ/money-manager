@@ -33,7 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.theme.SpaceGrotesk
 import com.example.moneymanager.theme.Ios
 import com.example.moneymanager.theme.IosScheme
 import com.example.moneymanager.theme.PaperMono
@@ -45,8 +45,9 @@ fun currentScheme(dark: Boolean = isSystemInDarkTheme()): IosScheme =
 data class IosTabItem(val title: String, val icon: ImageVector)
 
 /**
- * Floating frosted tab bar. True backdrop blur needs OS support, so frost is
- * approximated with a translucent card + top separator (see spec §3 blur rule).
+ * Kinetic Ledger tab bar (PRD §3): full-width dark slab, numbered mono
+ * labels `01 HOME`, ochre active state, hairline top. Owns bottom+horizontal
+ * insets (content must NOT also pad bottom — see NavGraph).
  */
 @Composable
 fun IosTabBar(
@@ -58,11 +59,7 @@ fun IosTabBar(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            // Solid: translucency over a flat canvas is pointless, and frost
-            // without blur reads as a smudge. Quiet ledger = solid + hairline.
-            .background(scheme.card)
-            // Own the bottom + horizontal insets: sits clear of the gesture
-            // bar and cutouts. (Content must NOT also pad bottom — see NavGraph.)
+            .background(scheme.slab)
             .windowInsetsPadding(
                 WindowInsets.safeDrawing.only(
                     WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
@@ -73,12 +70,12 @@ fun IosTabBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(scheme.separator)
+                .background(scheme.label.copy(alpha = 0.55f))
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = 4.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -86,30 +83,29 @@ fun IosTabBar(
                 val isSelected = index == selected
                 Column(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            if (isSelected) scheme.accent.copy(alpha = 0.15f)
-                            else Color.Transparent
-                        )
+                        .clip(RoundedCornerShape(0.dp))
+                        .background(if (isSelected) scheme.accent else Color.Transparent)
                         .clickable { onSelect(index) }
-                        .defaultMinSize(minWidth = 64.dp, minHeight = 48.dp)
-                        .padding(horizontal = 14.dp, vertical = 6.dp),
+                        .defaultMinSize(minWidth = 72.dp, minHeight = 52.dp)
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
                     androidx.compose.material3.Icon(
                         imageVector = item.icon,
                         contentDescription = item.title,
-                        tint = if (isSelected) scheme.accent else scheme.secondaryLabel,
-                        modifier = Modifier.size(24.dp)
+                        tint = if (isSelected) scheme.slab else scheme.onSlabSecondary,
+                        modifier = Modifier.size(20.dp)
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = item.title,
-                        fontFamily = Geist,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                        fontSize = 11.sp,
-                        color = if (isSelected) scheme.accent else scheme.secondaryLabel
+                        fontFamily = PaperMono,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        fontSize = 10.sp,
+                        letterSpacing = 0.5.sp,
+                        color = if (isSelected) scheme.slab else scheme.onSlabSecondary,
+                        maxLines = 1
                     )
                 }
             }
@@ -117,7 +113,7 @@ fun IosTabBar(
     }
 }
 
-/** iOS Settings-style section: small header + one rounded card of rows. */
+/** Settings-style section: mono micro-header + one square block of rows. */
 @Composable
 fun IosGroupedList(
     header: String?,
@@ -128,10 +124,12 @@ fun IosGroupedList(
         if (header != null) {
             Text(
                 text = header.uppercase(),
-                fontFamily = Geist,
-                fontSize = 13.sp,
+                fontFamily = PaperMono,
+                fontWeight = FontWeight.Medium,
+                fontSize = 11.sp,
+                letterSpacing = 1.sp,
                 color = scheme.secondaryLabel,
-                modifier = Modifier.padding(start = 16.dp, bottom = 6.dp)
+                modifier = Modifier.padding(start = 2.dp, bottom = 6.dp)
             )
         }
         Column(
@@ -189,7 +187,7 @@ fun IosRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.Medium,
                 fontSize = 17.sp,
                 color = scheme.label,
@@ -212,7 +210,7 @@ fun IosRow(
         if (showChevron) {
             Text(
                 text = "›",
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontSize = 20.sp,
                 color = scheme.secondaryLabel,
                 modifier = Modifier.padding(start = 4.dp)
@@ -241,7 +239,7 @@ fun LoadErrorCard(
     ) {
         Text(
             text = "Couldn't load",
-            fontFamily = Geist,
+            fontFamily = SpaceGrotesk,
             fontWeight = FontWeight.SemiBold,
             fontSize = 17.sp,
             color = scheme.destructive
@@ -249,7 +247,7 @@ fun LoadErrorCard(
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = message,
-            fontFamily = Geist,
+            fontFamily = SpaceGrotesk,
             fontSize = 14.sp,
             color = scheme.secondaryLabel
         )
@@ -257,7 +255,7 @@ fun LoadErrorCard(
         androidx.compose.material3.TextButton(onClick = onRetry) {
             Text(
                 text = "Try again",
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp,
                 color = scheme.accent

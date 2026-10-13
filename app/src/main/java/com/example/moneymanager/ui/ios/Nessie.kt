@@ -40,10 +40,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.moneymanager.theme.Geist
+import com.example.moneymanager.theme.SpaceGrotesk
 import com.example.moneymanager.theme.IosScheme
 import com.example.moneymanager.theme.PaperMono
-import com.example.moneymanager.theme.PlayfairItalic
 import com.example.moneymanager.util.Haptics
 import kotlinx.coroutines.delay
 import kotlin.random.Random
@@ -52,13 +51,16 @@ import androidx.compose.material3.Text
 /** Global privacy mask: when true, [IosAmount] renders bullets instead of figures. */
 val LocalHideAmounts = compositionLocalOf { false }
 
-/** Mask-aware currency: bullets when privacy is on, formatted ₹ otherwise. */
+/** Mask-aware currency: bullets when privacy is on, ₹ single-decimal otherwise. */
 @Composable
 fun maskedCurrency(amount: Double): String =
     if (LocalHideAmounts.current) "••••••"
-    else com.example.moneymanager.util.FormatUtils.formatCurrency(amount)
+    else com.example.moneymanager.util.FormatUtils.formatLedger(amount)
 
-/** Serif-italic hero word (Nessie voice). Figures stay in PaperMono — never serif. */
+/**
+ * Editorial hero word. Kinetic Ledger voice = Space Grotesk bold (the
+ * Playfair serif was retired with the Nessie direction).
+ */
 @Composable
 fun IosHeroWord(
     text: String,
@@ -69,8 +71,8 @@ fun IosHeroWord(
 ) {
     Text(
         text = text,
-        fontFamily = PlayfairItalic,
-        fontWeight = FontWeight.SemiBold,
+        fontFamily = SpaceGrotesk,
+        fontWeight = FontWeight.Bold,
         fontSize = fontSize,
         lineHeight = lineHeight,
         color = color,
@@ -226,7 +228,7 @@ fun ConfettiOverlay(
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = subtitle,
-                fontFamily = Geist,
+                fontFamily = SpaceGrotesk,
                 fontSize = 15.sp,
                 color = scheme.secondaryLabel,
                 textAlign = TextAlign.Center
