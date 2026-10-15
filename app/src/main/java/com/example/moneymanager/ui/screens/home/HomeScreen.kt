@@ -112,7 +112,7 @@ fun HomeScreen(
     // History blocks run edge-to-edge; every other block keeps 16dp insets.
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = 8.dp, bottom = 96.dp),
+        contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         // ── Utility row (privacy toggle + settings) ─────────────────────
@@ -263,17 +263,6 @@ fun HomeScreen(
             }
         }
 
-        // ── Footer diagnostics ──────────────────────────────────────────
-        item {
-            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                Hairline()
-                MonoLabel(
-                    text = "Synced with ledger node 01 // local only",
-                    color = scheme.secondaryLabel,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
-        }
     }
 
     ConfettiOverlay(

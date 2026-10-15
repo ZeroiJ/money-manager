@@ -31,7 +31,10 @@ The skill speaks SwiftUI/UIKit; translate, never water down (`cross-platform.md`
    `RectangleShape`; toggles are square sliders, not pills) since v1.16.0;
    3-section navigation is a bottom commit rail since v1.19.0 (2/3 ochre
    `+ EXPENSE` key + 1/3 HOME/REPORTS flip switch; the old 3-cell tab bar
-   is gone); Home's history is the
+   is gone); the Expense tab is one continuous paper surface since v1.20.0
+   (unboxed hero, hairline pickers, inversion-only selection, full-bleed
+   ink commit); no screen titles on tabs, no footer taglines anywhere;
+   list bottom padding is 24dp (rail inset already clears the bar); Home's history is the
    FULL transaction feed grouped by month, newest first (`MONTH YYYY ·
    ₹total` headers over full-bleed single-tone slab rows, hairline-separated,
    no icons) since v1.18.0; Home hero is the bold month name (no branding

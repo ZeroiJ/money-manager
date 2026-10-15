@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.20.0] - 2026-10-15 — Paper ledger expense
+
+**The Expense tab is one continuous paper surface (Paper option C)**
+- No more cards-in-cards: unboxed giant amount hero, hairline section
+  dividers, every picker a hairline square with selection-by-inversion.
+- Quick chips, paid-by chips, date shortcuts, keypad all follow the same
+  ink-on-paper instrument language (`=` key fills ink).
+- Note field is a hairline underline; commit is a full-bleed ink strip.
+- Removed the `New transaction` title (back chevron stays in edit mode).
+- Removed `Secure enclave` / `ledger node` footers from every tab.
+- Cut list bottom padding 96dp → 24dp on Home/Reports/Settings/Feed —
+  the rail inset already clears the bar, so no more dead space at the end.
+
 ## [v1.19.0] - 2026-10-15 — Commit rail
 
 **The 3-cell bottom tab bar is replaced with a commit rail**

@@ -6,12 +6,12 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
@@ -24,19 +24,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.EditCalendar
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -50,10 +47,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -65,19 +62,19 @@ import com.example.moneymanager.data.model.TransactionType
 import com.example.moneymanager.theme.SpaceGrotesk
 import com.example.moneymanager.theme.PaperMono
 import com.example.moneymanager.ui.ios.IosAmount
-import com.example.moneymanager.ui.ios.IosSegmented
 import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.ui.ios.pressShrink
-import com.example.moneymanager.ui.kinetic.KineticButton
-import com.example.moneymanager.ui.kinetic.KineticInk
+import com.example.moneymanager.ui.kinetic.Hairline
 import com.example.moneymanager.ui.kinetic.MonoLabel
 import com.example.moneymanager.util.FormatUtils
 import com.example.moneymanager.util.Haptics
 import com.example.moneymanager.util.ReceiptStorage
 
 /**
- * Full transaction form, used solely for editing a tapped row.
- * Same fields and logic as before; iOS grouped-card chrome only.
+ * Paper ledger expense form (v1.20.0, option C): the whole tab is one paper
+ * surface — amount as unboxed hero type, every picker a hairline square
+ * with selection-by-inversion only, one full-bleed ink commit strip.
+ * No cards-in-cards. Same fields and logic as before.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -131,16 +128,20 @@ fun AddTransactionScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(scheme.paper)
             .verticalScroll(rememberScrollState())
             .imePadding()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (showBack) {
+        // Back chevron only in edit mode; the tab itself carries no title.
+        if (showBack) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 IconButton(
                     onClick = onNavigateBack,
                     modifier = Modifier.size(44.dp)
@@ -148,48 +149,40 @@ fun AddTransactionScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = scheme.accent
+                        tint = scheme.label
                     )
                 }
             }
-            Text(
-                text = if (isEditMode) "Edit transaction" else "New transaction",
-                fontFamily = SpaceGrotesk,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 20.sp,
-                color = scheme.label
-            )
         }
 
-        IosSegmented(
+        LedgerSegmented(
             options = listOf("Expense", "Income"),
             selected = if (txType == TransactionType.EXPENSE) 0 else 1,
             onSelect = {
                 viewModel.transactionType.value =
                     if (it == 0) TransactionType.EXPENSE else TransactionType.INCOME
             },
-            scheme = scheme
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        // Amount hero (PRD §4.3): ochre tile, large active figure.
+        // Amount hero: unboxed giant figure + hairline quick chips.
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(scheme.accent)
-                .padding(vertical = 20.dp, horizontal = 16.dp),
+                .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             MonoLabel(
                 text = "Entry amount",
-                color = KineticInk.copy(alpha = 0.7f)
+                color = scheme.secondaryLabel
             )
             Spacer(modifier = Modifier.height(6.dp))
             IosAmount(
                 text = "₹ ${if (amount.isEmpty()) "0" else amount}_",
-                color = KineticInk,
-                fontSize = 40.sp
+                color = scheme.label,
+                fontSize = 56.sp
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
             Row(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -199,12 +192,12 @@ fun AddTransactionScreen(
                     Box(
                         modifier = Modifier
                             .defaultMinSize(minHeight = 44.dp)
-                            .background(KineticInk)
+                            .border(1.dp, scheme.label)
                             .clickable {
                                 Haptics.keyPress(chipView)
                                 viewModel.onNumpadClick(incStr)
                             }
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -212,36 +205,31 @@ fun AddTransactionScreen(
                             fontFamily = PaperMono,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp,
-                            color = scheme.accent
+                            color = scheme.label
                         )
                     }
                 }
             }
         }
 
-        // Scope card
+        Hairline()
+
+        // Scope section
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RectangleShape)
-                .background(scheme.card)
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            MonoLabel(text = "Scope", color = scheme.secondaryLabel)
             val modes = listOf(TransactionScope.PERSONAL, TransactionScope.HOUSEHOLD)
-            IosSegmented(
+            LedgerSegmented(
                 options = listOf("Personal", "Household"),
                 selected = modes.indexOf(scope).coerceAtLeast(0),
-                onSelect = { viewModel.transactionScope.value = modes[it] },
-                scheme = scheme
+                onSelect = { viewModel.transactionScope.value = modes[it] }
             )
             if (scope == TransactionScope.HOUSEHOLD && householdMembers.isNotEmpty()) {
-                Text(
-                    text = "Paid by",
-                    fontFamily = SpaceGrotesk,
-                    fontSize = 13.sp,
-                    color = scheme.secondaryLabel
-                )
+                MonoLabel(text = "Paid by", color = scheme.secondaryLabel)
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -251,13 +239,12 @@ fun AddTransactionScreen(
                         Box(
                             modifier = Modifier
                                 .defaultMinSize(minHeight = 44.dp)
-                                .clip(RectangleShape)
-                                .background(
-                                    if (isPaidBy) scheme.accent.copy(alpha = 0.15f)
-                                    else scheme.secondaryFill
+                                .then(
+                                    if (isPaidBy) Modifier.background(scheme.label)
+                                    else Modifier.border(1.dp, scheme.label)
                                 )
                                 .clickable { viewModel.selectedPaidBy.value = member.name }
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                .padding(horizontal = 14.dp, vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -265,7 +252,7 @@ fun AddTransactionScreen(
                                 fontFamily = SpaceGrotesk,
                                 fontWeight = if (isPaidBy) FontWeight.SemiBold else FontWeight.Normal,
                                 fontSize = 14.sp,
-                                color = if (isPaidBy) scheme.accent else scheme.label
+                                color = if (isPaidBy) scheme.paper else scheme.label
                             )
                         }
                     }
@@ -273,90 +260,127 @@ fun AddTransactionScreen(
             }
         }
 
-        // Payment mode card
+        Hairline()
+
+        // Payment mode section
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RectangleShape)
-                .background(scheme.card)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            MonoLabel(text = "Payment", color = scheme.secondaryLabel)
             val payModes = PaymentMode.values()
-            IosSegmented(
+            LedgerSegmented(
                 options = payModes.map { it.name.lowercase().replaceFirstChar(Char::titlecase) },
                 selected = payModes.indexOf(mode).coerceAtLeast(0),
-                onSelect = { viewModel.paymentMode.value = payModes[it] },
-                scheme = scheme
+                onSelect = { viewModel.paymentMode.value = payModes[it] }
             )
         }
 
-        // Category picker — static 4-column block, no scroll of its own.
+        Hairline()
+
+        // Category picker — static 4-column block, hairline squares,
+        // selection by inversion only.
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RectangleShape)
-                .background(scheme.card)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            categories.chunked(4).forEach { rowCats ->
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    rowCats.forEach { cat ->
-                        val isSelected = selectedCatId == cat.id
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .defaultMinSize(minHeight = 76.dp)
-                                .clip(RectangleShape)
-                                .background(
-                                    if (isSelected) scheme.accent.copy(alpha = 0.15f)
-                                    else scheme.secondaryFill
-                                )
-                                .clickable { viewModel.selectedCategoryId.value = cat.id }
-                                .padding(vertical = 8.dp, horizontal = 4.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    imageVector = FormatUtils.getCategoryIcon(cat.icon),
-                                    contentDescription = cat.name,
-                                    tint = if (isSelected) scheme.accent else scheme.label,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = cat.name,
-                                    fontFamily = SpaceGrotesk,
-                                    fontSize = 11.sp,
-                                    lineHeight = 13.sp,
-                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                    color = if (isSelected) scheme.accent else scheme.label,
-                                    maxLines = 2,
-                                    textAlign = TextAlign.Center
-                                )
+            MonoLabel(text = "Category", color = scheme.secondaryLabel)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                categories.chunked(4).forEach { rowCats ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        rowCats.forEach { cat ->
+                            val isSelected = selectedCatId == cat.id
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .defaultMinSize(minHeight = 76.dp)
+                                    .then(
+                                        if (isSelected) Modifier.background(scheme.label)
+                                        else Modifier.border(1.dp, scheme.label)
+                                    )
+                                    .clickable { viewModel.selectedCategoryId.value = cat.id }
+                                    .padding(vertical = 8.dp, horizontal = 4.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        imageVector = FormatUtils.getCategoryIcon(cat.icon),
+                                        contentDescription = cat.name,
+                                        tint = if (isSelected) scheme.paper else scheme.label,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = cat.name,
+                                        fontFamily = SpaceGrotesk,
+                                        fontSize = 11.sp,
+                                        lineHeight = 13.sp,
+                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                        color = if (isSelected) scheme.paper else scheme.label,
+                                        maxLines = 2,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
                             }
                         }
+                        // Pad the final row so cells stay equal-width.
+                        repeat(4 - rowCats.size) { Spacer(modifier = Modifier.weight(1f)) }
                     }
-                    // Pad the final row so cells stay equal-width.
-                    repeat(4 - rowCats.size) { Spacer(modifier = Modifier.weight(1f)) }
                 }
             }
         }
 
-        OutlinedTextField(
-            value = note,
-            onValueChange = { viewModel.noteInput.value = it },
-            label = { Text("Note (optional)", fontFamily = SpaceGrotesk) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RectangleShape,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = scheme.accent,
-                unfocusedBorderColor = scheme.separator
-            )
-        )
+        Hairline()
 
-        // Date card
+        // Note field — hairline underline, no box.
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            MonoLabel(text = "Note", color = scheme.secondaryLabel)
+            BasicTextField(
+                value = note,
+                onValueChange = { viewModel.noteInput.value = it },
+                singleLine = true,
+                textStyle = TextStyle(
+                    fontFamily = SpaceGrotesk,
+                    fontSize = 17.sp,
+                    color = scheme.label
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                decorationBox = { inner ->
+                    Column {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .defaultMinSize(minHeight = 44.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            if (note.isEmpty()) {
+                                Text(
+                                    text = "Note (optional)",
+                                    fontFamily = SpaceGrotesk,
+                                    fontSize = 17.sp,
+                                    color = scheme.secondaryLabel
+                                )
+                            }
+                            inner()
+                        }
+                        Hairline()
+                    }
+                }
+            )
+        }
+
+        Hairline()
+
+        // Date section
         var showDatePicker by remember { mutableStateOf(false) }
         val selectedDate by viewModel.selectedDate.collectAsState()
         val dateLabel = remember(selectedDate) {
@@ -367,39 +391,31 @@ fun AddTransactionScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RectangleShape)
-                .background(scheme.card)
-                .clickable { showDatePicker = true }
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            MonoLabel(text = "Date", color = scheme.secondaryLabel)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showDatePicker = true }
+                    .padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Date",
+                    text = dateLabel,
                     fontFamily = SpaceGrotesk,
-                    fontSize = 13.sp,
-                    color = scheme.secondaryLabel
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 17.sp,
+                    color = scheme.label
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = dateLabel,
-                        fontFamily = SpaceGrotesk,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 15.sp,
-                        color = scheme.label
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Icon(
-                        imageVector = Icons.Default.EditCalendar,
-                        contentDescription = "Pick date",
-                        tint = scheme.accent,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.EditCalendar,
+                    contentDescription = "Pick date",
+                    tint = scheme.label,
+                    modifier = Modifier.size(20.dp)
+                )
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -425,10 +441,9 @@ fun AddTransactionScreen(
                         modifier = Modifier
                             .weight(1f)
                             .defaultMinSize(minHeight = 44.dp)
-                            .clip(RectangleShape)
-                            .background(scheme.secondaryFill)
+                            .border(1.dp, scheme.label)
                             .clickable { action() }
-                            .padding(vertical = 8.dp),
+                            .padding(vertical = 8.dp, horizontal = 2.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -460,7 +475,7 @@ fun AddTransactionScreen(
                             "Set date",
                             fontFamily = SpaceGrotesk,
                             fontWeight = FontWeight.SemiBold,
-                            color = scheme.accent
+                            color = scheme.label
                         )
                     }
                 },
@@ -474,21 +489,16 @@ fun AddTransactionScreen(
             }
         }
 
-        // Receipt card
+        Hairline()
+
+        // Receipt section
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RectangleShape)
-                .background(scheme.card)
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(
-                text = "Receipt",
-                fontFamily = SpaceGrotesk,
-                fontSize = 13.sp,
-                color = scheme.secondaryLabel
-            )
+            MonoLabel(text = "Receipt", color = scheme.secondaryLabel)
             val receiptBitmap = remember(receiptUri) {
                 receiptUri?.let { path ->
                     ReceiptStorage.getReceiptFile(path)?.let { file ->
@@ -521,78 +531,162 @@ fun AddTransactionScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Button(
-                        onClick = {
-                            launchPhotoPicker.launch(
-                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                            )
-                        },
+                    Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(48.dp),
-                        shape = RectangleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
+                            .defaultMinSize(minHeight = 48.dp)
+                            .background(scheme.label)
+                            .clickable {
+                                launchPhotoPicker.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text("Attach", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            "Attach",
+                            fontFamily = SpaceGrotesk,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 15.sp,
+                            color = scheme.paper
+                        )
                     }
-                    Button(
-                        onClick = { viewModel.removeReceipt() },
+                    Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(48.dp),
-                        shape = RectangleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = scheme.destructive)
+                            .defaultMinSize(minHeight = 48.dp)
+                            .border(1.dp, scheme.label)
+                            .clickable { viewModel.removeReceipt() }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text("Remove", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            "Remove",
+                            fontFamily = SpaceGrotesk,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 15.sp,
+                            color = scheme.destructive
+                        )
                     }
                 }
             } else {
-                Button(
-                    onClick = {
-                        launchPhotoPicker.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
-                    },
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RectangleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = scheme.accent)
+                        .defaultMinSize(minHeight = 48.dp)
+                        .background(scheme.label)
+                        .clickable {
+                            launchPhotoPicker.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("Attach receipt", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "Attach receipt",
+                        fontFamily = SpaceGrotesk,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp,
+                        color = scheme.paper
+                    )
                 }
             }
         }
 
+        Hairline()
+
         IosKeypad(
-            onKeyClick = { key -> viewModel.onNumpadClick(key) }
+            onKeyClick = { key -> viewModel.onNumpadClick(key) },
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
 
+        // Commit strip — full-bleed ink, paper text.
         val saveButtonView = LocalView.current
-        KineticButton(
-            label = if (isEditMode) "SAVE CHANGES" else "CONFIRM & LOG EXPENSE",
-            onClick = {
-                Haptics.saveConfirmed(saveButtonView)
-                viewModel.saveTransaction {
-                    onNavigateBack()
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(scheme.label)
+                .clickable {
+                    Haptics.saveConfirmed(saveButtonView)
+                    viewModel.saveTransaction {
+                        onNavigateBack()
+                    }
                 }
-            },
-            modifier = Modifier.pressShrink(),
-            scheme = scheme
-        )
+                .pressShrink()
+                .padding(vertical = 22.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = if (isEditMode) "SAVE CHANGES" else "CONFIRM & LOG EXPENSE",
+                fontFamily = SpaceGrotesk,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                letterSpacing = 0.5.sp,
+                color = scheme.paper
+            )
+        }
+    }
+}
 
-        MonoLabel(
-            text = "Secure enclave active // local ledger only",
-            color = scheme.secondaryLabel,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
+/**
+ * Hairline segmented control for the paper ledger: bordered row, selection
+ * by inversion only (ink fill + paper text). 48dp cells.
+ */
+@Composable
+private fun LedgerSegmented(
+    options: List<String>,
+    selected: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    scheme: com.example.moneymanager.theme.IosScheme = currentScheme()
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(1.dp, scheme.label)
+    ) {
+        options.forEachIndexed { index, option ->
+            val isSelected = index == selected
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .defaultMinSize(minHeight = 48.dp)
+                    .then(
+                        if (isSelected) Modifier.background(scheme.label)
+                        else Modifier
+                    )
+                    .clickable { onSelect(index) }
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = option,
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    fontSize = 15.sp,
+                    color = if (isSelected) scheme.paper else scheme.label,
+                    maxLines = 1
+                )
+            }
+            if (index < options.lastIndex) {
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .defaultMinSize(minHeight = 48.dp)
+                        .background(scheme.label)
+                )
+            }
+        }
     }
 }
 
 @Composable
-fun IosKeypad(onKeyClick: (String) -> Unit) {
+fun IosKeypad(
+    onKeyClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val scheme = currentScheme()
     val keypadView = LocalView.current
     val rows = listOf(
@@ -603,29 +697,25 @@ fun IosKeypad(onKeyClick: (String) -> Unit) {
     )
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        MonoLabel(text = "Keypad", color = scheme.secondaryLabel)
         rows.forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 row.forEach { key ->
-                    val isAction = key in listOf("+", "-", "=", "DEL", "C")
                     val isEquals = key == "="
-                    val isClear = key == "C" || key == "DEL"
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .height(52.dp)
-                            .clip(RectangleShape)
-                            .background(
-                                when {
-                                    isEquals -> scheme.accent
-                                    else -> scheme.secondaryFill
-                                }
+                            .then(
+                                if (isEquals) Modifier.background(scheme.label)
+                                else Modifier.border(1.dp, scheme.label)
                             )
                             .clickable {
                                 Haptics.keyPress(keypadView)
@@ -638,12 +728,7 @@ fun IosKeypad(onKeyClick: (String) -> Unit) {
                             fontFamily = PaperMono,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 17.sp,
-                            color = when {
-                                isEquals -> Color.White
-                                isClear -> scheme.destructive
-                                isAction -> scheme.accent
-                                else -> scheme.label
-                            }
+                            color = if (isEquals) scheme.paper else scheme.label
                         )
                     }
                 }
