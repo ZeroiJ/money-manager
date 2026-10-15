@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
@@ -46,18 +48,21 @@ import com.example.moneymanager.theme.PaperMono
 fun currentScheme(dark: Boolean = false): IosScheme =
     if (dark) Ios.Dark else Ios.Light
 
-data class IosTabItem(val title: String, val icon: ImageVector)
-
 /**
- * Kinetic Ledger tab bar (PRD §3): full-width dark slab, numbered mono
- * labels `01 HOME`, ochre active state, hairline top. Owns bottom+horizontal
- * insets (content must NOT also pad bottom — see NavGraph).
+ * Commit rail (v1.19.0): replaces the 3-cell tab bar. Full-width dark slab
+ * with hairline top; a 2/3 ochre `+ EXPENSE ↗` commit key plus a 1/3
+ * HOME/REPORTS flip switch. Tabs navigate, never act — the key jumps to
+ * the Expense tab. Draws edge-to-edge into the gesture zone (each column's
+ * color runs to the physical bottom edge); only horizontal insets are
+ * padded. Content must NOT also pad bottom — see NavGraph.
  */
 @Composable
-fun IosTabBar(
-    selected: Int,
-    items: List<IosTabItem>,
-    onSelect: (Int) -> Unit,
+fun IosCommitRail(
+    selectedHome: Boolean,
+    selectedReports: Boolean,
+    onSelectHome: () -> Unit,
+    onSelectExpense: () -> Unit,
+    onSelectReports: () -> Unit,
     scheme: IosScheme = currentScheme()
 ) {
     Column(
@@ -65,9 +70,7 @@ fun IosTabBar(
             .fillMaxWidth()
             .background(scheme.slab)
             .windowInsetsPadding(
-                WindowInsets.safeDrawing.only(
-                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
-                )
+                WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
             )
     ) {
         Box(
@@ -79,41 +82,116 @@ fun IosTabBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+                .height(96.dp)
         ) {
-            items.forEachIndexed { index, item ->
-                val isSelected = index == selected
-                Column(
+            // Expense commit key — always ochre, always one tap away.
+            Box(
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxHeight()
+                    .background(scheme.accent)
+                    .clickable { onSelectExpense() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "+ EXPENSE ↗",
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 19.sp,
+                    color = com.example.moneymanager.ui.kinetic.KineticInk,
+                    maxLines = 1
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .fillMaxHeight()
+                    .background(scheme.onSlab.copy(alpha = 0.2f))
+            )
+            // HOME / REPORTS flip switch.
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+            ) {
+                FlipCell(
+                    label = "HOME",
+                    active = selectedHome,
+                    onClick = onSelectHome,
+                    modifier = Modifier.weight(1f)
+                )
+                Box(
                     modifier = Modifier
-                        .clip(RectangleShape)
-                        .background(if (isSelected) scheme.accent else Color.Transparent)
-                        .clickable { onSelect(index) }
-                        .defaultMinSize(minWidth = 72.dp, minHeight = 52.dp)
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    androidx.compose.material3.Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.title,
-                        tint = if (isSelected) scheme.slab else scheme.onSlabSecondary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.height(3.dp))
-                    Text(
-                        text = item.title,
-                        fontFamily = PaperMono,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        fontSize = 10.sp,
-                        letterSpacing = 0.5.sp,
-                        color = if (isSelected) scheme.slab else scheme.onSlabSecondary,
-                        maxLines = 1
-                    )
-                }
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(scheme.onSlab.copy(alpha = 0.2f))
+                )
+                FlipCell(
+                    label = "REPORTS",
+                    active = selectedReports,
+                    onClick = onSelectReports,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
+        // Edge extension: carry each column's color down through the system
+        // gesture zone to the physical bottom edge — no dead gap, no
+        // misalignment. Non-tappable; the 96dp row above stays clear of
+        // gesture conflicts.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(
+                    WindowInsets.safeDrawing.asPaddingValues()
+                        .calculateBottomPadding()
+                )
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxHeight()
+                    .background(scheme.accent)
+            )
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .fillMaxHeight()
+                    .background(scheme.onSlab.copy(alpha = 0.2f))
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(scheme.slab)
+            )
+        }
+    }
+}
+
+@Composable
+private fun FlipCell(
+    label: String,
+    active: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    scheme: IosScheme = currentScheme()
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(if (active) scheme.card else Color.Transparent)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            fontFamily = PaperMono,
+            fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
+            fontSize = 12.sp,
+            letterSpacing = 0.5.sp,
+            color = if (active) scheme.label else scheme.onSlabSecondary,
+            maxLines = 1
+        )
     }
 }
 

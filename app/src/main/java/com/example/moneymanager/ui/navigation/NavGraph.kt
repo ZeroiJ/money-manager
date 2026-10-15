@@ -30,8 +30,7 @@ import androidx.navigation.navArgument
 import com.example.moneymanager.theme.*
 import com.example.moneymanager.util.ErrorBus
 import com.example.moneymanager.ui.ios.AmbientBackground
-import com.example.moneymanager.ui.ios.IosTabBar
-import com.example.moneymanager.ui.ios.IosTabItem
+import com.example.moneymanager.ui.ios.IosCommitRail
 import com.example.moneymanager.ui.ios.LocalHideAmounts
 import com.example.moneymanager.ui.ios.readAnimatorScale
 import com.example.moneymanager.ui.ios.resolveAmbientMode
@@ -92,7 +91,7 @@ fun AppNavGraph(
     Box(modifier = Modifier.fillMaxSize()) {
         AmbientBackground(mode = ambientMode, dark = dark)
         // Default insets: content gets top + horizontal safe-drawing padding.
-        // The bottom inset is owned by IosTabBar (not double-padded here).
+        // The bottom inset is owned by IosCommitRail (not double-padded here).
         val snackbarHostState = androidx.compose.runtime.remember { SnackbarHostState() }
         // One global listener: every ErrorBus report becomes a snackbar with a
         // Details action into Settings → Diagnostics. Local-only, no telemetry.
@@ -116,30 +115,24 @@ fun AppNavGraph(
                     bottomNavItems.any { it.route == currentRoute }
                 }
                 if (shouldShowBottomBar) {
-                    val tabItems = androidx.compose.runtime.remember {
-                        bottomNavItems.mapIndexed { index, item ->
-                            IosTabItem(
-                                // PRD §3: numbered technical tab labels.
-                                title = "0${index + 1} ${item.title}",
-                                icon = item.icon
-                            )
+                    // Commit rail (v1.19.0): ochre key jumps to Expense,
+                    // flip switch toggles Home/Reports. Same tab-switch
+                    // semantics as the old bar (state save/restore).
+                    val goTab = { screen: Screen ->
+                        navController.navigate(screen.route) {
+                            popUpTo(Screen.Home.route) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     }
-                    val selectedIndex = bottomNavItems.indexOfFirst { it.route == currentRoute }
-                        .coerceAtLeast(0)
-                    IosTabBar(
-                        selected = selectedIndex,
-                        items = tabItems,
-                        onSelect = { index ->
-                            val screen = bottomNavItems[index]
-                            navController.navigate(screen.route) {
-                                popUpTo(Screen.Home.route) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        }
+                    IosCommitRail(
+                        selectedHome = currentRoute == Screen.Home.route,
+                        selectedReports = currentRoute == Screen.Reports.route,
+                        onSelectHome = { goTab(Screen.Home) },
+                        onSelectExpense = { goTab(Screen.Expense) },
+                        onSelectReports = { goTab(Screen.Reports) }
                     )
                 }
             }

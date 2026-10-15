@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.19.0] - 2026-10-15 — Commit rail
+
+**The 3-cell bottom tab bar is replaced with a commit rail**
+- Full-width dark slab: a 2/3 ochre `+ EXPENSE ↗` commit key (jumps to
+  the Expense tab, one tap from anywhere) plus a 1/3 HOME/REPORTS flip
+  switch (active cell fills paper, inactive stays dim).
+- Same tab-switch semantics as before (state save/restore); bar shows
+  only on the three main sections. `IosTabBar`/`IosTabItem` removed.
+
 ## [v1.18.0] - 2026-10-15 — History home
 
 **Home becomes the full backtrackable ledger**

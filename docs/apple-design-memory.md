@@ -29,8 +29,9 @@ The skill speaks SwiftUI/UIKit; translate, never water down (`cross-platform.md`
    `₹1,951.0` w/ greyed decimal; barcode tick meters; **strictly boxes** —
    ZERO rounded corners anywhere (RoundedCornerShape banned, use
    `RectangleShape`; toggles are square sliders, not pills) since v1.16.0;
-   3-tab IA `01 HOME / 02 EXPENSE / 03 REPORTS` (Budget tab removed in
-   v1.16.0 — budget data still backed up/exported); Home's history is the
+   3-section navigation is a bottom commit rail since v1.19.0 (2/3 ochre
+   `+ EXPENSE` key + 1/3 HOME/REPORTS flip switch; the old 3-cell tab bar
+   is gone); Home's history is the
    FULL transaction feed grouped by month, newest first (`MONTH YYYY ·
    ₹total` headers over full-bleed single-tone slab rows, hairline-separated,
    no icons) since v1.18.0; Home hero is the bold month name (no branding
