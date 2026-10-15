@@ -49,6 +49,10 @@ class HomeViewModel @Inject constructor(
         .map { list -> list.take(10) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    // Full month-grouped history for the Home ledger (uncapped, date-DESC).
+    val allTransactions: StateFlow<List<Transaction>> = transactionsSource
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     // Additive glanceable totals for the iOS Home card. Sourced from the UNCAPPED
     // feed so backdated writes and edits beyond the top-10 still retrigger them.
     val todaySpend: StateFlow<Double> = transactionsSource

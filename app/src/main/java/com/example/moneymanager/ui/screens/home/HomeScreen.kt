@@ -57,9 +57,9 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Tab 01 — Home Dashboard: LEDGER // 01 header, month-spend hero,
- * full-bleed recent-ledger drawer (single slab tone, no icons), footer
- * diagnostics. Strictly boxes — no rounded corners anywhere.
+ * Tab 01 — Home Dashboard: utility row, bold month-spend hero, full
+ * month-grouped transaction history (edge-to-edge single-slab blocks),
+ * footer diagnostics. Strictly boxes — no rounded corners anywhere.
  */
 @Composable
 fun HomeScreen(
@@ -72,7 +72,7 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit = {},
     onNavigateToEditTransaction: (Long) -> Unit = {}
 ) {
-    val recentTxs by viewModel.recentTransactions.collectAsState()
+    val allTxs by viewModel.allTransactions.collectAsState()
     val loadError by viewModel.loadError.collectAsState()
     val categoriesMap by viewModel.categoriesMap.collectAsState()
     val monthSpend by viewModel.monthSpend.collectAsState()
@@ -81,24 +81,27 @@ fun HomeScreen(
         FormatUtils.formatMonth(FormatUtils.getCurrentMonthKey()).substringBefore(" ")
     }
 
-    // FILTER cycles the visible ledger: ALL → EXPENSE → INCOME.
+    // FILTER cycles the visible history: ALL → EXPENSE → INCOME.
     var filterIndex by rememberSaveable { mutableStateOf(0) }
     val filterLabels = listOf("FILTER: ALL", "FILTER: OUT", "FILTER: IN")
-    val filteredTxs = remember(recentTxs, filterIndex) {
+    val filteredTxs = remember(allTxs, filterIndex) {
         when (filterIndex) {
-            1 -> recentTxs.filter { it.type == TransactionType.EXPENSE }
-            2 -> recentTxs.filter { it.type == TransactionType.INCOME }
-            else -> recentTxs
+            1 -> allTxs.filter { it.type == TransactionType.EXPENSE }
+            2 -> allTxs.filter { it.type == TransactionType.INCOME }
+            else -> allTxs
         }
     }
-    var showAll by rememberSaveable { mutableStateOf(false) }
+    // Full history, newest month first — easy expense backtracking.
+    val monthGroups = remember(filteredTxs) {
+        filteredTxs.groupBy { monthKeyOf(it.date) }.toSortedMap(compareByDescending { it })
+    }
 
     // First-entry celebration: empty (after load) -> non-empty, once ever.
     var showConfetti by remember { mutableStateOf(false) }
     var celebratedFirstEntry by rememberSaveable { mutableStateOf(false) }
     var wasEmpty by remember { mutableStateOf<Boolean?>(null) }
-    LaunchedEffect(recentTxs.isEmpty()) {
-        val empty = recentTxs.isEmpty()
+    LaunchedEffect(allTxs.isEmpty()) {
+        val empty = allTxs.isEmpty()
         if (firstEntryTransition(wasEmpty, empty, celebratedFirstEntry)) {
             celebratedFirstEntry = true
             showConfetti = true
@@ -106,40 +109,21 @@ fun HomeScreen(
         wasEmpty = empty
     }
 
-    // Ledger rows run edge-to-edge; every other block keeps 16dp insets.
+    // History blocks run edge-to-edge; every other block keeps 16dp insets.
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(top = 8.dp, bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // ── Header: monogram + LEDGER // 01 + utilities ─────────────────
+        // ── Utility row (privacy toggle + settings) ─────────────────────
         item {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(scheme.slab),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "MM",
-                        fontFamily = SpaceGrotesk,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = scheme.accent
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                MonoLabel(
-                    text = "LEDGER // 01",
-                    color = scheme.secondaryLabel,
-                    modifier = Modifier.weight(1f)
-                )
                 IconButton(onClick = onToggleHideAmounts, modifier = Modifier.size(44.dp)) {
                     Icon(
                         imageVector = if (hideAmounts) Icons.Default.VisibilityOff else Icons.Default.Visibility,
@@ -157,13 +141,13 @@ fun HomeScreen(
             }
         }
 
-        // ── Month spend hero ────────────────────────────────────────────
+        // ── Month spend hero — the month is the bold headline ────────────
         item {
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 KineticHeader(
-                    lead = "$monthName spend",
-                    headline = "Ledger",
-                    headlineSize = 30.sp
+                    lead = "Monthly spend",
+                    headline = monthName,
+                    headlineSize = 34.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 LedgerAmount(
@@ -175,7 +159,7 @@ fun HomeScreen(
             }
         }
 
-        // ── Recent transactions drawer — full-bleed slab block ──────────
+        // ── Full transaction history, grouped by month ──────────────────
         item {
             Row(
                 modifier = Modifier
@@ -184,7 +168,7 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 MonoLabel(
-                    text = "Recent ledger",
+                    text = "History",
                     color = scheme.secondaryLabel,
                     modifier = Modifier.weight(1f)
                 )
@@ -207,7 +191,7 @@ fun HomeScreen(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
-        } else if (filteredTxs.isEmpty()) {
+        } else if (allTxs.isEmpty()) {
             item {
                 Column(
                     modifier = Modifier
@@ -233,35 +217,46 @@ fun HomeScreen(
                     )
                 }
             }
-        } else {
-            val visible = if (showAll) filteredTxs.take(20) else filteredTxs.take(6)
+        } else if (filteredTxs.isEmpty()) {
             item {
-                Column(
+                MonoLabel(
+                    text = "No entries for this filter",
+                    color = scheme.secondaryLabel,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(scheme.slab)
-                ) {
-                    visible.forEachIndexed { i, tx ->
-                        LedgerRow(
-                            transaction = tx,
-                            category = categoriesMap[tx.categoryId],
-                            onClick = { onNavigateToEditTransaction(tx.id) }
-                        )
-                        if (i < visible.lastIndex) Hairline(color = scheme.onSlab.copy(alpha = 0.14f))
-                    }
-                    if (filteredTxs.size > 6) {
-                        Hairline(color = scheme.onSlab.copy(alpha = 0.14f))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { showAll = !showAll }
-                                .padding(vertical = 16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            MonoLabel(
-                                text = if (showAll) "SHOW LESS ∧" else "SHOW MORE ∨",
-                                color = scheme.onSlab
+                        .padding(horizontal = 16.dp)
+                )
+            }
+        } else {
+            monthGroups.forEach { (monthKey, txs) ->
+                val monthTotal = txs
+                    .filter { it.type == TransactionType.EXPENSE }
+                    .sumOf { it.amount }
+                item(key = "month-$monthKey") {
+                    MonoLabel(
+                        text = FormatUtils.formatMonth(monthKey) +
+                            " · " + FormatUtils.formatCurrency(monthTotal),
+                        color = scheme.secondaryLabel,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    )
+                }
+                item(key = "rows-$monthKey") {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(scheme.slab)
+                    ) {
+                        txs.forEachIndexed { i, tx ->
+                            LedgerRow(
+                                transaction = tx,
+                                category = categoriesMap[tx.categoryId],
+                                onClick = { onNavigateToEditTransaction(tx.id) }
                             )
+                            if (i < txs.lastIndex) {
+                                Hairline(color = scheme.onSlab.copy(alpha = 0.14f))
+                            }
                         }
                     }
                 }
@@ -286,6 +281,15 @@ fun HomeScreen(
         title = "First entry!",
         subtitle = "Your money story starts here.",
         onDone = { showConfetti = false }
+    )
+}
+
+/** Month key `yyyy-MM` for grouping history (matches FormatUtils keys). */
+private fun monthKeyOf(date: Long): String {
+    val cal = java.util.Calendar.getInstance().apply { timeInMillis = date }
+    return String.format(
+        Locale.US, "%04d-%02d",
+        cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH) + 1
     )
 }
 

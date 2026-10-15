@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.18.0] - 2026-10-15 — History home
+
+**Home becomes the full backtrackable ledger**
+- Removed the MM monogram + `LEDGER // 01` branding row (privacy toggle
+  and settings icon stay, right-aligned).
+- The month is now the bold hero headline (`Monthly spend / October`)
+  above the amount.
+- Recent-ledger drawer replaced with the full transaction history grouped
+  by month, newest first — each month gets a `MONTH YYYY · ₹total` header
+  over its full-bleed slab block; FILTER (ALL/OUT/IN) still applies.
+
 ## [v1.17.0] - 2026-10-14 — Light mode only
 
 **The Sage/Paper Kinetic Ledger is now the only runtime theme**

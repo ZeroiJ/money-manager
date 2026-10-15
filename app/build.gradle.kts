@@ -14,8 +14,8 @@ android {
         applicationId = "com.example.moneymanager"
         minSdk = 26
         targetSdk = 36
-        versionCode = 22
-        versionName = "1.17.0"
+        versionCode = 23
+        versionName = "1.18.0"
     }
 
     buildTypes {

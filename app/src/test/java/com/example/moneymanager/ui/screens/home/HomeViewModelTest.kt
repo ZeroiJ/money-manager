@@ -146,6 +146,20 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun testAllTransactions_ReturnsFullHistoryUncapped() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.allTransactions.collect() }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.recentTransactions.collect() }
+
+        val now = System.currentTimeMillis()
+        val twelve = (1L..12L).map { id -> tx(id, id * 10.0, "Tx $id", now) }
+        fakeDao.insertTransactions(twelve)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(12, viewModel.allTransactions.value.size)
+        assertEquals(10, viewModel.recentTransactions.value.size)
+    }
+
+    @Test
     fun testLoadError_surfacedAndRetryable() = runTest {
         fakeDao.failReads = true
         val failingVm = HomeViewModel(fakeDao)

@@ -30,9 +30,11 @@ The skill speaks SwiftUI/UIKit; translate, never water down (`cross-platform.md`
    ZERO rounded corners anywhere (RoundedCornerShape banned, use
    `RectangleShape`; toggles are square sliders, not pills) since v1.16.0;
    3-tab IA `01 HOME / 02 EXPENSE / 03 REPORTS` (Budget tab removed in
-   v1.16.0 — budget data still backed up/exported); Home's recent ledger
-   is edge-to-edge single-tone slab rows, hairline-separated, no icons;
-   ochre/terracotta surfaces take FIXED ink text.
+   v1.16.0 — budget data still backed up/exported); Home's history is the
+   FULL transaction feed grouped by month, newest first (`MONTH YYYY ·
+   ₹total` headers over full-bleed single-tone slab rows, hairline-separated,
+   no icons) since v1.18.0; Home hero is the bold month name (no branding
+   row); ochre/terracotta surfaces take FIXED ink text.
 
 1. **Edge-to-edge contract** (from `layout.md › Guides and safe areas` +
    `layout.md › Visual hierarchy`): background extends full-bleed beneath all
