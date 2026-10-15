@@ -2,7 +2,6 @@ package com.example.moneymanager.ui.ios
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,8 +37,13 @@ import com.example.moneymanager.theme.Ios
 import com.example.moneymanager.theme.IosScheme
 import com.example.moneymanager.theme.PaperMono
 
+/**
+ * The app is LIGHT-MODE ONLY (Sage/Paper Kinetic Ledger). The Obsidian dark
+ * variant still exists in [Ios.Dark] but is never selected — the rich palette
+ * reads best on the light canvas. Ignore the system dark setting entirely.
+ */
 @Composable
-fun currentScheme(dark: Boolean = isSystemInDarkTheme()): IosScheme =
+fun currentScheme(dark: Boolean = false): IosScheme =
     if (dark) Ios.Dark else Ios.Light
 
 data class IosTabItem(val title: String, val icon: ImageVector)

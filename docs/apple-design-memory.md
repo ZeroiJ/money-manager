@@ -23,7 +23,8 @@ The skill speaks SwiftUI/UIKit; translate, never water down (`cross-platform.md`
    plan `docs/superpowers/plans/2026-10-13-kinetic-ledger-redesign.md`), the
    apple-design craft rules below sit ON TOP of it (they govern how, not what):
    sage canvas `#B5BFAE` / paper `#F3FCEA` / slab `#1E241C`, ochre `#D9C852`,
-   terracotta `#D76449`, maroon `#4A1510`, Obsidian dark; Space Grotesk UI +
+   terracotta `#D76449`, maroon `#4A1510`; **light mode only since v1.17.0**
+   (Obsidian tokens remain but are never selected at runtime); Space Grotesk UI +
    PaperMono tabular figures (Playfair serif retired); single-decimal
    `₹1,951.0` w/ greyed decimal; barcode tick meters; **strictly boxes** —
    ZERO rounded corners anywhere (RoundedCornerShape banned, use
@@ -31,7 +32,7 @@ The skill speaks SwiftUI/UIKit; translate, never water down (`cross-platform.md`
    3-tab IA `01 HOME / 02 EXPENSE / 03 REPORTS` (Budget tab removed in
    v1.16.0 — budget data still backed up/exported); Home's recent ledger
    is edge-to-edge single-tone slab rows, hairline-separated, no icons;
-   ochre/terracotta surfaces take FIXED ink text in both modes.
+   ochre/terracotta surfaces take FIXED ink text.
 
 1. **Edge-to-edge contract** (from `layout.md › Guides and safe areas` +
    `layout.md › Visual hierarchy`): background extends full-bleed beneath all

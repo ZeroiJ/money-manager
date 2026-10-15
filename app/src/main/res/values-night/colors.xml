@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Launch/splash background: near-black navy (dark) so there is no white flash. -->
-    <color name="splash_bg">#FF060B24</color>
-</resources>

@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.17.0] - 2026-10-14 — Light mode only
+
+**The Sage/Paper Kinetic Ledger is now the only runtime theme**
+- Removed system dark-mode selection: `currentScheme()` defaults to light,
+  `MainActivity` uses only the light Material3 scheme, ambient/mesh
+  gradients are pinned to Sage, and the `values-night` splash override is
+  gone.
+- Status/navigation-bar icons are forced to the light-bar style so they
+  stay visible on the light canvas even when Android is in dark mode.
+- Verified on-device with system night mode forced on: Home and Expense
+  still render in light Sage/Paper.
+
 ## [v1.16.0] - 2026-10-13 — Strictly boxes
 
 **Hardening the Kinetic Ledger into an all-square system + IA slim-down**

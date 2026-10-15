@@ -3,7 +3,6 @@ package com.example.moneymanager.ui.navigation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -82,7 +81,8 @@ fun AppNavGraph(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val context = LocalContext.current
-    val dark = isSystemInDarkTheme()
+    // Light-mode only: ambient mesh always uses the Sage gradient (v1.17.0).
+    val dark = false
     val settingsVm: com.example.moneymanager.ui.screens.settings.SettingsViewModel = hiltViewModel()
     val ambientEnabled by settingsVm.ambientEnabled.collectAsState()
     val hideAmounts by settingsVm.hideAmounts.collectAsState()
