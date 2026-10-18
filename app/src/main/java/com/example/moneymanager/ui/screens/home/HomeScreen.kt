@@ -16,12 +16,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,6 +41,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -96,6 +107,9 @@ fun HomeScreen(
         filteredTxs.groupBy { monthKeyOf(it.date) }.toSortedMap(compareByDescending { it })
     }
 
+    // Swipe-right on a ledger row -> confirm dialog -> dao delete (v1.21).
+    var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
+
     // First-entry celebration: empty (after load) -> non-empty, once ever.
     var showConfetti by remember { mutableStateOf(false) }
     var celebratedFirstEntry by rememberSaveable { mutableStateOf(false) }
@@ -112,7 +126,7 @@ fun HomeScreen(
     // History blocks run edge-to-edge; every other block keeps 16dp insets.
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp),
+        contentPadding = PaddingValues(top = 44.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         // ── Utility row (privacy toggle + settings) ─────────────────────
@@ -170,7 +184,10 @@ fun HomeScreen(
                 MonoLabel(
                     text = "History",
                     color = scheme.secondaryLabel,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .pressShrink()
+                        .clickable(onClick = onNavigateToTransactions)
                 )
                 LedgerPill(
                     text = filterLabels[filterIndex],
@@ -249,10 +266,15 @@ fun HomeScreen(
                             .background(scheme.slab)
                     ) {
                         txs.forEachIndexed { i, tx ->
-                            LedgerRow(
-                                transaction = tx,
-                                category = categoriesMap[tx.categoryId],
-                                onClick = { onNavigateToEditTransaction(tx.id) }
+                            SwipeToDeleteRow(
+                                onSwipeToDelete = { transactionToDelete = tx },
+                                content = {
+                                    LedgerRow(
+                                        transaction = tx,
+                                        category = categoriesMap[tx.categoryId],
+                                        onClick = { onNavigateToEditTransaction(tx.id) }
+                                    )
+                                }
                             )
                             if (i < txs.lastIndex) {
                                 Hairline(color = scheme.onSlab.copy(alpha = 0.14f))
@@ -271,6 +293,49 @@ fun HomeScreen(
         subtitle = "Your money story starts here.",
         onDone = { showConfetti = false }
     )
+
+    if (transactionToDelete != null) {
+        val tx = transactionToDelete!!
+        AlertDialog(
+            onDismissRequest = { transactionToDelete = null },
+            shape = RectangleShape,
+            containerColor = scheme.card,
+            title = {
+                Text(
+                    text = "Delete transaction",
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 17.sp,
+                    color = scheme.label
+                )
+            },
+            text = {
+                Text(
+                    text = "Delete record for ${FormatUtils.formatCurrency(tx.amount)}?",
+                    fontFamily = SpaceGrotesk,
+                    fontSize = 15.sp,
+                    color = scheme.label
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteTransaction(tx)
+                        transactionToDelete = null
+                    },
+                    shape = RectangleShape,
+                    colors = ButtonDefaults.buttonColors(containerColor = scheme.destructive)
+                ) {
+                    Text("Delete", fontFamily = SpaceGrotesk, fontWeight = FontWeight.SemiBold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { transactionToDelete = null }) {
+                    Text("Cancel", fontFamily = SpaceGrotesk, color = scheme.accent)
+                }
+            }
+        )
+    }
 }
 
 /** Month key `yyyy-MM` for grouping history (matches FormatUtils keys). */
@@ -334,5 +399,60 @@ private fun LedgerRow(
             fontSize = 15.sp,
             rolling = false
         )
+    }
+}
+
+/**
+ * v1.21 delete gesture: swipe a ledger row RIGHT — the slab slides right
+ * and the destructive red bar is revealed underneath, following the finger.
+ * Release past the threshold opens the confirm dialog; the row always snaps
+ * back and is only removed once the dialog's Delete is tapped. Right-only.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeToDeleteRow(
+    onSwipeToDelete: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    val scheme = currentScheme()
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.Settled) {
+                false
+            } else {
+                onSwipeToDelete()
+                false
+            }
+        }
+    )
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = true,
+        enableDismissFromEndToStart = false,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(scheme.destructive),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color.White,
+                    modifier = Modifier.padding(start = 20.dp)
+                )
+            }
+        }
+    ) {
+        // Opaque slab layer: masks the red background while settled (rows
+        // draw over the parent slab, so without this it bleeds through).
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(scheme.slab)
+        ) {
+            content()
+        }
     }
 }

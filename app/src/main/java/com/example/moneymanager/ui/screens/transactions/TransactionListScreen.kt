@@ -88,7 +88,7 @@ fun TransactionListScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 8.dp)
+            .padding(top = 44.dp)
     ) {
         KineticHeader(
             lead = "All recent",
@@ -326,6 +326,9 @@ private fun DeletableRow(
 ) {
     val scheme = currentScheme()
     val expense = tx.type == TransactionType.EXPENSE
+    // Right-swipe = delete (v1.21): the row slides right and the red bar
+    // is revealed underneath, following the finger. Release past the
+    // threshold -> confirm dialog; always snaps back afterwards.
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.Settled) {
@@ -338,19 +341,20 @@ private fun DeletableRow(
     )
     SwipeToDismissBox(
         state = dismissState,
-        enableDismissFromStartToEnd = false,
+        enableDismissFromStartToEnd = true,
+        enableDismissFromEndToStart = false,
         backgroundContent = {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(scheme.destructive),
-                contentAlignment = Alignment.CenterEnd
+                contentAlignment = Alignment.CenterStart
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete",
                     tint = Color.White,
-                    modifier = Modifier.padding(end = 20.dp)
+                    modifier = Modifier.padding(start = 20.dp)
                 )
             }
         }

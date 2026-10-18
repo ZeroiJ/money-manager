@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,7 +30,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -43,19 +41,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.moneymanager.theme.SpaceGrotesk
-import com.example.moneymanager.theme.IosScheme
 import com.example.moneymanager.ui.ios.IosAmount
-import com.example.moneymanager.ui.ios.IosProgressBar
-import com.example.moneymanager.ui.ios.IosSegmented
 import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.ui.ios.maskedCurrency
-import com.example.moneymanager.ui.kinetic.KineticHeader
 import com.example.moneymanager.ui.kinetic.Hairline
 import com.example.moneymanager.ui.kinetic.LedgerAmount
 import com.example.moneymanager.ui.kinetic.LedgerPill
+import com.example.moneymanager.ui.kinetic.LedgerSegmented
 import com.example.moneymanager.ui.kinetic.MonoLabel
 import com.example.moneymanager.util.FormatUtils
 
+/**
+ * Reports on dark green (v1.21.0): one continuous slab surface, paper ink,
+ * hairline dividers, monochrome paper-step data palette. No cards, no
+ * candy colors. Same metrics and logic as before.
+ */
 @Composable
 fun ReportsScreen(
     viewModel: ReportsViewModel = hiltViewModel()
@@ -70,134 +70,146 @@ fun ReportsScreen(
     val heatmapDays by viewModel.monthlyCalendarHeatmap.collectAsState()
     val settlements by viewModel.householdSettlements.collectAsState()
     val scheme = currentScheme()
+    val periods = ReportPeriod.values()
+
+    // Single-ink voice on the slab: paper type, dim metadata, faint rules.
+    val ink = scheme.onSlab
+    val dim = scheme.onSlabSecondary
+    val faint = scheme.onSlab.copy(alpha = 0.2f)
+    val deep = scheme.slab
 
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     var selectedHeatmapDay by remember { mutableStateOf<CalendarDayHeatmap?>(null) }
-    val periods = ReportPeriod.values()
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(deep),
+        contentPadding = PaddingValues(top = 44.dp, bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         item {
-            KineticHeader(
-                lead = "Audit",
-                headline = "Reports",
-                headlineSize = 28.sp
-            )
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Text(
+                    text = "Audit",
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 20.sp,
+                    color = dim
+                )
+                Text(
+                    text = "Reports",
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp,
+                    color = ink
+                )
+            }
         }
 
         item {
-            IosSegmented(
+            LedgerSegmented(
                 options = listOf("WEEK", "MONTH", "QTR", "YEAR", "ALL"),
                 selected = periods.indexOf(selectedPeriod).coerceAtLeast(0),
                 onSelect = { viewModel.selectedPeriod.value = periods[it] },
-                scheme = scheme
+                modifier = Modifier.padding(horizontal = 16.dp),
+                ink = ink,
+                paper = deep
             )
         }
 
-        // ── Accumulated outflow metric (PRD §4.4) ───────────────────────
+        // ── Accumulated outflow hero ──────────────────────────────────
         item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(scheme.card)
-                    .padding(16.dp)
-            ) {
-                MonoLabel(text = "Accumulated outflow", color = scheme.secondaryLabel)
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                MonoLabel(text = "Accumulated outflow", color = dim)
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     LedgerAmount(
                         text = FormatUtils.formatLedger(totalExpense),
                         fontSize = 40.sp,
-                        color = scheme.label,
-                        dimmedColor = scheme.secondaryLabel
+                        color = ink,
+                        dimmedColor = dim
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     LedgerPill(
                         text = "IN ${FormatUtils.formatLedger(totalIncome)}",
-                        container = scheme.accent,
-                        content = scheme.label
+                        container = ink,
+                        content = deep
                     )
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                Hairline()
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.weight(1f)) {
-                        MonoLabel(text = "Personal", color = scheme.secondaryLabel)
+                        MonoLabel(text = "Personal", color = dim)
                         LedgerAmount(
                             text = FormatUtils.formatLedger(personalSpend),
                             fontSize = 17.sp,
-                            color = scheme.label,
-                            dimmedColor = scheme.secondaryLabel
+                            color = ink,
+                            dimmedColor = dim
                         )
                     }
                     Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                        MonoLabel(text = "Household", color = scheme.secondaryLabel)
+                        MonoLabel(text = "Household", color = dim)
                         LedgerAmount(
                             text = FormatUtils.formatLedger(householdSpend),
                             fontSize = 17.sp,
-                            color = scheme.label,
-                            dimmedColor = scheme.secondaryLabel
+                            color = ink,
+                            dimmedColor = dim
                         )
                     }
                 }
             }
         }
 
+        item { Hairline(color = faint) }
+
         item {
-            IosSegmented(
+            LedgerSegmented(
                 options = listOf("Category", "Trend", "Heatmap"),
                 selected = selectedTab,
                 onSelect = { selectedTab = it },
-                scheme = scheme
+                modifier = Modifier.padding(horizontal = 16.dp),
+                ink = ink,
+                paper = deep
             )
         }
 
         when (selectedTab) {
             0 -> {
                 item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RectangleShape)
-                            .background(scheme.card)
-                            .padding(16.dp)
-                    ) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                         ScopeRow(
                             label = "Personal",
                             amount = personalSpend,
-                            color = scheme.accent,
-                            scheme = scheme
+                            dot = ink,
+                            ink = ink,
+                            dim = dim
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         ScopeRow(
                             label = "Household",
                             amount = householdSpend,
-                            color = Color(0xFFFF9500),
-                            scheme = scheme
+                            dot = ink.copy(alpha = 0.45f),
+                            ink = ink,
+                            dim = dim
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         val total = (personalSpend + householdSpend).coerceAtLeast(1.0)
                         val personalFraction =
                             (personalSpend / total).toFloat().coerceIn(0f, 1f)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(10.dp)
-                                .clip(RectangleShape)
-                                .background(scheme.secondaryFill)
-                        ) {
-                            if (personalSpend > 0) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth(fraction = personalFraction.coerceAtLeast(0.01f))
-                                        .height(10.dp)
-                                        .background(scheme.accent)
-                                )
-                            }
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(fraction = personalFraction.coerceAtLeast(0.01f))
+                                    .height(10.dp)
+                                    .background(ink)
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(10.dp)
+                                    .background(faint)
+                            )
                         }
                     }
                 }
@@ -205,19 +217,12 @@ fun ReportsScreen(
                 if (categoryReports.isNotEmpty()) {
                     item {
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RectangleShape)
-                                .background(scheme.card)
-                                .padding(16.dp),
+                            modifier = Modifier.padding(horizontal = 16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
+                            MonoLabel(
                                 text = "Spending by category",
-                                fontFamily = SpaceGrotesk,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 17.sp,
-                                color = scheme.label,
+                                color = dim,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -229,18 +234,19 @@ fun ReportsScreen(
                                 IosDonutChart(
                                     categories = categoryReports,
                                     totalSpend = totalExpense,
-                                    scheme = scheme
+                                    ring = ink,
+                                    faint = faint
                                 )
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
                                         text = "SPENT",
                                         fontFamily = SpaceGrotesk,
                                         fontSize = 11.sp,
-                                        color = scheme.secondaryLabel
+                                        color = dim
                                     )
                                     IosAmount(
                                         text = FormatUtils.formatLedger(totalExpense),
-                                        color = scheme.label,
+                                        color = ink,
                                         fontSize = 17.sp
                                     )
                                 }
@@ -256,7 +262,7 @@ fun ReportsScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                val palette = donutPalette(scheme)
+                                val palette = monoPalette(ink)
                                 visible.forEachIndexed { index, catReport ->
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
@@ -265,7 +271,6 @@ fun ReportsScreen(
                                         Box(
                                             modifier = Modifier
                                                 .size(10.dp)
-                                                .clip(RectangleShape)
                                                 .background(palette[index % palette.size])
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
@@ -275,12 +280,12 @@ fun ReportsScreen(
                                             fontFamily = SpaceGrotesk,
                                             fontWeight = FontWeight.Medium,
                                             fontSize = 15.sp,
-                                            color = scheme.label,
+                                            color = ink,
                                             maxLines = 1
                                         )
                                         IosAmount(
                                             text = FormatUtils.formatLedger(catReport.amount),
-                                            color = scheme.label,
+                                            color = ink,
                                             fontSize = 15.sp
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
@@ -288,7 +293,7 @@ fun ReportsScreen(
                                             text = "${(catReport.percentage * 100).toInt()}%",
                                             fontFamily = SpaceGrotesk,
                                             fontSize = 13.sp,
-                                            color = scheme.secondaryLabel
+                                            color = dim
                                         )
                                     }
                                 }
@@ -304,7 +309,7 @@ fun ReportsScreen(
                                             fontFamily = SpaceGrotesk,
                                             fontWeight = FontWeight.Medium,
                                             fontSize = 15.sp,
-                                            color = scheme.accent
+                                            color = ink
                                         )
                                     }
                                 }
@@ -316,20 +321,10 @@ fun ReportsScreen(
                 if (settlements.isNotEmpty()) {
                     item {
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RectangleShape)
-                                .background(scheme.card)
-                                .padding(16.dp),
+                            modifier = Modifier.padding(horizontal = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Text(
-                                text = "Settle up",
-                                fontFamily = SpaceGrotesk,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 17.sp,
-                                color = scheme.label
-                            )
+                            MonoLabel(text = "Settle up", color = dim)
                             settlements.forEach { balance ->
                                 val isOwed = balance.netBalance > 0
                                 Row(
@@ -343,13 +338,13 @@ fun ReportsScreen(
                                             fontFamily = SpaceGrotesk,
                                             fontWeight = FontWeight.Medium,
                                             fontSize = 15.sp,
-                                            color = scheme.label
+                                            color = ink
                                         )
                                         Text(
                                             text = "Paid ${maskedCurrency(balance.totalPaid)} · Share ${maskedCurrency(balance.fairShare)}",
                                             fontFamily = SpaceGrotesk,
                                             fontSize = 13.sp,
-                                            color = scheme.secondaryLabel
+                                            color = dim
                                         )
                                     }
                                     Column(horizontalAlignment = Alignment.End) {
@@ -358,14 +353,14 @@ fun ReportsScreen(
                                                 FormatUtils.formatLedger(
                                                     if (isOwed) balance.netBalance else -balance.netBalance
                                                 ),
-                                            color = if (isOwed) scheme.success else scheme.destructive,
+                                            color = ink,
                                             fontSize = 15.sp
                                         )
                                         Text(
                                             text = if (isOwed) "Gets back" else "Owes",
                                             fontFamily = SpaceGrotesk,
                                             fontSize = 11.sp,
-                                            color = if (isOwed) scheme.success else scheme.destructive
+                                            color = dim
                                         )
                                     }
                                 }
@@ -376,41 +371,17 @@ fun ReportsScreen(
             }
             1 -> {
                 item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RectangleShape)
-                            .background(scheme.card)
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = "Daily spend",
-                            fontFamily = SpaceGrotesk,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 17.sp,
-                            color = scheme.label
-                        )
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        MonoLabel(text = "Daily spend", color = dim)
                         Spacer(modifier = Modifier.height(10.dp))
-                        IosTrendBars(days = dailyTrend, scheme = scheme)
+                        IosTrendBars(days = dailyTrend, ink = ink, dim = dim, faint = faint)
                     }
                 }
             }
             else -> {
                 item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RectangleShape)
-                            .background(scheme.card)
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = "Spend calendar",
-                            fontFamily = SpaceGrotesk,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 17.sp,
-                            color = scheme.label
-                        )
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        MonoLabel(text = "Spend calendar", color = dim)
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Row(
@@ -423,7 +394,7 @@ fun ReportsScreen(
                                     fontFamily = SpaceGrotesk,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 11.sp,
-                                    color = scheme.secondaryLabel,
+                                    color = dim,
                                     modifier = Modifier.width(36.dp),
                                     textAlign = TextAlign.Center
                                 )
@@ -440,17 +411,16 @@ fun ReportsScreen(
                         ) {
                             items(heatmapDays) { day ->
                                 val cellColor = when (day.intensityLevel) {
-                                    0 -> scheme.secondaryFill
-                                    1 -> scheme.accent.copy(alpha = 0.25f)
-                                    2 -> scheme.accent.copy(alpha = 0.55f)
-                                    3 -> Color(0xFFFF9500)
-                                    else -> scheme.destructive
+                                    0 -> ink.copy(alpha = 0.08f)
+                                    1 -> ink.copy(alpha = 0.30f)
+                                    2 -> ink.copy(alpha = 0.55f)
+                                    3 -> ink.copy(alpha = 0.80f)
+                                    else -> ink
                                 }
-                                val onStrong = day.intensityLevel >= 3
+                                val strongText = day.intensityLevel >= 3
                                 Box(
                                     modifier = Modifier
                                         .size(36.dp)
-                                        .clip(RectangleShape)
                                         .background(cellColor)
                                         .clickable { selectedHeatmapDay = day },
                                     contentAlignment = Alignment.Center
@@ -460,7 +430,7 @@ fun ReportsScreen(
                                         fontFamily = SpaceGrotesk,
                                         fontWeight = if (day.intensityLevel > 0) FontWeight.SemiBold else FontWeight.Normal,
                                         fontSize = 12.sp,
-                                        color = if (onStrong) Color.White else scheme.label
+                                        color = if (strongText) deep else ink
                                     )
                                 }
                             }
@@ -472,8 +442,7 @@ fun ReportsScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RectangleShape)
-                                    .background(scheme.secondaryFill)
+                                    .background(ink.copy(alpha = 0.10f))
                                     .padding(12.dp)
                             ) {
                                 Text(
@@ -481,7 +450,7 @@ fun ReportsScreen(
                                     fontFamily = SpaceGrotesk,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 15.sp,
-                                    color = scheme.label
+                                    color = ink
                                 )
                             }
                         }
@@ -493,7 +462,13 @@ fun ReportsScreen(
 }
 
 @Composable
-private fun ScopeRow(label: String, amount: Double, color: Color, scheme: IosScheme) {
+private fun ScopeRow(
+    label: String,
+    amount: Double,
+    dot: Color,
+    ink: Color,
+    dim: Color
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -503,8 +478,7 @@ private fun ScopeRow(label: String, amount: Double, color: Color, scheme: IosSch
             Box(
                 modifier = Modifier
                     .size(10.dp)
-                    .clip(RectangleShape)
-                    .background(color)
+                    .background(dot)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -512,38 +486,34 @@ private fun ScopeRow(label: String, amount: Double, color: Color, scheme: IosSch
                 fontFamily = SpaceGrotesk,
                 fontWeight = FontWeight.Medium,
                 fontSize = 15.sp,
-                color = scheme.label
+                color = ink
             )
         }
         LedgerAmount(
             text = FormatUtils.formatLedger(amount),
             fontSize = 15.sp,
-            color = scheme.label,
-            dimmedColor = scheme.secondaryLabel
+            color = ink,
+            dimmedColor = dim
         )
     }
 }
 
-// Data palette (Lens: charts keep their own palette, but Kinetic's is earthy —
-// ochre/terracotta/olive family, no candy purples or sky blues).
-private fun donutPalette(scheme: IosScheme): List<Color> = listOf(
-    scheme.accent,          // ochre
-    Color(0xFF3F7D4E),      // ledger green
-    scheme.destructive,     // terracotta
-    Color(0xFF7A8471),      // sage slate
-    Color(0xFFB98B4A),      // brass
-    scheme.maroon,          // deep maroon
-    Color(0xFF5C6B54),      // olive
-    scheme.secondaryLabel
+// Monochrome paper-step palette: rank reads as brightness, not hue.
+private fun monoPalette(ink: Color): List<Color> = listOf(
+    ink,
+    ink.copy(alpha = 0.65f),
+    ink.copy(alpha = 0.40f),
+    ink.copy(alpha = 0.25f)
 )
 
 @Composable
 fun IosDonutChart(
     categories: List<CategorySpendReport>,
     totalSpend: Double,
-    scheme: IosScheme
+    ring: Color,
+    faint: Color
 ) {
-    val colors = donutPalette(scheme)
+    val colors = monoPalette(ring)
     Canvas(modifier = Modifier.fillMaxSize()) {
         val strokeWidth = 18.dp.toPx()
         val diameter = size.minDimension - strokeWidth
@@ -554,7 +524,7 @@ fun IosDonutChart(
 
         if (totalSpend <= 0) {
             drawCircle(
-                color = colors.last(),
+                color = faint,
                 radius = radius,
                 center = center,
                 style = Stroke(width = strokeWidth)
@@ -580,15 +550,15 @@ fun IosDonutChart(
     }
 }
 
-/** Rounded daily bars with a top-3 peak list. Replaces the ASCII flame graph. */
+/** Paper bars with a top-3 peak list — peak reads as full height, not hue. */
 @Composable
-private fun IosTrendBars(days: List<DailySpendPoint>, scheme: IosScheme) {
+private fun IosTrendBars(days: List<DailySpendPoint>, ink: Color, dim: Color, faint: Color) {
     if (days.isEmpty() || days.all { it.amount <= 0 }) {
         Text(
             text = "No expenses in the selected period.",
             fontFamily = SpaceGrotesk,
             fontSize = 15.sp,
-            color = scheme.secondaryLabel,
+            color = dim,
             modifier = Modifier.padding(vertical = 16.dp)
         )
         return
@@ -608,10 +578,7 @@ private fun IosTrendBars(days: List<DailySpendPoint>, scheme: IosScheme) {
                 modifier = Modifier
                     .weight(1f)
                     .height((8 + ratio * 112).dp)
-                    .clip(RectangleShape)
-                    .background(
-                        if (ratio >= 0.98f) Color(0xFFFF9500) else scheme.accent
-                    )
+                    .background(ink)
             )
         }
     }
@@ -623,7 +590,7 @@ private fun IosTrendBars(days: List<DailySpendPoint>, scheme: IosScheme) {
         text = "Highest days",
         fontFamily = SpaceGrotesk,
         fontSize = 13.sp,
-        color = scheme.secondaryLabel
+        color = dim
     )
     Spacer(modifier = Modifier.height(6.dp))
     top.forEach { day ->
@@ -637,21 +604,44 @@ private fun IosTrendBars(days: List<DailySpendPoint>, scheme: IosScheme) {
                 text = "Day ${day.dayNumber}",
                 fontFamily = SpaceGrotesk,
                 fontSize = 13.sp,
-                color = scheme.secondaryLabel,
+                color = dim,
                 modifier = Modifier.width(56.dp)
             )
             IosAmount(
                 text = FormatUtils.formatLedger(day.amount),
-                color = scheme.label,
+                color = ink,
                 fontSize = 13.sp
             )
             Spacer(modifier = Modifier.width(8.dp))
-            IosProgressBar(
-                progress = (day.amount / maxAmount).toFloat(),
-                overBudget = false,
-                scheme = scheme,
+            SliverBar(
+                fraction = (day.amount / maxAmount).toFloat(),
+                ink = ink,
+                faint = faint,
                 modifier = Modifier.weight(1f)
             )
         }
+    }
+}
+
+/** Hairline meter: faint track, paper fill. Replaces the red/green bar. */
+@Composable
+private fun SliverBar(
+    fraction: Float,
+    ink: Color,
+    faint: Color,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(6.dp)
+            .background(faint)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(fraction = fraction.coerceIn(0f, 1f))
+                .height(6.dp)
+                .background(ink)
+        )
     }
 }

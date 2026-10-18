@@ -1,5 +1,6 @@
 package com.example.moneymanager.ui.screens.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moneymanager.data.dao.MoneyDao
@@ -7,13 +8,17 @@ import com.example.moneymanager.data.model.Category
 import com.example.moneymanager.data.model.Transaction
 import com.example.moneymanager.util.ErrorBus
 import com.example.moneymanager.util.ErrorKind
+import com.example.moneymanager.util.ReceiptStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val moneyDao: MoneyDao
 ) : ViewModel() {
 
@@ -33,6 +38,22 @@ class HomeViewModel @Inject constructor(
     fun retryLoad() {
         _loadError.value = null
         refreshTick.value++
+    }
+
+    // Swipe-right delete on the Home ledger rows (v1.21). Room's invalidation
+    // re-emits every derived flow (history, month spend) after the row vanishes.
+    fun deleteTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            try {
+                transaction.receiptUri?.let { ReceiptStorage.deleteReceipt(appContext, it) }
+                moneyDao.deleteTransaction(transaction)
+            } catch (e: Exception) {
+                ErrorBus.report(
+                    ErrorKind.DB_WRITE, "Home",
+                    "Couldn't delete the transaction", e
+                )
+            }
+        }
     }
 
     private val transactionsSource: Flow<List<Transaction>> =

@@ -80,6 +80,16 @@ fun AppNavGraph(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val context = LocalContext.current
+    val layoutDirection = androidx.compose.ui.platform.LocalLayoutDirection.current
+    // Edge-to-edge top (v1.21.0): every screen draws behind the status bar
+    // in its own background — no seam rectangle. Reports is dark green, so
+    // it gets light status icons; the light tabs keep dark icons.
+    androidx.compose.runtime.LaunchedEffect(currentRoute) {
+        (context as? android.app.Activity)?.window?.let { window ->
+            androidx.core.view.WindowInsetsControllerCompat(window, window.decorView)
+                .isAppearanceLightStatusBars = currentRoute != Screen.Reports.route
+        }
+    }
     // Light-mode only: ambient mesh always uses the Sage gradient (v1.17.0).
     val dark = false
     val settingsVm: com.example.moneymanager.ui.screens.settings.SettingsViewModel = hiltViewModel()
@@ -90,8 +100,9 @@ fun AppNavGraph(
 
     Box(modifier = Modifier.fillMaxSize()) {
         AmbientBackground(mode = ambientMode, dark = dark)
-        // Default insets: content gets top + horizontal safe-drawing padding.
-        // The bottom inset is owned by IosCommitRail (not double-padded here).
+        // Edge-to-edge: content draws behind the status bar (each screen
+        // owns its top clearance in its own background). Only horizontal +
+        // bottom insets are padded here; the bottom inset clears the rail.
         val snackbarHostState = androidx.compose.runtime.remember { SnackbarHostState() }
         // One global listener: every ErrorBus report becomes a snackbar with a
         // Details action into Settings → Diagnostics. Local-only, no telemetry.
@@ -143,7 +154,11 @@ fun AppNavGraph(
             navController = navController,
             // Widget/SMS preset routes straight into tab 03 (fast capture).
             startDestination = if (presetCategory != null) Screen.Expense.route else Screen.Home.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(
+                start = innerPadding.calculateStartPadding(layoutDirection),
+                end = innerPadding.calculateEndPadding(layoutDirection),
+                bottom = innerPadding.calculateBottomPadding()
+            )
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(

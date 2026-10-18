@@ -2,6 +2,7 @@ package com.example.moneymanager.ui.screens.home
 
 import com.example.moneymanager.data.FakeMoneyDao
 import com.example.moneymanager.data.model.*
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
@@ -30,7 +31,7 @@ class HomeViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeDao = FakeMoneyDao()
-        viewModel = HomeViewModel(fakeDao)
+        viewModel = HomeViewModel(mockk(relaxed = true), fakeDao)
     }
 
     @After
@@ -162,7 +163,7 @@ class HomeViewModelTest {
     @Test
     fun testLoadError_surfacedAndRetryable() = runTest {
         fakeDao.failReads = true
-        val failingVm = HomeViewModel(fakeDao)
+        val failingVm = HomeViewModel(mockk(relaxed = true), fakeDao)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             failingVm.recentTransactions.collect()
         }

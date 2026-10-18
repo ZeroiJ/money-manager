@@ -65,6 +65,7 @@ import com.example.moneymanager.ui.ios.IosAmount
 import com.example.moneymanager.ui.ios.currentScheme
 import com.example.moneymanager.ui.ios.pressShrink
 import com.example.moneymanager.ui.kinetic.Hairline
+import com.example.moneymanager.ui.kinetic.LedgerSegmented
 import com.example.moneymanager.ui.kinetic.MonoLabel
 import com.example.moneymanager.util.FormatUtils
 import com.example.moneymanager.util.Haptics
@@ -131,7 +132,7 @@ fun AddTransactionScreen(
             .background(scheme.paper)
             .verticalScroll(rememberScrollState())
             .imePadding()
-            .padding(top = 8.dp),
+            .padding(top = 44.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         // Back chevron only in edit mode; the tab itself carries no title.
@@ -603,18 +604,21 @@ fun AddTransactionScreen(
         )
 
         // Commit strip — full-bleed ink, paper text.
+        // NOTE: pressShrink must come BEFORE clickable. Its internal
+        // detectTapGestures consumes the up event, so as the inner modifier
+        // it would cancel the clickable and kill the button entirely.
         val saveButtonView = LocalView.current
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(scheme.label)
+                .pressShrink()
                 .clickable {
                     Haptics.saveConfirmed(saveButtonView)
                     viewModel.saveTransaction {
                         onNavigateBack()
                     }
                 }
-                .pressShrink()
                 .padding(vertical = 22.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -626,58 +630,6 @@ fun AddTransactionScreen(
                 letterSpacing = 0.5.sp,
                 color = scheme.paper
             )
-        }
-    }
-}
-
-/**
- * Hairline segmented control for the paper ledger: bordered row, selection
- * by inversion only (ink fill + paper text). 48dp cells.
- */
-@Composable
-private fun LedgerSegmented(
-    options: List<String>,
-    selected: Int,
-    onSelect: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-    scheme: com.example.moneymanager.theme.IosScheme = currentScheme()
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(1.dp, scheme.label)
-    ) {
-        options.forEachIndexed { index, option ->
-            val isSelected = index == selected
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .defaultMinSize(minHeight = 48.dp)
-                    .then(
-                        if (isSelected) Modifier.background(scheme.label)
-                        else Modifier
-                    )
-                    .clickable { onSelect(index) }
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = option,
-                    fontFamily = SpaceGrotesk,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                    fontSize = 15.sp,
-                    color = if (isSelected) scheme.paper else scheme.label,
-                    maxLines = 1
-                )
-            }
-            if (index < options.lastIndex) {
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .defaultMinSize(minHeight = 48.dp)
-                        .background(scheme.label)
-                )
-            }
         }
     }
 }

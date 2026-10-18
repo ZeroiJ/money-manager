@@ -2,11 +2,13 @@ package com.example.moneymanager.ui.kinetic
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -38,6 +40,62 @@ import com.example.moneymanager.ui.ios.currentScheme
 
 /** Fixed ink for type ON ochre/terracotta — never theme-dependent (contrast). */
 val KineticInk = Color(0xFF1E241C)
+
+/**
+ * Hairline segmented control: bordered row, selection by inversion only.
+ * 48dp cells. Shared by the paper Expense form and the dark Reports
+ * screen — both are single-ink surfaces. [ink]/[paper] default to the
+ * theme label/paper; Reports passes onSlab/slab to stay on dark green.
+ */
+@Composable
+fun LedgerSegmented(
+    options: List<String>,
+    selected: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    scheme: IosScheme = currentScheme(),
+    ink: Color = scheme.label,
+    paper: Color = scheme.paper
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(1.dp, ink)
+    ) {
+        options.forEachIndexed { index, option ->
+            val isSelected = index == selected
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .defaultMinSize(minHeight = 48.dp)
+                    .then(
+                        if (isSelected) Modifier.background(ink)
+                        else Modifier
+                    )
+                    .clickable { onSelect(index) }
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = option,
+                    fontFamily = SpaceGrotesk,
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    fontSize = 15.sp,
+                    color = if (isSelected) paper else ink,
+                    maxLines = 1
+                )
+            }
+            if (index < options.lastIndex) {
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .defaultMinSize(minHeight = 48.dp)
+                        .background(ink)
+                )
+            }
+        }
+    }
+}
 
 /** Uppercase monospace micro-label — the technical metadata voice. */
 @Composable
