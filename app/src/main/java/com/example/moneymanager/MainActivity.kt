@@ -1,6 +1,8 @@
 package com.example.moneymanager
 
+import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.SystemBarStyle
@@ -31,6 +33,15 @@ class MainActivity : FragmentActivity() {
       navigationBarStyle = SystemBarStyle.light(transparent, transparent)
     )
     super.onCreate(savedInstanceState)
+
+    // Cutout: extend the layout into the punch-hole on API 28+ (belt and
+    // suspenders with the theme's windowLayoutInDisplayCutoutMode item).
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      window.attributes = window.attributes.apply {
+        layoutInDisplayCutoutMode =
+          WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+      }
+    }
 
     lifecycleScope.launch {
       val prefs = UserPreferences(applicationContext)

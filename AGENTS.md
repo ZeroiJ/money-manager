@@ -37,6 +37,26 @@ accounts, no backend, no login.
 - Keep composables small and previewable; one screen = one top-level
   composable + ViewModel.
 
+## Edge-to-edge & system bars (mandatory)
+The app is full edge-to-edge: backgrounds bleed behind the punch-hole and
+the gesture bar; content never does. Keep all four layers intact:
+- `res/values/themes.xml` (and `values-night/`): `statusBarColor` and
+  `navigationBarColor` = `@android:color/transparent`,
+  `enforceNavigationBarContrast` = false,
+  `windowLayoutInDisplayCutoutMode` = shortEdges.
+- `MainActivity.onCreate`: `enableEdgeToEdge()` (light transparent bar
+  styles) AND on API 28+ set
+  `window.attributes.layoutInDisplayCutoutMode =
+  LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES`.
+- Never pad the root container with `systemBarsPadding()` /
+  `safeDrawingPadding()` and never set `fitsSystemWindows` on it — the
+  outermost layer stays inset-free so the background draws edge-to-edge.
+- Apply insets/padding ONLY to inner interactive elements: top headers pad
+  below the status bar/camera (screens use a 44dp top content padding),
+  and `IosCommitRail` owns the bottom (96dp tappable row above the gesture
+  pill + non-tappable color extension through the gesture zone, horizontal
+  safeDrawing inset only). NavHost content must NOT double-pad the bottom.
+
 ## Data model (source of truth — see also project spec doc)
 - `Transaction`: id, amount, type(expense/income), category_id, note, date,
   payment_mode, scope(personal/household), paid_by (nullable)
@@ -44,6 +64,11 @@ accounts, no backend, no login.
 - `Budget`: id, category_id, month, amount_limit
 - `RecurringRule`: id, template_transaction_fields, frequency, next_due_date
 - `HouseholdMember` (only if implementing splits): id, name
+
+## Device policy
+- Ask before using adb or installing/launching builds on the connected
+  phone — no installs, taps, or screenshots without explicit approval.
+  Local compile and unit tests are fine.
 
 ## Deny rules
 - Never add a backend, cloud sync, or third-party auth without being asked

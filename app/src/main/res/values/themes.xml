@@ -4,5 +4,14 @@
     <style name="Theme.MoneyManager" parent="android:Theme.Material.Light.NoActionBar">
         <!-- Launch background matches the app (no white flash). -->
         <item name="android:windowBackground">@color/splash_bg</item>
+
+        <!-- Edge-to-edge: bars transparent so the canvas bleeds behind the
+             punch-hole and gesture pill. shortEdges extends the layout into
+             the cutout (API 27+); the nav-bar contrast scrim is off so the
+             commit-rail colors run clean to the physical edge. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
 </resources>
