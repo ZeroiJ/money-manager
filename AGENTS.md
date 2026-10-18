@@ -66,9 +66,9 @@ the gesture bar; content never does. Keep all four layers intact:
 - `HouseholdMember` (only if implementing splits): id, name
 
 ## Device policy
-- Ask before using adb or installing/launching builds on the connected
-  phone — no installs, taps, or screenshots without explicit approval.
-  Local compile and unit tests are fine.
+- adb on the connected phone is fine (installDebug, launches, input,
+  screenshots) for verification. Ask before destructive device ops:
+  clearing app data, uninstalling, wiping, or touching other apps.
 
 ## Deny rules
 - Never add a backend, cloud sync, or third-party auth without being asked
